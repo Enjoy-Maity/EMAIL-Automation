@@ -8,7 +8,8 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     ws=wb.sheet_names
     worksheet=''
 
-    print(f"\n\n{workbook}\n\n")
+    #print(f"\n\n{workbook}\n\n")
+    
     for sheet in ws:
         if sheet == 'Email-Package':
             worksheet=sheet

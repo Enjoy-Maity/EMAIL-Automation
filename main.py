@@ -209,7 +209,7 @@ class App:
         self.main_win_canvas.create_text(710,268,anchor = "nw",text = self.interdomain_kpis_mail_communication_status.get(),fill =self.interdomain_kpis_mail_communication_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
 
         self.main_win_canvas.create_window(100,360,anchor = "nw",window = self.evening_task_btn)
-        self.main_win_canvas.create_text(137,378,anchor = "nw",text = self.evening_task_status.get(),fill =self.evening_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
+        self.main_win_canvas.create_text(137,388,anchor = "nw",text = self.evening_task_status.get(),fill =self.evening_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
 
         self.main_win_canvas.update_idletasks()                     # Solves the flickering problem when the frame gets updated
         if ind  ==  31:
@@ -236,7 +236,7 @@ class App:
                 if (len(self.file_browser_file)==0):
                     raise FileNotSelected (" Please Select the file first!","File Not Selected")
 
-                self.circle_email_automation_status_flag=circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
+                self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
                 
                 if self.circle_email_automation_status_flag == 1:
                     self.circle_email_automation_task_color_get.set(self.color[1])
@@ -270,14 +270,17 @@ class App:
                 if (len(self.file_browser_file)==0):
                     raise FileNotSelected (" Please Select the file first!","File Not Selected")
                 
-                self.circle_email_automation_status_flag=circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
-                self.thread=Thread(interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file))
-                self.thread.daemon = True
-                self.thread.start()
-                self.thread.join()
-                self.interdomain_kpis_data_prep_color_get.set(self.color[1])
-                self.interdomain_kpis_data_prep_task_status.set(" Successful ")
-                self.interdomain_kpis_data_prep_task_completed = 1
+                else:
+                    self.thread=Thread(interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file))
+                    self.thread.daemon = True
+                    self.thread.start()
+                    self.thread.join()
+                    #interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file)
+                    self.interdomain_kpis_data_prep_color_get.set(self.color[1])
+                    self.interdomain_kpis_data_prep_task_completed = 1
+                    self.interdomain_kpis_data_prep_status_checker_flag = 1
+                    self.interdomain_kpis_data_prep_task_status.set(" Successful ")
+                    
             
             except FileNotSelected:
                 self.interdomain_kpis_data_prep_color_get.set(self.color[0])
@@ -347,11 +350,13 @@ class App:
                 if self.main_win.state() != "normal":
                     self.main_win_flag = 0
                     self.main_win.deiconify()
+                self.interdomain_kpis_mail_communication_status_checker_flag = 0
                 raise CustomException ("Please! Run Interdomain KPIs Data Prep task First!","   Task Unsuccessful")
                
             self.region_handler_names_win.mainloop()
         
         else:
+            self.interdomain_kpis_mail_communication_status_checker_flag = 0
             raise CustomWarning(" Interdomain KPIs mail Communication Task Already Successfully Completed"," Task Already Done")
         
     def interdomain_kpis_mail_commmunication_starter_func(self,event):
@@ -376,6 +381,7 @@ class App:
 
                     interdomain_KPIs_Mail_Comm_Task.paco_cscore(self.sender,self.file_browser_file,self.north_and_west_region,self.east_region_and_south_region)
                     self.interdomain_kpis_mail_communication_color_get.set(self.color[1])
+                    self.interdomain_kpis_mail_communication_status_checker_flag = 1
                     self.interdomain_kpis_mail_communication_status.set(" Successful ")
                     
                 
@@ -426,48 +432,56 @@ class App:
 
     def evening_task_func (self,event):
         if (self.evening_task_status_checker_flag == 0):
-            self.evening_task_win = Toplevel(self.main_win)
-            if self.main_win.state() == 'normal':
-                self.main_win.withdraw()
-            self.evening_task_win.iconbitmap('images/ericsson-blue-icon-logo.ico')
-            self.evening_task_win.title("   Please Enter The Names to Proceed")
-            self.evening_task_win.geometry("600x550")
-            self.evening_task_win.minsize(600,550)
-            self.evening_task_win.maxsize(600,550)
-            self.evening_task_win.bind("<Escape>",self.evening_task_func_quit)
-
-            self.evening_task_background = ImageTk.PhotoImage(Image.open("images/MPBN PLANNING TASK_3_4.png"))
-            self.evening_task_win_canvas=Canvas(self.evening_task_win,height = 550,width = 600,bd=0,highlightthickness=0, relief="ridge")
-            self.evening_task_win_canvas.grid(row = 0,column = 0,sticky = NW)
-            self.evening_task_win_canvas.create_image(0,0,image = self.evening_task_background, anchor = "nw")
+            if (len(self.file_browser_file) == 0):
+                self.evening_task_color_get.set(self.color[0])
+                self.evening_task_status_checker_flag = 0
+                self.evening_task_status.set(' Unsuccessful ')
+                raise FileNotSelected (" Please Select the file first!","File Not Selected")
             
+            else:
+                self.evening_task_win = Toplevel(self.main_win)
+                if self.main_win.state() == 'normal':
+                    self.main_win.withdraw()
+                self.evening_task_win.iconbitmap('images/ericsson-blue-icon-logo.ico')
+                self.evening_task_win.title("   Please Enter The Names to Proceed")
+                self.evening_task_win.geometry("600x550")
+                self.evening_task_win.minsize(600,550)
+                self.evening_task_win.maxsize(600,550)
+                self.evening_task_win.bind("<Escape>",self.evening_task_func_quit)
 
-            self.evening_task_win_canvas.create_text(10,20,anchor = "nw",text = "Please Enter Name of the Night Shift Lead", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
-            self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
-            self.evening_task_win_canvas.create_window(10,70,anchor = "nw",window=self.evening_task_win_canvas_night_shift_lead_entry)
+                self.evening_task_background = ImageTk.PhotoImage(Image.open("images/MPBN PLANNING TASK_3_4.png"))
+                self.evening_task_win_canvas=Canvas(self.evening_task_win,height = 550,width = 600,bd=0,highlightthickness=0, relief="ridge")
+                self.evening_task_win_canvas.grid(row = 0,column = 0,sticky = NW)
+                self.evening_task_win_canvas.create_image(0,0,image = self.evening_task_background, anchor = "nw")
+                
 
-            self.evening_task_win_canvas.create_text(10,150,anchor = "nw",text = "Please Enter Name of the Buffer/Auditor/Trainer", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
-            self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
-            self.evening_task_win_canvas.create_window(10,200,anchor = "nw",window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
+                self.evening_task_win_canvas.create_text(10,20,anchor = "nw",text = "Please Enter Name of the Night Shift Lead", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
+                self.evening_task_win_canvas.create_window(10,70,anchor = "nw",window=self.evening_task_win_canvas_night_shift_lead_entry)
 
-            self.evening_task_win_canvas.create_text(10,280,anchor = "nw",text = "Please Enter Name of the Resource on Automation", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
-            self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
-            self.evening_task_win_canvas.create_window(10,310,anchor = "nw",window=self.evening_task_win_canvas_resource_on_automation_entry)
+                self.evening_task_win_canvas.create_text(10,150,anchor = "nw",text = "Please Enter Name of the Buffer/Auditor/Trainer", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
+                self.evening_task_win_canvas.create_window(10,200,anchor = "nw",window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
 
-            self.evening_task_submit_btn = ttk.Button(self.evening_task_win, text = "Submit", command = lambda: self.evening_task_func_starter(1))
-            self.evening_task_win_canvas.create_window(580,520,window = self.evening_task_submit_btn,anchor = "se")
+                self.evening_task_win_canvas.create_text(10,280,anchor = "nw",text = "Please Enter Name of the Resource on Automation", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
+                self.evening_task_win_canvas.create_window(10,310,anchor = "nw",window=self.evening_task_win_canvas_resource_on_automation_entry)
 
+                self.evening_task_submit_btn = ttk.Button(self.evening_task_win, text = "Submit", command = lambda: self.evening_task_func_starter(1))
+                self.evening_task_win_canvas.create_window(580,520,window = self.evening_task_submit_btn,anchor = "se")
 
-            self.evening_task_win.protocol("WM_DELETE_WINDOW",lambda:self.evening_task_func_quit(1))
-            self.evening_task_win.bind("<Return>",self.evening_task_func_starter)
+                self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
 
-            if self.evening_task_win.state() != "normal" :
-                if self.main_win.state() != "normal":
-                    self.main_win_flag = 0
-                    self.main_win.deiconify()
-                self.evening_task_win.destroy()
+                self.evening_task_win.protocol("WM_DELETE_WINDOW",lambda:self.evening_task_func_quit(1))
+                self.evening_task_win.bind("<Return>",self.evening_task_func_starter)
 
-            self.evening_task_win.mainloop()
+                if self.evening_task_win.state() != "normal" :
+                    if self.main_win.state() != "normal":
+                        self.main_win_flag = 0
+                        self.main_win.deiconify()
+                    self.evening_task_win.destroy()
+
+                self.evening_task_win.mainloop()
         
         else:
             raise CustomWarning ("Evening Task Already Successfully Completed"," Task Already Done")
@@ -487,69 +501,64 @@ class App:
         self.resource_on_automation = self.evening_task_win_canvas_resource_on_automation_entry.get()
         self.evening_task_color_get.set(self.color[2])
         self.evening_task_status.set(' In Progress ')
+        
+        self.empty_string_list = []
+        self.integer_string_list = []
+        
+        try:
+            
+            if (len(self.night_shift_lead)>0) and (len(self.buffer_auditor_trainer) > 0) and (len(self.resource_on_automation) > 0):
+                if (not (any(c.isdigit() for c in self.night_shift_lead))) and (not (any(c.isdigit() for c in self.buffer_auditor_trainer))) and (not (any(c.isdigit() for c in self.resource_on_automation))):
+                    self.main_win_flag = 0
+                    self.main_win.deiconify()
 
-        if (len(self.file_browser_file)==0):
+                    self.evening_task_win.destroy()
+                    evening_mail_task.evening_task(self.sender,self.night_shift_lead,self.buffer_auditor_trainer,self.resource_on_automation,self.file_browser_file)
+                    self.evening_task_color_get.set(self.color[1])
+                    self.evening_task_status_checker_flag = 1
+                    self.evening_task_status.set(' Successful ')
+                
+            if (len(self.night_shift_lead) == 0):
+                self.empty_string_list.append("Night Shift Lead")
+            
+            if (any(c.isdigit() for c in self.night_shift_lead)):
+                self.integer_string_list.append("Night Shift Lead")
+
+            if (len(self.buffer_auditor_trainer) == 0):
+                self.empty_string_list.append("Buffer/Auditor/Trainer")
+            if (any(c.isdigit() for c in self.buffer_auditor_trainer)):
+                self.integer_string_list.append("Buffer/Auditor/Trainer")
+
+            if (len(self.resource_on_automation) == 0):
+                self.empty_string_list.append("Resource on Automation")
+            if (any(c.isdigit() for c in self.resource_on_automation)):
+                self.integer_string_list.append("Resource On Automation")
+
+
+            if (len(self.empty_string_list) > 0) and (len(self.integer_string_list) == 0):
                 self.evening_task_color_get.set(self.color[0])
                 self.evening_task_status_checker_flag = 0
                 self.evening_task_status.set(' Unsuccessful ')
-                raise FileNotSelected (" Please Select the file first!","File Not Selected")
-        
-        else:
+                raise EveningTaskException (f"Please Enter Valid Names, Empty Strings are not allowed\nEmpty Field/Fields: {','.join(self.empty_string_list)}")
+            if (len(self.empty_string_list) == 0) and (len(self.integer_string_list) > 0):
+                self.evening_task_color_get.set(self.color[0])
+                self.evening_task_status_checker_flag = 0
+                self.evening_task_status.set(' Unsuccessful ')
+                raise EveningTaskException (f"Please Enter Valid Names, Numbers are not allowed\nField/Fields with Numbers: {','.join(self.integer_string_list)}")
+            if (len(self.empty_string_list) > 0) and (len(self.integer_string_list) > 0):
+                self.evening_task_color_get.set(self.color[0])
+                self.evening_task_status_checker_flag = 0
+                self.evening_task_status.set(' Unsuccessful ')
+                raise EveningTaskException (f"Please Enter Valid Names, Empty Strings and Numbers are not allowed\n Empty Field/Fields: {','.join(self.empty_string_list)}\nField/Fields with Numbers: {','.join(self.integer_string_list)}")
+
+                
+        except EveningTaskException:
             self.empty_string_list = []
             self.integer_string_list = []
-            try:
-                
-                if (len(self.night_shift_lead)>0) and (len(self.buffer_auditor_trainer) > 0) and (len(self.resource_on_automation) > 0):
-                    if (not (any(c.isdigit() for c in self.night_shift_lead))) and (not (any(c.isdigit() for c in self.buffer_auditor_trainer))) and (not (any(c.isdigit() for c in self.resource_on_automation))):
-                        self.main_win_flag = 0
-                        self.main_win.deiconify()
-
-                        self.evening_task_win.destroy()
-                        evening_mail_task.evening_task(self.sender,self.night_shift_lead,self.buffer_auditor_trainer,self.resource_on_automation,self.file_browser_file)
-                        self.evening_task_color_get.set(self.color[1])
-                        self.evening_task_status_checker_flag = 1
-                        self.evening_task_status.set(' Successful ')
-                    
-                if (len(self.night_shift_lead) == 0):
-                    self.empty_string_list.append("Night Shift Lead")
-                
-                if (any(c.isdigit() for c in self.night_shift_lead)):
-                    self.integer_string_list.append("Night Shift Lead")
-
-                if (len(self.buffer_auditor_trainer) == 0):
-                    self.empty_string_list.append("Buffer/Auditor/Trainer")
-                if (any(c.isdigit() for c in self.buffer_auditor_trainer)):
-                    self.integer_string_list.append("Buffer/Auditor/Trainer")
-
-                if (len(self.resource_on_automation) == 0):
-                    self.empty_string_list.append("Resource on Automation")
-                if (any(c.isdigit() for c in self.resource_on_automation)):
-                    self.integer_string_list.append("Resource On Automation")
-
-
-                if (len(self.empty_string_list) > 0) and (len(self.integer_string_list) == 0):
-                    self.evening_task_color_get.set(self.color[0])
-                    self.evening_task_status_checker_flag = 0
-                    self.evening_task_status.set(' Unsuccessful ')
-                    raise EveningTaskException (f"Please Enter Valid Names, Empty Strings are not allowed\nEmpty Field/Fields: {','.join(self.empty_string_list)}")
-                if (len(self.empty_string_list) == 0) and (len(self.integer_string_list) > 0):
-                    self.evening_task_color_get.set(self.color[0])
-                    self.evening_task_status_checker_flag = 0
-                    self.evening_task_status.set(' Unsuccessful ')
-                    raise EveningTaskException (f"Please Enter Valid Names, Numbers are not allowed\nField/Fields with Numbers: {','.join(self.integer_string_list)}")
-                if (len(self.empty_string_list) > 0) and (len(self.integer_string_list) > 0):
-                    self.evening_task_color_get.set(self.color[0])
-                    self.evening_task_status_checker_flag = 0
-                    self.evening_task_status.set(' Unsuccessful ')
-                    raise EveningTaskException (f"Please Enter Valid Names, Empty Strings and Numbers are not allowed\n Empty Field/Fields: {','.join(self.empty_string_list)}\nField/Fields with Numbers: {','.join(self.integer_string_list)}")
-
-                
-            except EveningTaskException:
-                self.empty_string_list = []
-                self.integer_string_list = []
-                self.evening_task_color_get.set(self.color[0])
-                self.evening_task_status_checker_flag = 0
-                self.evening_task_status.set(' Unsuccessful ')
+            self.evening_task_color_get.set(self.color[0])
+            self.evening_task_status_checker_flag = 0
+            self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+            self.evening_task_status.set(' Unsuccessful ')
 
     
     def submit_sender_name (self,event):
