@@ -187,7 +187,7 @@ def fetch_details(sender,workbook):
                     to=Email_ID.iloc[row_to_fetch]['To Mail List']
                     cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
                     
-                    subject=f"ONLY FOR TEST :Connected End Nodes and their services on MPBN devices: {cir}"
+                    subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%Y-%m-%d')}"
                     body="""
                         <html>        
                             <body>
@@ -201,7 +201,7 @@ def fetch_details(sender,workbook):
                                     <p>{}</p>
                                 </div>
                                 <div>
-                                    <p>Regards<br>{}<br>only for testing From Enjoy Maity<br>Ericsson India Global Services Pvt. Ltd.</p>
+                                    <p>Regards<br>{}<br>Ericsson India Global Services Pvt. Ltd.</p>
                                     </div>
                             </body>
                         </html>

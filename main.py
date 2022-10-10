@@ -199,17 +199,17 @@ class App:
         self.main_win_canvas.create_window(420,182,anchor = "nw",window = self.file_browser_entry)
         self.main_win_canvas.create_window(840,180,anchor = "nw",window = self.file_browser_btn)
         
-        self.main_win_canvas.create_window(100,240,anchor = "nw",window = self.circle_email_automation_task_btn)
-        self.main_win_canvas.create_text(137,268,anchor = "nw",text = self.circle_email_automation_task_status.get(),fill = self.circle_email_automation_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
+        self.main_win_canvas.create_window(100,268,anchor = "nw",window = self.circle_email_automation_task_btn)
+        self.main_win_canvas.create_text(137,300,anchor = "nw",text = self.circle_email_automation_task_status.get(),fill = self.circle_email_automation_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
         
-        self.main_win_canvas.create_window(359,240,anchor = "nw",window = self.interdomain_kpis_data_prep_btn)
-        self.main_win_canvas.create_text(406,268,anchor = "nw",text = self.interdomain_kpis_data_prep_task_status.get(),fill = self.interdomain_kpis_data_prep_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
+        self.main_win_canvas.create_window(359,268,anchor = "nw",window = self.interdomain_kpis_data_prep_btn)
+        self.main_win_canvas.create_text(406,300,anchor = "nw",text = self.interdomain_kpis_data_prep_task_status.get(),fill = self.interdomain_kpis_data_prep_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
 
-        self.main_win_canvas.create_window(655,240,anchor = "nw",window = self.interdomain_kpis_mail_communication_btn)
-        self.main_win_canvas.create_text(710,268,anchor = "nw",text = self.interdomain_kpis_mail_communication_status.get(),fill =self.interdomain_kpis_mail_communication_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
+        self.main_win_canvas.create_window(655,268,anchor = "nw",window = self.interdomain_kpis_mail_communication_btn)
+        self.main_win_canvas.create_text(710,300,anchor = "nw",text = self.interdomain_kpis_mail_communication_status.get(),fill =self.interdomain_kpis_mail_communication_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
 
-        self.main_win_canvas.create_window(100,360,anchor = "nw",window = self.evening_task_btn)
-        self.main_win_canvas.create_text(137,388,anchor = "nw",text = self.evening_task_status.get(),fill =self.evening_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
+        self.main_win_canvas.create_window(100,388,anchor = "nw",window = self.evening_task_btn)
+        self.main_win_canvas.create_text(137,420,anchor = "nw",text = self.evening_task_status.get(),fill =self.evening_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
 
         self.main_win_canvas.update_idletasks()                     # Solves the flickering problem when the frame gets updated
         if ind  ==  31:
@@ -234,7 +234,7 @@ class App:
         
             try:
                 if (len(self.file_browser_file)==0):
-                    raise FileNotSelected (" Please Select the file first!","File Not Selected")
+                    raise FileNotSelected (" Please Select the MPBN Planning Workbbok first!","File Not Selected")
 
                 self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
                 
@@ -251,8 +251,9 @@ class App:
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
-            except:
+            except Exception as error:
                 #self.circle_email_automation_task_thread.join()
+                messagebox.showerror(" Exception Occured",error)
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
@@ -268,7 +269,7 @@ class App:
             try:
                 #time.sleep(5)
                 if (len(self.file_browser_file)==0):
-                    raise FileNotSelected (" Please Select the file first!","File Not Selected")
+                    raise FileNotSelected (" Please Select the MPBN Planning Excel Workbook first!","File Not Selected")
                 
                 else:
                     self.thread=Thread(interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file))
@@ -286,7 +287,8 @@ class App:
                 self.interdomain_kpis_data_prep_color_get.set(self.color[0])
                 self.interdomain_kpis_data_prep_status_checker_flag = 0
                 self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
-            except:
+            except Exception as error:
+                messagebox.showerror(" Exception Occured", error)
                 self.interdomain_kpis_data_prep_color_get.set(self.color[0])
                 self.interdomain_kpis_data_prep_status_checker_flag = 0
                 self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
@@ -371,7 +373,7 @@ class App:
         try:
             if (len(self.file_browser_file)==0):
                 self.interdomain_kpis_mail_communication_status_checker_flag = 0
-                raise FileNotSelected (" Please Select the file first!","File Not Selected")
+                raise FileNotSelected (" Please Select the MPBN Planning Excel Workbook first!","File Not Selected")
             
             if (len(self.north_and_west_region)>0) and (len(self.east_region_and_south_region)>0):
                 if (not (any(c.isdigit() for c in self.north_and_west_region ))) and (not (any(c.isdigit() for c in self.east_region_and_south_region))):
@@ -426,6 +428,11 @@ class App:
             self.north_and_west_region_entry.focus_force()
             self.interdomain_kpis_mail_communication_color_get.set(self.color[0])
             self.interdomain_kpis_mail_communication_status.set(' Unsuccessful ')
+        
+        except Exception as error:
+            messagebox.showerror(" Exception Occured", error)
+            self.interdomain_kpis_mail_communication_color_get.set(self.color[0])
+            self.interdomain_kpis_mail_communication_status.set(' Unsuccessful ')
             
 
                 
@@ -436,7 +443,7 @@ class App:
                 self.evening_task_color_get.set(self.color[0])
                 self.evening_task_status_checker_flag = 0
                 self.evening_task_status.set(' Unsuccessful ')
-                raise FileNotSelected (" Please Select the file first!","File Not Selected")
+                raise FileNotSelected (" Please Select the MPBN Planning Excel Workbook first!","File Not Selected")
             
             else:
                 self.evening_task_win = Toplevel(self.main_win)
@@ -455,15 +462,15 @@ class App:
                 self.evening_task_win_canvas.create_image(0,0,image = self.evening_task_background, anchor = "nw")
                 
 
-                self.evening_task_win_canvas.create_text(10,20,anchor = "nw",text = "Please Enter Name of the Night Shift Lead", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                self.evening_task_win_canvas.create_text(10,20,anchor = "nw",text = "Please Enter Night Shift Lead Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
                 self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
                 self.evening_task_win_canvas.create_window(10,70,anchor = "nw",window=self.evening_task_win_canvas_night_shift_lead_entry)
 
-                self.evening_task_win_canvas.create_text(10,150,anchor = "nw",text = "Please Enter Name of the Buffer/Auditor/Trainer", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                self.evening_task_win_canvas.create_text(10,150,anchor = "nw",text = "Please Enter Buffer/Auditor/Trainer Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
                 self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
                 self.evening_task_win_canvas.create_window(10,200,anchor = "nw",window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
 
-                self.evening_task_win_canvas.create_text(10,280,anchor = "nw",text = "Please Enter Name of the Resource on Automation", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                self.evening_task_win_canvas.create_text(10,280,anchor = "nw",text = "Please Enter Resource on Automation Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
                 self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
                 self.evening_task_win_canvas.create_window(10,310,anchor = "nw",window=self.evening_task_win_canvas_resource_on_automation_entry)
 
@@ -558,6 +565,12 @@ class App:
             self.evening_task_color_get.set(self.color[0])
             self.evening_task_status_checker_flag = 0
             self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+            self.evening_task_status.set(' Unsuccessful ')
+        
+        except Exception as error:
+            messagebox.showerror(" Exception Occured",error)
+            self.evening_task_color_get.set(self.color[0])
+            self.evening_task_status_checker_flag = 0
             self.evening_task_status.set(' Unsuccessful ')
 
     

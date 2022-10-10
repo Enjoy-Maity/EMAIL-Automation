@@ -118,17 +118,17 @@ Rollback CR re-attempt count : 0
 Partially completed CR re-attempt count : 0
 Updated automation CR count
 ======================
+Total CRs                     :{}
+CR Planned Manually           :{}
 CR Planned via Enable Tool    :{}
 CR Planned via CREATE Tool    :{}
-CR Planned Manually           :{}
 CR Planned Partial Automation :{}
-Total CRs                     :{}
 ======================
 
 Regards,
 {}
         """
-        message = message.format(execution_date,maintenance_window,total_no_of_crs,critical,major,critical,delhi_critical,major,delhi_major,resources_occupied_in_night_activities,resource_on_leave,night_shift_lead,buffer_auditor_trainer,resource_on_automation,enable,create,manual,partially_automation,total_no_of_crs,sender)
+        message = message.format(execution_date,maintenance_window,total_no_of_crs,critical,major,critical,delhi_critical,major,delhi_major,resources_occupied_in_night_activities,resource_on_leave,night_shift_lead,buffer_auditor_trainer,resource_on_automation,total_no_of_crs,manual,enable,create,partially_automation,sender)
         # print(message)
         
         file_path = workbook.split("/")
