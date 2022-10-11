@@ -269,9 +269,8 @@ def fetch_details(sender,workbook):
                         """
                     sendmail(dataframe,to,cc,body,subject,sender)
                     #messagebox.showinfo("   Mail Successfully Sent",f"Mail Sent for the Circle {cir}\n\nPlease! Press The Enter Key or Click The OK Button To Proceed")
-                if len(remainder)>0:
+                if len(input_error)>0:
                     flag=2
-                    #messagebox.showwarning("  Mail Not Sent",f"Mail could not be sent for {remainder_list} as there's no email id present for the {remainder_list} in the Email ID sheet in {workbook}")
                     messagebox.showinfo("  Mail Sent",f"Mail Sent For { total_circles_in_planning_sheet - len(remainder) }/{total_circles_in_planning_sheet} Circles\nInput Error SNo. in Planning Sheet : {', '.join(str(num) for num in input_error)}")
                 else:
                     flag=1
