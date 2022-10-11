@@ -1,3 +1,4 @@
+from re import T
 import sys
 from datetime import datetime,timedelta
 import subprocess
@@ -87,10 +88,28 @@ try:
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
             
             else:
-                Email_Id = pd.read_excel(workbook,'Mail Id')
+                
                 #print(daily_plan_sheet)
 
                 # Sheetnames
+
+                input_error = []
+                result_df = pd.DataFrame()
+
+                for i in range(0,len(daily_plan_sheet)):
+                    if daily_plan_sheet.at[i,'CR NO'] == "NA":
+                        input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                    else:
+                        result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
+
+                del daily_plan_sheet
+
+                daily_plan_sheet = result_df.copy(deep = True)
+
+                del result_df
+                
+                input_error.sort()
+                
                 sheetname = "PS Core-Inter Domain"
                 sheetname2 = "CS Core-Inter Domain"
                 sheetname3 = "RAN-Inter Domain"
@@ -117,7 +136,7 @@ try:
                 Kpis_to_be_monitored = []
                 # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
                 for i in range(0,len(daily_plan_sheet)):
-                    if daily_plan_sheet.iloc[i]['Domain kpi'] == "PS Core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Paco-circle" or daily_plan_sheet.iloc[i]['Domain kpi'] == "paco-circle" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Paco" or daily_plan_sheet.iloc[i]['Domain kpi'] == "ps core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "pS Core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Ps core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "ps" or daily_plan_sheet.iloc[i]['Domain kpi'] == "PS":
+                    if daily_plan_sheet.iloc[i]['Domain kpi'] == "PS Core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Paco-circle" or daily_plan_sheet.iloc[i]['Domain kpi'] == "paco-circle" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Paco" or daily_plan_sheet.iloc[i]['Domain kpi'] == "ps core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "pS Core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Ps core" or daily_plan_sheet.iloc[i]['Domain kpi'] == "ps" or daily_plan_sheet.iloc[i]['Domain kpi'] == "PS" or daily_plan_sheet.iloc[i]['Domain kpi'] == "Paco circle" or daily_plan_sheet.iloc[i]['Domain kpi'] == "paco circle":
                         execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -202,7 +221,7 @@ try:
                 oss_IP = []
                 # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
                 for i in range(0,len(daily_plan_sheet)):
-                    if daily_plan_sheet.iloc[i]['Domain kpi'] == "RAN":
+                    if (daily_plan_sheet.iloc[i]['Domain kpi'] == "RAN") or (daily_plan_sheet.iloc[i]['Domain kpi'] == "ran") or (daily_plan_sheet.iloc[i]['Domain kpi'] == "RaN") or (daily_plan_sheet.iloc[i]['Domain kpi'] == "rAN") or daily_plan_sheet.iloc[i]['Domain kpi'] == "Ran":
                         execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -220,7 +239,7 @@ try:
                         else:
                             tech_validator_team_leader = technical_validator+"/"+team_leader
                             validator.append(tech_validator_team_leader)
-                        inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'])
+                        inter_domain.append("RAN")
                         impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
                         Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
                         oss_name.append(daily_plan_sheet.iloc[i]['oss name'])
@@ -266,7 +285,11 @@ try:
                 styling(workbook,sheetname2)
                 styling(workbook,sheetname3)
 
-                messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Data Preparation Task completed")
+                if (len(input_error) > 0):
+                    messagebox.showwarning("   Partial Successful Completion",f"Interdomain KPIs Mail Data Preparation Task partially completed\nS.No. with no CR No. : {', '.join(str(num) for num in input_error)}")
+
+                else:
+                    messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Data Preparation Task completed")
 
                 email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook)
 
@@ -1030,6 +1053,7 @@ try:
 
                 messagebox.showinfo("   Successful Completion",'Email Package Sheet created')
 
+
                 
 
             
@@ -1054,4 +1078,4 @@ except TomorrowDataNotFound as error:
 except DomainNotFound as error:
     messagebox.showerror("  Domain KPI can't be Empty")
 
-#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")

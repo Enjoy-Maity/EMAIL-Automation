@@ -50,7 +50,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
             
         else:
-            daily_plan_sheet=daily_plan_sheet.drop_duplicates(subset=['CR NO'])
+            #daily_plan_sheet=daily_plan_sheet.drop_duplicates(subset=['CR NO'])
             Email_Id=pd.read_excel(workbook,'Mail Id')
             list_of_interdomains=["CS Core","PS Core","RAN"]
             df2=pd.read_excel(workbook,sheet_name="CS Core-Inter Domain")

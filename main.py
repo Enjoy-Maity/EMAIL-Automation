@@ -195,7 +195,7 @@ class App:
         self.main_win_canvas.delete("all")
         self.main_win_canvas.create_image(0,0,image = self.main_win_background_img,anchor = "nw")
         self.main_win_canvas.create_image(870,2,image = self.frame,anchor = "nw")
-        self.main_win_canvas.create_text(220,194,text = "Choose The Planning Sheet :-",fill = "#FFFFFF",font = ("Ericsson Hilda ExtraBold",21   ,"bold underline"))        
+        self.main_win_canvas.create_text(220,194,text = "Choose Daily Planning Sheet :-",fill = "#FFFFFF",font = ("Ericsson Hilda ExtraBold",21   ,"bold underline"))        
         self.main_win_canvas.create_window(420,182,anchor = "nw",window = self.file_browser_entry)
         self.main_win_canvas.create_window(840,180,anchor = "nw",window = self.file_browser_btn)
         
@@ -245,6 +245,7 @@ class App:
 
                 elif self.circle_email_automation_task_status == 2:
                     self.circle_email_automation_task_color_get.set(self.color[0])
+                    self.circle_email_automation_status_checker_flag = 1
                     self.circle_email_automation_task_status.set(" Unsuccessful ")
 
             except FileNotSelected:

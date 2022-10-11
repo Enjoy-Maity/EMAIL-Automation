@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime,timedelta
+from unittest import result
 import pandas as pd
 import win32com.client as win32
 from tkinter import *
@@ -56,27 +57,87 @@ def fetch_details(sender,workbook):
             daily_plan_sheet=daily_plan_sheet[daily_plan_sheet['Execution Date']==tomorrow.strftime('%Y-%m-%d')]
 
             if len(daily_plan_sheet)==0:
-                raise TomorrowDataNotFound("Today's Maintenance Data not Found in the , kindly check!")
+                raise TomorrowDataNotFound(f"Today's Maintenance Data not Found in the {workbook}, kindly check!")
             
             else:
                 
                 Email_ID=pd.read_excel(excel,'Mail Id')
 
-                for j in range(0,len(daily_plan_sheet)):
-                    temp=daily_plan_sheet.iloc[j]['Circle']
-                    daily_plan_sheet.iloc[j]['Circle']=temp.upper()
+                daily_plan_sheet['Circle'] = daily_plan_sheet['Circle'].str.upper()
+                
+                input_error = []
+                result_df = pd.DataFrame()
+
+                for i in range(0,len(daily_plan_sheet)):
+                    if daily_plan_sheet.at[i,'CR NO'] == "NA":
+                        input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                    else:
+                        if (len(daily_plan_sheet.at[i,'Activity Title'].strip()) == "NA"):
+                            input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                        else:
+                            result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
+                        
+                daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
+                #print(result_df)
+
+                result_dataframe = pd.DataFrame()
+
+
+                for idx,crno in enumerate(daily_plan_sheet_unique_cr):
+                    counter = result_df['CR NO'].value_counts()[idx]
+                    if (counter > 1):
+                        temp_df = pd.DataFrame()
+                        temp_df = result_df[result_df['CR NO'] == crno].reset_index(drop=True)
+                        if (len(temp_df['Circle'].unique())) > 1:
+                            for i in range(0,len(temp_df)):
+                                input_error.append(temp_df.at[i,'S.NO'])
+                        if ((len(temp_df['Circle'].unique())) == 1) :
+                            if (temp_df.at[0,'CR NO'] not in temp_df['CR NO'].tolist()):
+                                result_dataframe = pd.concat([result_dataframe,temp_df.iloc[0].to_frame().T], ignore_index= True)
+                    else:
+                        temp_df = pd.DataFrame()
+                        temp_df = result_df[result_df['CR NO'] == crno].reset_index(drop=True)
+                        result_dataframe = pd.concat([result_dataframe,temp_df.iloc[0].to_frame().T], ignore_index= True)
+
+
+                del daily_plan_sheet
+                daily_plan_sheet = result_dataframe.copy(deep = True)
+
+                del result_df
+                del result_dataframe
 
                 circles=daily_plan_sheet['Circle'].unique()
                 total_circles_in_planning_sheet = len(circles)
+                #print(f"\n\n{total_circles_in_planning_sheet}\n\n")
                 email_id_list=Email_ID['Circle'].unique()
                 # print(circles) # checking for all the unique values of circles in the MPBN Planning Sheets
                 remainder=list(set(circles)-set(email_id_list))
+                #print(f"\n\n{remainder}\n\n")
                 remainder.sort()
-                remainder_list=",".join(remainder)
+
+                if (len(remainder) > 0) :
+                    for circle in remainder :
+                        temp_df = daily_plan_sheet[daily_plan_sheet['Circle'] == circle].reset_index( drop = True)
+                        if (len(temp_df) > 1):
+                            for i in range(0,temp_df):
+                                input_error.append(temp_df.at[i,'S.NO'])
+                        else:
+                            input_error.append(temp_df.at[0,'S.NO'])
+
+                # remainder_list=""
+
+                # for circle_name in remainder:
+                #     if len(circle_name.strip()) == 0:
+                #         remainder_list = f"{remainder_list}, Circle name missing"
+                #     else:
+                #         remainder_list = f"{remainder_list}, "
                 
                 circles=list(set(circles)-set(remainder))
+                
+                input_error.sort()
                 #daily_plan_sheet['Execution Date']=daily_plan_sheet['Execution Date'].dt.to_pydatetime()
-                    
+
+                
                 for i in range(0,len(circles)):
 
                     execution_date=[]       #  list for collecting execution date of each Cr
@@ -187,7 +248,7 @@ def fetch_details(sender,workbook):
                     to=Email_ID.iloc[row_to_fetch]['To Mail List']
                     cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
                     
-                    subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%Y-%m-%d')}"
+                    subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%d-%m-%Y')}"
                     body="""
                         <html>        
                             <body>
@@ -211,10 +272,10 @@ def fetch_details(sender,workbook):
                 if len(remainder)>0:
                     flag=2
                     #messagebox.showwarning("  Mail Not Sent",f"Mail could not be sent for {remainder_list} as there's no email id present for the {remainder_list} in the Email ID sheet in {workbook}")
-                    messagebox.showinfo("  Mail Sent",f"Mail Sent For { len(total_circles_in_planning_sheet) - len(remainder) }/{ len(total_circles_in_planning_sheet) } Circles\n remainder: {remainder_list}")
+                    messagebox.showinfo("  Mail Sent",f"Mail Sent For { total_circles_in_planning_sheet - len(remainder) }/{total_circles_in_planning_sheet} Circles\nInput Error SNo. in Planning Sheet : {', '.join(str(num) for num in input_error)}")
                 else:
                     flag=1
-                    messagebox.showinfo("  Mail Sent Successfully","All The Mails for All the Circles in Daily Planning Sheet Have Been Sent")
+                    messagebox.showinfo("  Mail Sent Successfully","All Mails for Mentioned Circles in Daily Planning Sheet have been sent!")
                 return flag
 
     except FileNotFoundError:
@@ -231,4 +292,7 @@ def fetch_details(sender,workbook):
         messagebox.showerror("  Data can't be found",error).bind("<Return>",quit)
         sys.exit(0)
     
+    # except Exception as error:
+    #     print(error)
     
+#fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
