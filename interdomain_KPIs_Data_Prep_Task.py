@@ -88,10 +88,9 @@ try:
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
             
             else:
-                
-                #print(daily_plan_sheet)
+                Email_ID = pd.read_excel(workbook,"Mail Id")
 
-                # Sheetnames
+                circle = Email_ID['Circle'].tolist()
 
                 input_error = []
                 result_df = pd.DataFrame()
@@ -100,7 +99,12 @@ try:
                     if daily_plan_sheet.at[i,'CR NO'] == "NA":
                         input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     else:
-                        result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
+                        if (daily_plan_sheet.at[i,'Circle'] not in circle):
+                            input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                        else:
+                            result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
+                
+                result_df.drop_duplicates(keep = 'first', inplace= True)
 
                 del daily_plan_sheet
 
@@ -1078,4 +1082,4 @@ except TomorrowDataNotFound as error:
 except DomainNotFound as error:
     messagebox.showerror("  Domain KPI can't be Empty")
 
-paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")

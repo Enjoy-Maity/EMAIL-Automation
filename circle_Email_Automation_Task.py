@@ -1,3 +1,4 @@
+from re import T
 import sys
 from datetime import datetime,timedelta
 from unittest import result
@@ -31,8 +32,6 @@ def sendmail(dataframe,to,cc,body,subject,sender):
     msg.Save()
     msg.Send()
 
-    # messagebox.showinfo("   Successful Completion","Circle Email Automation task completed")
-
 #####################################################################
 ############################# Fetch-details #########################
 #####################################################################
@@ -48,6 +47,7 @@ def fetch_details(sender,workbook):
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
         if (len(workbook) == 0):
             raise TomorrowDataNotFound ("Please Browse for the Excel File to continue")
+        
         elif (len(workbook) > 0):
             excel=pd.ExcelFile(workbook)
             daily_plan_sheet=pd.read_excel(excel,'Planning Sheet')
@@ -60,83 +60,69 @@ def fetch_details(sender,workbook):
                 raise TomorrowDataNotFound(f"Today's Maintenance Data not Found in the {workbook}, kindly check!")
             
             else:
+                flag = 0
                 
                 Email_ID=pd.read_excel(excel,'Mail Id')
 
-                daily_plan_sheet['Circle'] = daily_plan_sheet['Circle'].str.upper()
+                # daily_plan_sheet['Circle'] = daily_plan_sheet['Circle'].str.upper()
+                for i in range(0,len(daily_plan_sheet)):
+                    daily_plan_sheet.at[i,'Circle'] = daily_plan_sheet.at[i,'Circle'].str.upper()
+                daily_plan_sheet = daily_plan_sheet[['S.NO','Execution Date','Maintenance Window','CR NO','Activity Title','Risk','Location','Circle']]
                 
                 input_error = []
                 result_df = pd.DataFrame()
 
                 for i in range(0,len(daily_plan_sheet)):
-                    if daily_plan_sheet.at[i,'CR NO'] == "NA":
+                    if (daily_plan_sheet.at[i,'CR NO'] == 'NA'):
+                        print(daily_plan_sheet.at[i,'S.NO'])
                         input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                        continue
+                    
+                    if (daily_plan_sheet.at[i,'Activity Title'] == 'NA'):
+                        input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                        continue
+                    
+                    if (daily_plan_sheet.at[i,'Circle'] == 'NA'):
+                        input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                        continue
+                    
                     else:
-                        if (len(daily_plan_sheet.at[i,'Activity Title'].strip()) == "NA"):
-                            input_error.append(daily_plan_sheet.at[i,'S.NO'])
-                        else:
-                            result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
-                        
+                        result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T],ignore_index = True)
+                
+                circles=list(result_df['Circle'].unique())
+                total_circles_in_planning_sheet = len(circles)
+
                 daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
-                #print(result_df)
+                
+                del daily_plan_sheet
+                new_result_df = pd.DataFrame()
 
-                result_dataframe = pd.DataFrame()
-
-
-                for idx,crno in enumerate(daily_plan_sheet_unique_cr):
-                    counter = result_df['CR NO'].value_counts()[idx]
+                for index, cr_no in enumerate(daily_plan_sheet_unique_cr):
+                    counter = result_df['CR NO'].value_counts().to_list()[index]
+                    temp_df = pd.DataFrame()
+                    temp_df = result_df[result_df['CR NO'] == cr_no]
                     if (counter > 1):
-                        temp_df = pd.DataFrame()
-                        temp_df = result_df[result_df['CR NO'] == crno].reset_index(drop=True)
-                        if (len(temp_df['Circle'].unique())) > 1:
+                        if (len(temp_df['Circle'].unique()) > 1):
                             for i in range(0,len(temp_df)):
                                 input_error.append(temp_df.at[i,'S.NO'])
-                        if ((len(temp_df['Circle'].unique())) == 1) :
-                            if (temp_df.at[0,'CR NO'] not in temp_df['CR NO'].tolist()):
-                                result_dataframe = pd.concat([result_dataframe,temp_df.iloc[0].to_frame().T], ignore_index= True)
+                            continue
+                        if (len(temp_df['Circle'].unique()) == 1):
+                            new_result_df = pd.concat([new_result_df, temp_df.iloc[0].to_frame().T],ignore_index = True)
                     else:
-                        temp_df = pd.DataFrame()
-                        temp_df = result_df[result_df['CR NO'] == crno].reset_index(drop=True)
-                        result_dataframe = pd.concat([result_dataframe,temp_df.iloc[0].to_frame().T], ignore_index= True)
-
-
-                del daily_plan_sheet
-                daily_plan_sheet = result_dataframe.copy(deep = True)
-
+                        new_result_df = pd.concat([new_result_df,temp_df.iloc[0].to_frame().T],ignore_index = True)
+                
+                daily_plan_sheet = new_result_df.copy(deep = True)
+                del new_result_df
                 del result_df
-                del result_dataframe
 
-                circles=daily_plan_sheet['Circle'].unique()
-                total_circles_in_planning_sheet = len(circles)
-                #print(f"\n\n{total_circles_in_planning_sheet}\n\n")
                 email_id_list=Email_ID['Circle'].unique()
-                # print(circles) # checking for all the unique values of circles in the MPBN Planning Sheets
                 remainder=list(set(circles)-set(email_id_list))
-                #print(f"\n\n{remainder}\n\n")
                 remainder.sort()
 
-                if (len(remainder) > 0) :
-                    for circle in remainder :
-                        temp_df = daily_plan_sheet[daily_plan_sheet['Circle'] == circle].reset_index( drop = True)
-                        if (len(temp_df) > 1):
-                            for i in range(0,temp_df):
-                                input_error.append(temp_df.at[i,'S.NO'])
-                        else:
-                            input_error.append(temp_df.at[0,'S.NO'])
-
-                # remainder_list=""
-
-                # for circle_name in remainder:
-                #     if len(circle_name.strip()) == 0:
-                #         remainder_list = f"{remainder_list}, Circle name missing"
-                #     else:
-                #         remainder_list = f"{remainder_list}, "
-                
                 circles=list(set(circles)-set(remainder))
-                
-                input_error.sort()
-                #daily_plan_sheet['Execution Date']=daily_plan_sheet['Execution Date'].dt.to_pydatetime()
 
+                input_error = list(set(input_error))
+                input_error.sort()
                 
                 for i in range(0,len(circles)):
 
@@ -166,9 +152,10 @@ def fetch_details(sender,workbook):
                     dataframe.reset_index(drop=True,inplace=True)
                     dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
                     # dataframe['Execution Date']=pd.to_datetime(dataframe['Execution Date'])
-                    dataframe['Execution Date']=dataframe['Execution Date'].dt.strftime('%d-%m-%Y')
+                    dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'], format = "%d-%m-%Y")
+                    dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%d-%m-%Y')
 
-                    #print(dataframe.head())
+                    dataframe.replace(to_replace = 'NA',value = '')
 
                     cir=circles[i]
 
@@ -269,29 +256,32 @@ def fetch_details(sender,workbook):
                         """
                     sendmail(dataframe,to,cc,body,subject,sender)
                     #messagebox.showinfo("   Mail Successfully Sent",f"Mail Sent for the Circle {cir}\n\nPlease! Press The Enter Key or Click The OK Button To Proceed")
+                
                 if len(input_error)>0:
-                    flag=2
-                    messagebox.showinfo("  Mail Sent",f"Mail Sent For { total_circles_in_planning_sheet - len(remainder) }/{total_circles_in_planning_sheet} Circles\nInput Error SNo. in Planning Sheet : {', '.join(str(num) for num in input_error)}")
+                    flag = 0
+                    messagebox.showwarning("  Mail Sent",f"Mail Sent For { total_circles_in_planning_sheet - len(remainder) }/{total_circles_in_planning_sheet} Circles\nInput Error in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
+                
                 else:
-                    flag=1
-                    messagebox.showinfo("  Mail Sent Successfully","All Mails for Mentioned Circles in Daily Planning Sheet have been sent!")
+                    flag = 1
+                    messagebox.showinfo("  Mail Sent Successfully",f"All Mails for mentioned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
+                
                 return flag
 
     except FileNotFoundError:
         working_directory=workbook
-        messagebox.showwarning("    File not Found","Check {} for the Planning Sheet".format(working_directory)).bind("<Return>",quit)
+        messagebox.showwarning("    File not Found","Check {} for the Planning Sheet".format(working_directory))
         sys.exit(0)
     
     except ValueError:
          working_directory=workbook
-         messagebox.showwarning(" Value Error"," Check {} for all the requirement sheets".format(working_directory)).bind("<Return>",quit)
+         messagebox.showwarning(" Value Error"," Check {} for all the requirement sheets".format(working_directory))
          sys.exit(0)
     
     except TomorrowDataNotFound as error:
-        messagebox.showerror("  Data can't be found",error).bind("<Return>",quit)
+        messagebox.showerror("  Data can't be found",error)
         sys.exit(0)
     
-    # except Exception as error:
-    #     print(error)
+    except Exception as e:
+        messagebox.showerror("  Exception Occurred",e)
     
 #fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")

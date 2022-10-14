@@ -19,6 +19,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
         messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Generate the Email-Package Sheet First!')
     
     else:
+       
         worksheet=pd.read_excel(wb,worksheet)
         total_no_of_crs=len(worksheet)
         total_no_of_resource = 16
@@ -60,6 +61,9 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
         
         resources_occupied_in_night_activities = len(worksheet['Change Responsible'].unique())
+
+        #worksheet['Circle'] = worksheet['Circle'].astype(str).str.replace("\D+","")
+        worksheet.fillna("NA", inplace = True)
 
         for row in range(0,len(worksheet)):
             if worksheet.at[row,'Risk'].strip() == 'Level 1':
@@ -135,7 +139,7 @@ Regards,
         file_path.remove(file_path[-1])
         file_path = '\\'.join(file_path)
         
-        # print(f"\n\n{file_path}\n\n")
+        print(f"\n\n{file_path}\n\n")
         file_path = f'{file_path}\\evening message.txt'
         
         #print(f"\n\n{file_path}\n\n")
@@ -144,4 +148,4 @@ Regards,
             f.write(message)
 
 
-#evening_task('Enjoy Maity','','','',"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+#evening_task('Enjoy Maity','','','',"C:/Daily/MPBN Daily Planning Sheet.xlsx")

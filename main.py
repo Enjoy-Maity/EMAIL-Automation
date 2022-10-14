@@ -229,24 +229,26 @@ class App:
 
     def circle_email_automation_task_func (self):
         if (self.circle_email_automation_status_checker_flag == 0):
-            self.circle_email_automation_task_color_get.set(self.color[2])
-            self.circle_email_automation_task_status.set(" In Progress ")
-        
             try:
+                self.circle_email_automation_task_color_get.set(self.color[2])
+                self.circle_email_automation_task_status.set(" In Progress ")
+
                 if (len(self.file_browser_file)==0):
                     raise FileNotSelected (" Please Select the MPBN Planning Workbbok first!","File Not Selected")
 
-                self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
-                
-                if self.circle_email_automation_status_flag == 1:
-                    self.circle_email_automation_task_color_get.set(self.color[1])
-                    self.circle_email_automation_task_status.set(" Successful ")
-                    self.circle_email_automation_status_checker_flag = 1
+                else:
+                    self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
+                    #print(self.circle_email_automation_status_flag)
+                    
+                    if (self.circle_email_automation_status_flag == 1):
+                        self.circle_email_automation_task_color_get.set(self.color[1])
+                        self.circle_email_automation_status_checker_flag = 1
+                        self.circle_email_automation_task_status.set(" Successful ")
 
-                elif self.circle_email_automation_task_status == 2:
-                    self.circle_email_automation_task_color_get.set(self.color[0])
-                    self.circle_email_automation_status_checker_flag = 1
-                    self.circle_email_automation_task_status.set(" Unsuccessful ")
+                    if (self.circle_email_automation_task_status == 0):
+                        self.circle_email_automation_task_color_get.set(self.color[0])
+                        self.circle_email_automation_status_checker_flag = 0
+                        self.circle_email_automation_task_status.set(" Unsuccessful ")
 
             except FileNotSelected:
                 self.circle_email_automation_task_color_get.set(self.color[0])
@@ -258,6 +260,7 @@ class App:
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
+
         else :
             raise CustomWarning ("  Circle Automation Task Already Successfully Completed", " Task Already Done")    
         
