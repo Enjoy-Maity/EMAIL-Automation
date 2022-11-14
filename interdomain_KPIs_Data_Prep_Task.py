@@ -222,7 +222,7 @@ try:
                     impacted_node_details = []
                     Kpis_to_be_monitored = []
                     for i in range(0,len(daily_plan_sheet)):
-                        if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS") or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) or (daily_plan_sheet.iloc[i]['Domain kpi']upper().startswith("")):
+                        if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) :
                             execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                             maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                             mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
