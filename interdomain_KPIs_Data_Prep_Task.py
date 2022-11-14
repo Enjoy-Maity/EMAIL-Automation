@@ -180,7 +180,7 @@ try:
                     Kpis_to_be_monitored = []
                     # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
                     for i in range(0,len(daily_plan_sheet)):
-                        if (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS-CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS_CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PACO') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("PS")):
+                        if (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS-CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS_CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('PACO')) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("PS")):
                             execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                             maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                             mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
