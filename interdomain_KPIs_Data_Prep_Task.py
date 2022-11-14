@@ -1121,4 +1121,4 @@ except TomorrowDataNotFound as error:
 except DomainNotFound as error:
     messagebox.showerror("  Domain KPI can't be Empty")
 
-#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")

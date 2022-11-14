@@ -53,11 +53,14 @@ def fetch_details(sender,workbook):
             daily_plan_sheet=pd.read_excel(excel,'Planning Sheet')
             daily_plan_sheet.fillna("NA",inplace=True)
             input_error = []
+
             tomorrow=datetime.now()+timedelta(1) # getting tomorrow date for data execution
+            
             for i in range(0,len(daily_plan_sheet)):
-                if daily_plan_sheet['Execution Date'] != tomorrow.strftime('%Y-%m-%d'):
-                    input_error.append(daily_plan_sheet['S.NO'])
-            daily_plan_sheet=daily_plan_sheet[daily_plan_sheet['Execution Date']==tomorrow.strftime('%Y-%m-%d')]
+                if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
+                    input_error.append(str(daily_plan_sheet.iloc[i]['S.NO']))
+
+            daily_plan_sheet=daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
 
             if len(daily_plan_sheet)==0:
                 raise CustomException(f"Today's Maintenance Data not Found in the {workbook}, kindly check!")
