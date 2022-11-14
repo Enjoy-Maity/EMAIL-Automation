@@ -16,11 +16,17 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     
 
     if (len(worksheet) == 0):
-        messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Generate the Email-Package Sheet First!')
+        messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+        return 'Unsuccessful'
     
     else:
        
         worksheet=pd.read_excel(wb,worksheet)
+
+        if (len(worksheet) == 0):
+            messagebox.showwarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            return 'Unsuccessful'
+        
         total_no_of_crs=len(worksheet)
         total_no_of_resource = 16
         critical = 0  # Level 1
@@ -139,13 +145,14 @@ Regards,
         file_path.remove(file_path[-1])
         file_path = '\\'.join(file_path)
         
-        print(f"\n\n{file_path}\n\n")
+        #print(f"\n\n{file_path}\n\n")
         file_path = f'{file_path}\\evening message.txt'
         
         #print(f"\n\n{file_path}\n\n")
         #assert os.path.isfile(file_path)
         with open(file_path,'w') as f:
             f.write(message)
-
+        
+        return 'Successful'
 
 #evening_task('Enjoy Maity','','','',"C:/Daily/MPBN Daily Planning Sheet.xlsx")

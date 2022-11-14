@@ -1,4 +1,5 @@
 from threading import Thread
+import tkinter as tk
 from tkinter import *
 from tkinter import filedialog,messagebox
 import tkinter.ttk as ttk
@@ -6,11 +7,27 @@ from PIL import ImageTk,Image
 import sys
 import re
 import subprocess
-import circle_Email_Automation_Task
-import interdomain_KPIs_Data_Prep_Task
-import interdomain_KPIs_Mail_Comm_Task
-import evening_mail_task
 import re
+#simport 
+
+
+# class ThreadWithReturnValue(Thread):
+#     def __init__(self):
+#         #super().__init__(group=None,target=None,name=None,*args,**kwargs)
+#         super().__init__(self)
+#         self._returnvalue = None
+    
+#     def run(self):
+#             if self._target is not None:
+#                 # self.target = self._target
+#                 # self.args = self._args
+#                 self._returnvalue = self._target(*self._args,**self._kwargs)
+#                 print("Thread is woking")
+#                 return self._returnvalue
+    
+#     # def join(self,*args):
+#     #     Thread.join(self,*args)
+#     #     return self._returnvalue
 
 class EmptyString (Exception):
     def __init__(self,msg):
@@ -58,7 +75,7 @@ class CustomWarning(Exception):
         messagebox.showwarning(self.title,self.msg)
         
 
-class App:
+class App(tk.Tk):
     def __init__(self,main_win):
         self.empty_string_list = []
         self.integer_string_list = []
@@ -237,18 +254,19 @@ class App:
                     raise FileNotSelected (" Please Select the MPBN Planning Workbbok first!","File Not Selected")
 
                 else:
+                    import circle_Email_Automation_Task
                     self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
-                    #print(self.circle_email_automation_status_flag)
+                    print(self.circle_email_automation_status_flag)
                     
-                    if (self.circle_email_automation_status_flag == 1):
+                    if (self.circle_email_automation_status_flag == "Successful"):
+                        self.circle_email_automation_task_status.set(" Successful ")
                         self.circle_email_automation_task_color_get.set(self.color[1])
                         self.circle_email_automation_status_checker_flag = 1
-                        self.circle_email_automation_task_status.set(" Successful ")
 
-                    if (self.circle_email_automation_task_status == 0):
+                    if (self.circle_email_automation_status_flag == "Unsuccessful"):
+                        self.circle_email_automation_task_status.set(" Unsuccessful ")
                         self.circle_email_automation_task_color_get.set(self.color[0])
                         self.circle_email_automation_status_checker_flag = 0
-                        self.circle_email_automation_task_status.set(" Unsuccessful ")
 
             except FileNotSelected:
                 self.circle_email_automation_task_color_get.set(self.color[0])
@@ -276,26 +294,38 @@ class App:
                     raise FileNotSelected (" Please Select the MPBN Planning Excel Workbook first!","File Not Selected")
                 
                 else:
-                    self.thread=Thread(interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file))
-                    self.thread.daemon = True
-                    self.thread.start()
-                    self.thread.join()
+                    import interdomain_KPIs_Data_Prep_Task
+                    # self.thread=ThreadWithReturnValue(interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file))
+                    # self.thread.daemon = True
+                    # self.thread.start()
+                    # print(self.thread._returnvalue)
+                    self.interdomain_kpis_data_prep_status_flag = interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file)
+                    # self.thread.join()
+                    
                     #interdomain_KPIs_Data_Prep_Task.paco_cscore(self.sender,self.file_browser_file)
-                    self.interdomain_kpis_data_prep_color_get.set(self.color[1])
-                    self.interdomain_kpis_data_prep_task_completed = 1
-                    self.interdomain_kpis_data_prep_status_checker_flag = 1
-                    self.interdomain_kpis_data_prep_task_status.set(" Successful ")
+
+                    if (self.interdomain_kpis_data_prep_status_flag == 'Successful'):
+                        self.interdomain_kpis_data_prep_color_get.set(self.color[1])
+                        self.interdomain_kpis_data_prep_task_completed = 1
+                        self.interdomain_kpis_data_prep_status_checker_flag = 1
+                        self.interdomain_kpis_data_prep_task_status.set(" Successful ")
+                    
+                    elif (self.interdomain_kpis_data_prep_status_flag == 'Unsuccessful'):
+                        self.interdomain_kpis_data_prep_color_get.set(self.color[0])
+                        self.interdomain_kpis_data_prep_task_completed = 0
+                        self.interdomain_kpis_data_prep_status_checker_flag = 0
+                        self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
                     
             
             except FileNotSelected:
                 self.interdomain_kpis_data_prep_color_get.set(self.color[0])
                 self.interdomain_kpis_data_prep_status_checker_flag = 0
                 self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.interdomain_kpis_data_prep_color_get.set(self.color[0])
-                self.interdomain_kpis_data_prep_status_checker_flag = 0
-                self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
+            #  except Exception as error:
+                #messagebox.showerror(" Exception Occured", error)
+                # self.interdomain_kpis_data_prep_color_get.set(self.color[0])
+                # self.interdomain_kpis_data_prep_status_checker_flag = 0
+                # self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
         else:
             raise CustomWarning (" Interdomain KPIs Data Prep Task Already Successfully Completed"," Task Already Done")
     
@@ -384,7 +414,7 @@ class App:
                     self.main_win_flag = 0
                     self.main_win.deiconify()
                     self.region_handler_names_win.destroy()
-
+                    import interdomain_KPIs_Mail_Comm_Task
                     interdomain_KPIs_Mail_Comm_Task.paco_cscore(self.sender,self.file_browser_file,self.north_and_west_region,self.east_region_and_south_region)
                     self.interdomain_kpis_mail_communication_color_get.set(self.color[1])
                     self.interdomain_kpis_mail_communication_status_checker_flag = 1
@@ -524,10 +554,18 @@ class App:
                     self.main_win.deiconify()
 
                     self.evening_task_win.destroy()
-                    evening_mail_task.evening_task(self.sender,self.night_shift_lead,self.buffer_auditor_trainer,self.resource_on_automation,self.file_browser_file)
-                    self.evening_task_color_get.set(self.color[1])
-                    self.evening_task_status_checker_flag = 1
-                    self.evening_task_status.set(' Successful ')
+                    import evening_mail_task
+                    self.evening_mail_task_status_flag = evening_mail_task.evening_task(self.sender,self.night_shift_lead,self.buffer_auditor_trainer,self.resource_on_automation,self.file_browser_file)
+                    
+                    if (self.evening_mail_task_status_flag == 'Successful'):
+                        self.evening_task_color_get.set(self.color[1])
+                        self.evening_task_status_checker_flag = 1
+                        self.evening_task_status.set(' Successful ')
+                    
+                    if (self.evening_mail_task_status_flag == 'Unsuccessful'):
+                        self.evening_task_color_get.set(self.color[0])
+                        self.evening_task_status_checker_flag = 0
+                        self.evening_task_status.set(' Unsuccessful ')
                 
             if (len(self.night_shift_lead) == 0):
                 self.empty_string_list.append("Night Shift Lead")
