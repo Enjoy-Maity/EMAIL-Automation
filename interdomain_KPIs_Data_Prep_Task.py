@@ -81,11 +81,19 @@ try:
             #workbook = r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
             daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
             daily_plan_sheet.fillna("NA",inplace = True)
+            input_error = []
             tomorrow = datetime.now()+timedelta(1) # getting tomorrow date for data execution
+            
+            for i in range(0,len(daily_plan_sheet)):
+                if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
+                    input_error.append(str(daily_plan_sheet.iloc[i]['S.NO']))
             daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
 
             if len(daily_plan_sheet) == 0:
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
+            
+            elif (len(input_error) > 0):
+                raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join(input_error)}")
             
             else:
                 Email_ID = pd.read_excel(workbook,"Mail Id")
@@ -318,7 +326,7 @@ try:
                     # # except:
                     # #     pass
                     # finally:
-                    df.to_excel(writer,sheet_name = sheetname,index = False,)
+                    df.to_excel(writer,sheet_name = sheetname,index = False)
                     df2.to_excel(writer,sheet_name = sheetname2,index = False)
                     df3.to_excel(writer,sheet_name = sheetname3,index = False)
 
@@ -1121,4 +1129,4 @@ except TomorrowDataNotFound as error:
 except DomainNotFound as error:
     messagebox.showerror("  Domain KPI can't be Empty")
 
-paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")

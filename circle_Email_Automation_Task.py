@@ -232,4 +232,4 @@ def fetch_details(sender,workbook):
     except Exception as e:
         messagebox.showerror("  Exception Occurred",e)
     
-fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")

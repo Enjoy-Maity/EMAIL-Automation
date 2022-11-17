@@ -41,13 +41,21 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
         daily_plan_sheet=pd.read_excel(workbook,'Planning Sheet')
         daily_plan_sheet.fillna("NA",inplace=True)
+        input_error = []
         tomorrow=datetime.now()+timedelta(1) # getting tomorrow date for data execution
+            
+        for i in range(0,len(daily_plan_sheet)):
+            if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
+                input_error.append(str(daily_plan_sheet.iloc[i]['S.NO']))
         #print(daily_plan_sheet.iloc[2]['Execution Date'])
         daily_plan_sheet=daily_plan_sheet[daily_plan_sheet['Execution Date']==tomorrow.strftime('%Y-%m-%d')]
         
 
         if len(daily_plan_sheet)==0:
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
+        
+        elif (len(input_error) > 0):
+                raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join(input_error)}")    
             
         else:
             #daily_plan_sheet=daily_plan_sheet.drop_duplicates(subset=['CR NO'])
