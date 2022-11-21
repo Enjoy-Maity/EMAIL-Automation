@@ -11,6 +11,7 @@ class CustomException(Exception):
     def __init__(self,msg):
         self.msg=msg
 
+
 #####################################################################
 #############################    Sendmail   #########################
 #####################################################################
@@ -227,7 +228,6 @@ def fetch_details(sender,workbook):
     
     except CustomException as error:
         messagebox.showerror("  Data can't be found",error)
-        sys.exit(0)
     
     except Exception as e:
         messagebox.showerror("  Exception Occurred",e)
