@@ -1,13 +1,12 @@
-from threading import Thread
+# from threading import Thread
 import tkinter as tk
 from tkinter import *
 from tkinter import filedialog,messagebox
 import tkinter.ttk as ttk
 from PIL import ImageTk,Image
 import sys
-import re
 import subprocess
-import re
+# import re
 import pandas as pd
 
 

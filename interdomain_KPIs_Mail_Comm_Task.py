@@ -88,7 +88,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             list_of_dfs=[df2,df,df3]
 
             for i in list_of_interdomains:
-                subject=f"ONLY FOR TESTING: KPI Monitoring | {i} for MPBN CRs | {for_date}"
+                subject=f"KPI Monitoring | {i} for MPBN CRs | {for_date}"
                 if i=="CS Core":
                     to=Email_Id.iloc[24]['To Mail List']
                     cc=Email_Id.iloc[24]['Copy Mail List']
