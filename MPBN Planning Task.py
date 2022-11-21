@@ -255,7 +255,6 @@ class App(tk.Tk):
                 else:
                     import circle_Email_Automation_Task
                     self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(self.sender,self.file_browser_file)
-                    print(self.circle_email_automation_status_flag)
                     
                     if (self.circle_email_automation_status_flag == "Successful"):
                         self.circle_email_automation_task_status.set(" Successful ")

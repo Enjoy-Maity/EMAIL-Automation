@@ -134,13 +134,15 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
     except FileNotFoundError:
         working_directory=r"C:\Daily"
         messagebox.showerror(" File not Found","Check {} for MPBN Daily Planning Sheet.xlsx".format(working_directory)).bind("<Return>",quit)
-    
+        return "Unsuccessful"
+
     except ValueError:
          working_directory=r"C:\Daily"
          messagebox.showwarning("    Value Error","Check {} for MPBN Daily Planning Sheet.xlsx for all the requirement sheet".format(working_directory)).bind("<Return>",quit)
-    
+         return "Unsuccessful"
 
     except TomorrowDataNotFound as error:
         messagebox.showerror(" Data for tomorrow's date not found",error).bind("<Return>",quit)
+        return "Unsuccessful"
     
    

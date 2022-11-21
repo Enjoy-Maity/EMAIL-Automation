@@ -219,15 +219,19 @@ def fetch_details(sender,workbook):
     except FileNotFoundError:
         working_directory=workbook
         messagebox.showwarning("    File not Found","Check {} for the Planning Sheet".format(working_directory))
+        return "Unsuccessful"
     
     except ValueError:
          working_directory=workbook
          messagebox.showwarning(" Value Error"," Check {} for all the requirement sheets".format(working_directory))
+         return "Unsuccessful"
     
     except CustomException as error:
         messagebox.showerror("  Data can't be found",error)
+        return "Unsuccessful"
     
     except Exception as e:
         messagebox.showerror("  Exception Occurred",e)
+        return "Unsuccessful"
     
 #fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
