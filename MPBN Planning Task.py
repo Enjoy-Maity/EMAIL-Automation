@@ -270,6 +270,7 @@ class App(tk.Tk):
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
+            
             except Exception as error:
                 #self.circle_email_automation_task_thread.join()
                 messagebox.showerror(" Exception Occured",error)
@@ -470,75 +471,79 @@ class App(tk.Tk):
                 
 
     def evening_task_func (self,event):
-        if (self.evening_task_status_checker_flag == 0):
-            
-            if (len(self.file_browser_file) == 0):
-                self.evening_task_color_get.set(self.color[0])
-                self.evening_task_status_checker_flag = 0
-                self.evening_task_status.set(' Unsuccessful ')
-                raise FileNotSelected (" Please Select the MPBN Planning Excel Workbook first!","File Not Selected")
-            
-            else:
-                self.interdomain_kpis_data_prep_creation_status_flag = 0
-                self.workbook = pd.ExcelFile(self.file_browser_file)
-                self.worksheet_names = self.workbook.sheet_names
-
-                for sheet in self.worksheet_names:
-                    if (sheet == 'Email-Package'):
-                        self.worksheet = pd.read_excel(self.workbook,sheet)
-                        if (len(self.worksheet) > 0):
-                            self.interdomain_kpis_data_prep_creation_status_flag = 1
-
-                if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
-                    raise CustomException('Kindly Click the Button for Interdomain Kpi Data Prep First!','Email-Package Worksheet Empty')
+        try:
+            if (self.evening_task_status_checker_flag == 0):
+                if (len(self.file_browser_file) == 0):
+                    raise FileNotSelected (" Please Select the MPBN Planning Excel Workbook first!","File Not Selected")
                 
                 else:
-                    self.evening_task_win = Toplevel(self.main_win)
-                    if self.main_win.state() == 'normal':
-                        self.main_win.withdraw()
-                    self.evening_task_win.iconbitmap('images/ericsson-blue-icon-logo.ico')
-                    self.evening_task_win.title("   Please Enter The Names to Proceed")
-                    self.evening_task_win.geometry("600x550")
-                    self.evening_task_win.minsize(600,550)
-                    self.evening_task_win.maxsize(600,550)
-                    self.evening_task_win.bind("<Escape>",self.evening_task_func_quit)
+                    self.interdomain_kpis_data_prep_creation_status_flag = 0
+                    self.workbook = pd.ExcelFile(self.file_browser_file)
+                    self.worksheet_names = self.workbook.sheet_names
 
-                    self.evening_task_background = ImageTk.PhotoImage(Image.open("images/MPBN PLANNING TASK_3_4.png"))
-                    self.evening_task_win_canvas=Canvas(self.evening_task_win,height = 550,width = 600,bd=0,highlightthickness=0, relief="ridge")
-                    self.evening_task_win_canvas.grid(row = 0,column = 0,sticky = NW)
-                    self.evening_task_win_canvas.create_image(0,0,image = self.evening_task_background, anchor = "nw")
+                    for sheet in self.worksheet_names:
+                        if (sheet == 'Email-Package'):
+                            self.worksheet = pd.read_excel(self.workbook,sheet)
+                            if (len(self.worksheet) > 0):
+                                self.interdomain_kpis_data_prep_creation_status_flag = 1
+
+                    if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
+                        raise CustomException('Kindly Click the Button for Interdomain Kpi Data Prep First!','Email-Package Worksheet Empty')
                     
+                    else:
+                        self.evening_task_win = Toplevel(self.main_win)
+                        if self.main_win.state() == 'normal':
+                            self.main_win.withdraw()
+                        self.evening_task_win.iconbitmap('images/ericsson-blue-icon-logo.ico')
+                        self.evening_task_win.title("   Please Enter The Names to Proceed")
+                        self.evening_task_win.geometry("600x550")
+                        self.evening_task_win.minsize(600,550)
+                        self.evening_task_win.maxsize(600,550)
+                        self.evening_task_win.bind("<Escape>",self.evening_task_func_quit)
 
-                    self.evening_task_win_canvas.create_text(10,20,anchor = "nw",text = "Please Enter Night Shift Lead Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
-                    self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
-                    self.evening_task_win_canvas.create_window(10,70,anchor = "nw",window=self.evening_task_win_canvas_night_shift_lead_entry)
+                        self.evening_task_background = ImageTk.PhotoImage(Image.open("images/MPBN PLANNING TASK_3_4.png"))
+                        self.evening_task_win_canvas=Canvas(self.evening_task_win,height = 550,width = 600,bd=0,highlightthickness=0, relief="ridge")
+                        self.evening_task_win_canvas.grid(row = 0,column = 0,sticky = NW)
+                        self.evening_task_win_canvas.create_image(0,0,image = self.evening_task_background, anchor = "nw")
+                        
 
-                    self.evening_task_win_canvas.create_text(10,150,anchor = "nw",text = "Please Enter Buffer/Auditor/Trainer Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
-                    self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
-                    self.evening_task_win_canvas.create_window(10,200,anchor = "nw",window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
+                        self.evening_task_win_canvas.create_text(10,20,anchor = "nw",text = "Please Enter Night Shift Lead Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                        self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
+                        self.evening_task_win_canvas.create_window(10,70,anchor = "nw",window=self.evening_task_win_canvas_night_shift_lead_entry)
 
-                    self.evening_task_win_canvas.create_text(10,280,anchor = "nw",text = "Please Enter Resource on Automation Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
-                    self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
-                    self.evening_task_win_canvas.create_window(10,310,anchor = "nw",window=self.evening_task_win_canvas_resource_on_automation_entry)
+                        self.evening_task_win_canvas.create_text(10,150,anchor = "nw",text = "Please Enter Buffer/Auditor/Trainer Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                        self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
+                        self.evening_task_win_canvas.create_window(10,200,anchor = "nw",window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
 
-                    self.evening_task_submit_btn = ttk.Button(self.evening_task_win, text = "Submit", command = lambda: self.evening_task_func_starter(1))
-                    self.evening_task_win_canvas.create_window(580,520,window = self.evening_task_submit_btn,anchor = "se")
+                        self.evening_task_win_canvas.create_text(10,280,anchor = "nw",text = "Please Enter Resource on Automation Name", fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
+                        self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(self.evening_task_win_canvas,width = 40, font = ("Ericsson Hilda",15))
+                        self.evening_task_win_canvas.create_window(10,310,anchor = "nw",window=self.evening_task_win_canvas_resource_on_automation_entry)
 
-                    self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+                        self.evening_task_submit_btn = ttk.Button(self.evening_task_win, text = "Submit", command = lambda: self.evening_task_func_starter(1))
+                        self.evening_task_win_canvas.create_window(580,520,window = self.evening_task_submit_btn,anchor = "se")
 
-                    self.evening_task_win.protocol("WM_DELETE_WINDOW",lambda:self.evening_task_func_quit(1))
-                    self.evening_task_win.bind("<Return>",self.evening_task_func_starter)
+                        self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
 
-                    if self.evening_task_win.state() != "normal" :
-                        if self.main_win.state() != "normal":
-                            self.main_win_flag = 0
-                            self.main_win.deiconify()
-                        self.evening_task_win.destroy()
+                        self.evening_task_win.protocol("WM_DELETE_WINDOW",lambda:self.evening_task_func_quit(1))
+                        self.evening_task_win.bind("<Return>",self.evening_task_func_starter)
 
-                    self.evening_task_win.mainloop()
+                        if self.evening_task_win.state() != "normal" :
+                            if self.main_win.state() != "normal":
+                                self.main_win_flag = 0
+                                self.main_win.deiconify()
+                            self.evening_task_win.destroy()
+
+                        self.evening_task_win.mainloop()
+            
+            else:
+                raise CustomWarning ("Evening Task Already Successfully Completed"," Task Already Done")
         
-        else:
-            raise CustomWarning ("Evening Task Already Successfully Completed"," Task Already Done")
+        except FileNotSelected :
+            self.evening_task_color_get.set(self.color[0])
+            self.evening_task_status_checker_flag = 0
+            self.evening_task_status.set(' Unsuccessful ')
+            
+
         
 
     def evening_task_func_quit(self,event):
