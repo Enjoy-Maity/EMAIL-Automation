@@ -1124,7 +1124,6 @@ try:
 
 except TomorrowDataNotFound as error:
     messagebox.showerror("  Data for tomorrow's date not found",error)
-    sys.exit(0)
 
 except DomainNotFound as error:
     messagebox.showerror("  Domain KPI can't be Empty")

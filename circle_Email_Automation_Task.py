@@ -219,12 +219,10 @@ def fetch_details(sender,workbook):
     except FileNotFoundError:
         working_directory=workbook
         messagebox.showwarning("    File not Found","Check {} for the Planning Sheet".format(working_directory))
-        sys.exit(0)
     
     except ValueError:
          working_directory=workbook
          messagebox.showwarning(" Value Error"," Check {} for all the requirement sheets".format(working_directory))
-         sys.exit(0)
     
     except CustomException as error:
         messagebox.showerror("  Data can't be found",error)
