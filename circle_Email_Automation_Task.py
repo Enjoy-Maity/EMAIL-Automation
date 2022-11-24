@@ -1,7 +1,5 @@
-from re import T
 import sys
 from datetime import datetime,timedelta
-from unittest import result
 import pandas as pd
 import win32com.client as win32
 from tkinter import *
@@ -24,12 +22,12 @@ def sendmail(dataframe,to,cc,body,subject,sender):
     msg.To=to
     msg.CC=cc
     dataframe=dataframe.style.set_table_styles([
-        {'selector':'th','props':'border:1px solid black; color:white; background-color:rgb(0, 51, 204);text-align:center;'},
-        {'selector':'tr','props':'border:1px solid black;text-align:center;'},
-        {'selector':'td','props':'border:1px solid black;text-align:center;'},
-        {'selector':'tr:nth-child(even)','props':'border:1px solid black;text-align:center;'}])
+        {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},
+        {'selector':'tr','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
+        {'selector':'td','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
+        {'selector':'tr:nth-child(even)','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'}])
     dataframe=dataframe.hide(axis='index')
-    msg.HTMLBody=html_body.format(dataframe.to_html(index=False),sender)
+    msg.HTMLBody=html_body.format(dataframe.to_html(classes = 'table table-stripped',index=False),sender)
     msg.Save()
     msg.Send()
 
