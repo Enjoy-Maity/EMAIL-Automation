@@ -58,7 +58,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         else:
             #daily_plan_sheet=daily_plan_sheet.drop_duplicates(subset=['CR NO'])
             Email_Id=pd.read_excel(workbook,'Mail Id')
-            list_of_interdomains=["CS Core","PS Core","RAN"]
+            list_of_interdomains=["CS-Core","PS-Core","RAN"]
             df2=pd.read_excel(workbook,sheet_name="CS Core-Inter Domain")
             df2.fillna("NA",inplace=True)
             df=pd.read_excel(workbook,sheet_name="PS Core-Inter Domain")
@@ -87,18 +87,27 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
 
             for i in list_of_interdomains:
                 subject=f"KPI Monitoring | {i} for MPBN CRs | {for_date}"
-                if i=="CS Core":
+                if i=="CS-Core":
                     to=Email_Id.iloc[24]['To Mail List']
                     cc=Email_Id.iloc[24]['Copy Mail List']
                     dataframe=df2
-                elif i=="PS Core":
+
+                    if (len(dataframe) == 0):
+                        continue
+                elif i=="PS-Core":
                     to=Email_Id.iloc[23]['To Mail List']
                     cc=Email_Id.iloc[23]['Copy Mail List']
                     dataframe=df
+                    
+                    if (len(dataframe) == 0):
+                        continue
                 elif i=="RAN":
                     to=Email_Id.iloc[25]['To Mail List']
                     cc=Email_Id.iloc[25]['Copy Mail List']
                     dataframe=df3
+                    
+                    if (len(dataframe) == 0):
+                        continue
 
                 mpbn_html_body="""
                     <html>
@@ -107,8 +116,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                                     <p>Hi Team,</p>
                                     <p>Please find below the list of MPBN activity which includes Core nodes, so KPI monitoring required. Impacted nodes with KPI details given below. Please share KPI monitoring resource from your end.<br><br></p>
                                     <p>@Core Team: Please contact below spoc region wise if any issue with KPI input.<br><br></p>
-                                    <p>{}: North region and west region </p>
-                                    <p>{}: East region and South region <br></p>
+                                    <p>{}: North region and west region <br>
+                                       {}: East region and South region <br></p>
                                     <p>Note:-If there is any deviation in KPI please call to Executer before 6 AM. After that please call to technical validator/Team Lead.<br><br></p>
                             
                             </div>
@@ -122,9 +131,9 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                     </html>
                 """
                 sendmail(dataframe,to,cc,mpbn_html_body,subject,north_and_west_region,east_region_and_south_region,sender)
-                messagebox.showinfo("     Mail Sent Info",f"Mail sent for {i} Interdomain KPIs")
+                messagebox.showinfo("     Mail Sent Info",f"Mail sent for {i} Interdomain KPIs!")
             
-        messagebox.showinfo(" Mail Sent Successfully","Mail For the All the Interdomain Kpis Have Been Sent")
+        messagebox.showinfo(" Mails Sent Successfully","Mails for all Interdomain Kpis have been sent!")
 
 
    
@@ -143,4 +152,4 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         messagebox.showerror(" Data for tomorrow's date not found",error)
         return "Unsuccessful"
     
-#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx","","")
+paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx","","")

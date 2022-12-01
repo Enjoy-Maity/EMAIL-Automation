@@ -193,9 +193,9 @@ def fetch_details(sender,workbook):
                                 <body>
                                     <div><p>Hi team,<br></p>
                                         <p>Please confirm below points so that we will approve CR’s.<br></p>
-                                        <p>1)  End nodes and service details are required which are running on respective MPBN device (in case of changes on Core/PACO/HLR devices ).</p>
-                                        <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/PACO/HLR devices.</p>
-                                        <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/PACO/HLR devices.<br><br></p>
+                                        <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>
+                                        <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>
+                                        <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.<br><br></p>
                                     </div>
                                     <div>
                                         <p>{}</p>

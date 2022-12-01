@@ -826,7 +826,7 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
             
             styling(workbook,new_sheetname)
 
-            messagebox.showinfo("   Successful Completion",'Email Package Sheet also created')
+            messagebox.showinfo("   Successful Completion",'Email-Package Sheet also prepared!')    
 
 
 #####################################################################
@@ -1096,7 +1096,7 @@ def paco_cscore(sender,workbook):
                 styling(workbook,sheetname2)
                 styling(workbook,sheetname3)
 
-                messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Data Preparation Task completed")
+                messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Data Preparation Task Completed!")
 
                 email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook)
 
