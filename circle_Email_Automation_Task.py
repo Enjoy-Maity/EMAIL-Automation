@@ -54,7 +54,7 @@ def fetch_details(sender,workbook):
             input_error = []
 
             tomorrow=datetime.now()+timedelta(1) # getting tomorrow date for data execution
-            
+            daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
             for i in range(0,len(daily_plan_sheet)):
                 if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
                     input_error.append(str(daily_plan_sheet.iloc[i]['S.NO']))
@@ -76,7 +76,7 @@ def fetch_details(sender,workbook):
                 # for i in range(0,len(daily_plan_sheet)):
                 #     daily_plan_sheet.at[i,'Circle'] = daily_plan_sheet.at[i,'Circle'].str.upper()
                 daily_plan_sheet['Circle'].str.upper()
-                daily_plan_sheet = daily_plan_sheet[['S.NO','Execution Date','Maintenance Window','CR NO','Activity Title','Risk','Location','Circle']]
+                daily_plan_sheet = daily_plan_sheet[['S.NO','Execution Date','Maintenance Window','CR NO','Activity Title','Risk','Location','Circle','Planning Status']]
                 
                 input_error = []
                 result_df = pd.DataFrame()
@@ -129,6 +129,7 @@ def fetch_details(sender,workbook):
                         new_result_df = pd.concat([new_result_df,temp_df.iloc[0].to_frame().T],ignore_index = True)
                 
                 daily_plan_sheet = new_result_df.copy(deep = True)
+                
                 del new_result_df
                 del result_df
 
@@ -157,8 +158,8 @@ def fetch_details(sender,workbook):
                         for j in range(0,len(daily_plan_sheet)):
                             #print(str(tomorrow.strftime("%d-%m-%Y")))
                             
-                            if daily_plan_sheet.iloc[j]['Circle']==circles[i]: # Adding constraint to check for CRs for next date only
-
+                            if (daily_plan_sheet.iloc[j]['Circle']==circles[i]) and (daily_plan_sheet.iloc[j]['Planning Status'].strip().upper() == "PLANNED"): # Adding constraint to check for CRs for next date only
+            
                                 execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
                                 maintenance_window.append(daily_plan_sheet.iloc[j]['Maintenance Window'])
                                 cr_no.append(daily_plan_sheet.iloc[j]['CR NO'])
@@ -172,8 +173,8 @@ def fetch_details(sender,workbook):
                         dataframe.reset_index(drop=True,inplace=True)
                         dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
                         # dataframe['Execution Date']=pd.to_datetime(dataframe['Execution Date'])
-                        dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'], format = "%d-%m-%Y")
-                        dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%d-%m-%Y')
+                        #dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'], format = "%d-%m-%Y")
+                        dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%m/%d/%Y')
 
                         dataframe.replace(to_replace = 'NA',value = '')
                     
@@ -228,8 +229,8 @@ def fetch_details(sender,workbook):
         messagebox.showerror("  Data can't be found",error)
         return "Unsuccessful"
     
-    except Exception as e:
-        messagebox.showerror("  Exception Occurred",e)
-        return "Unsuccessful"
+    # except Exception as e:
+    #     messagebox.showerror("  Exception Occurred",e)
+    #     return "Unsuccessful"
     
-#fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")

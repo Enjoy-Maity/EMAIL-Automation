@@ -24,8 +24,8 @@ import pandas as pd
 #                 print("Thread is woking")
 #                 return self._returnvalue
     
-#     # def join(self,*args):
-#     #     Thread.join(self,*args)
+#     # def join(self):
+#     #     Thread.join(self)
 #     #     return self._returnvalue
 
 class EmptyString (Exception):
@@ -118,18 +118,18 @@ class App(tk.Tk):
             
             # self.circle_email_automation_task_btn_thread = Thread(target = self.circle_email_automation_task_func,args = ())
             # self.circle_email_automation_task_btn_thread.daemon = True
-            # self.circle_email_automation_task_btn = ttk.Button(self.main_win,text = "Circle Email Automation Task",command = self.circle_email_automation_task_btn_thread.start())
+            # self.circle_email_automation_task_btn = ttk.Button(self.main_win,text = "Circle Email Communication Task",command = self.circle_email_automation_task_btn_thread.start())
             # self.circle_email_automation_task_btn_thread.join()
             # self.circle_email_automation_task_status = " Successful "
-            self.circle_email_automation_task_btn = ttk.Button(self.main_win,text = "Circle Email Automation Task",command = self.circle_email_automation_task_func)
+            self.circle_email_automation_task_btn = ttk.Button(self.main_win,text = "  Circle Mail Communication  ",command = self.circle_email_automation_task_func_surity)
 
             self.interdomain_kpis_data_prep_btn = ttk.Button(self.main_win,text = "Interdomain KPIs Data Preparation",command = self.interdomain_kpis_data_prep_func)
 
             self.interdomain_kpis_mail_communication_btn = ttk.Button(self.main_win,text = "Interdomain KPIs Mail Communication",command = lambda: self.interdomain_kpis_mail_communication_func(1))
 
-            self.evening_task_btn = ttk.Button(self.main_win,text = "      Evening Message Task     ",command = lambda: self.evening_task_func(1))
+            self.evening_task_btn = ttk.Button(self.main_win,text = "           Evening Message          ",command = lambda: self.evening_task_func(1))
 
-            self.mpbn_signoff_task_btn = ttk.Button(self.main_win,text = "          Signoff  Task        ",command = self.mpbn_signoff_task_func)
+            self.mpbn_signoff_task_btn = ttk.Button(self.main_win,text = "                 MPBN Signoff               ",command = self.mpbn_signoff_task_func)
 
             # self.main_win_canvas.create_window(840,182,anchor = "nw",window = self.file_browser_btn)
             # self.main_win_canvas.create_window(420,182,anchor = "nw",window = self.file_browser_entry)
@@ -153,7 +153,7 @@ class App(tk.Tk):
             self.evening_task_status.set("")
             
             self.mpbn_signoff_task_status = StringVar(self.main_win_canvas)
-            self.mpbn_signoff_task_status.set("")
+            self.mpbn_signoff_task_status.set("Unsuccessful")
             
             
             self.color = ["#FF0000","#00FF00","#FFFFFF"]
@@ -238,7 +238,7 @@ class App(tk.Tk):
         self.main_win_canvas.create_text(137,420,anchor = "nw",text = self.evening_task_status.get(),fill =self.evening_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
 
         self.main_win_canvas.create_window(359,388,anchor = "nw",window = self.mpbn_signoff_task_btn)
-        self.main_win_canvas.create_text(406,420,anchor = "nw",text = self.mpbn_signoff_task_status.get(),fill =self.evening_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold"))
+        self.main_win_canvas.create_text(406,420,anchor = "nw",text = self.mpbn_signoff_task_status.get(),fill = self.mpbn_signoff_task_color_get.get(),font = ("Ericsson Hilda ExtraBold",15,"bold")) # self.mpbn_signoff_task_color_get.get()
 
         self.main_win_canvas.update_idletasks()                     # Solves the flickering problem when the frame gets updated
         if ind  ==  31:
@@ -255,7 +255,13 @@ class App(tk.Tk):
         self.file_browser_entry.insert(0,self.mystring)
         self.file_browser_file = self.mystring
 
-
+    def circle_email_automation_task_func_surity(self):
+        self.circle_email_automation_task_surity_check = messagebox.askyesno("  Circle Mail Confirmation","Do you want to proceed for Email Communication for Tonight Planned Circles ?")
+        if (self.circle_email_automation_task_surity_check):
+            self.circle_email_automation_task_func()
+        else:
+            pass
+    
     def circle_email_automation_task_func (self):
         if (self.circle_email_automation_status_checker_flag == 0):
             try:
@@ -719,6 +725,9 @@ def main():
         current_file = __file__ # gets the value of current running file
         subprocess.run(["python", current_file])
         sys.exit(0)
+    
+    except Exception as e:
+        messagebox.showerror("  Exception Occured",e)
 
 
     # except Exception as e:

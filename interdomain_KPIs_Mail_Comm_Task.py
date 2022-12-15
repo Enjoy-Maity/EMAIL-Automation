@@ -37,10 +37,10 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         #   user=subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
 
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
-        daily_plan_sheet=pd.read_excel(workbook,'Planning Sheet')
+        daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
         daily_plan_sheet.fillna("NA",inplace=True)
         input_error = []
-        tomorrow=datetime.now()+timedelta(1) # getting tomorrow date for data execution
+        tomorrow = datetime.now() + timedelta(1) # getting tomorrow date for data execution
             
         for i in range(0,len(daily_plan_sheet)):
             if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
@@ -49,7 +49,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         daily_plan_sheet=daily_plan_sheet[daily_plan_sheet['Execution Date']==tomorrow.strftime('%Y-%m-%d')]
         
 
-        if len(daily_plan_sheet)==0:
+        if len(daily_plan_sheet) == 0:
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
         
         elif (len(input_error) > 0):
@@ -58,57 +58,67 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         else:
             #daily_plan_sheet=daily_plan_sheet.drop_duplicates(subset=['CR NO'])
             Email_Id=pd.read_excel(workbook,'Mail Id')
-            list_of_interdomains=["CS-Core","PS-Core","RAN"]
+            list_of_interdomains=["CS-Core","PS-Core","RAN","VAS"]
             df2=pd.read_excel(workbook,sheet_name="CS Core-Inter Domain")
             df2.fillna("NA",inplace=True)
             df=pd.read_excel(workbook,sheet_name="PS Core-Inter Domain")
             df.fillna("NA",inplace=True)
             df3=pd.read_excel(workbook,sheet_name="RAN-Inter Domain")
             df3.fillna("NA",inplace=True)
+            df4=pd.read_excel(workbook,sheet_name="VAS-Inter Domain")
+            df4.fillna("NA",inplace=True)
 
             suffix=["st","nd","rd","th"]
-            date_end_digit=int(tomorrow.strftime("%d"))%10
-            date_digits=int(tomorrow.strftime("%d"))%100
+            date_end_digit = int(tomorrow.strftime("%d"))%10
+            date_digits = int(tomorrow.strftime("%d"))%100
             if date_digits<10 or date_digits>20:
-                if date_end_digit==1:
-                    suffix_for_date=suffix[0]
-                elif date_end_digit==2:
-                    suffix_for_date=suffix[1]
-                elif date_end_digit==3:
-                    suffix_for_date=suffix[2]
+                if date_end_digit == 1:
+                    suffix_for_date = suffix[0]
+                elif date_end_digit == 2:
+                    suffix_for_date = suffix[1]
+                elif date_end_digit == 3:
+                    suffix_for_date = suffix[2]
                 else:
-                    suffix_for_date=suffix[3]
+                    suffix_for_date = suffix[3]
             else:
-                suffix_for_date=suffix[3]
-            for_date=tomorrow.strftime("%d{}_%b'%y").format(suffix_for_date)
+                suffix_for_date = suffix[3]
+            for_date = tomorrow.strftime("%d{}_%b'%y").format(suffix_for_date)
 
             
-            list_of_dfs=[df2,df,df3]
+            #list_of_dfs = [df2,df,df3]
 
             for i in list_of_interdomains:
                 subject=f"KPI Monitoring | {i} for MPBN CRs | {for_date}"
-                if i=="CS-Core":
+                if (i == "CS-Core"):
                     to=Email_Id.iloc[24]['To Mail List']
                     cc=Email_Id.iloc[24]['Copy Mail List']
                     dataframe=df2
 
                     if (len(dataframe) == 0):
                         continue
-                elif i=="PS-Core":
+
+                elif (i == "PS-Core"):
                     to=Email_Id.iloc[23]['To Mail List']
                     cc=Email_Id.iloc[23]['Copy Mail List']
                     dataframe=df
                     
                     if (len(dataframe) == 0):
                         continue
-                elif i=="RAN":
+                elif (i == "RAN"):
                     to=Email_Id.iloc[25]['To Mail List']
                     cc=Email_Id.iloc[25]['Copy Mail List']
                     dataframe=df3
                     
                     if (len(dataframe) == 0):
                         continue
-
+                elif (i == "VAS"):
+                    to=Email_Id.iloc[26]['To Mail List']
+                    cc=Email_Id.iloc[26]['Copy Mail List']
+                    dataframe=df4
+                    
+                    if (len(dataframe) == 0):
+                        continue
+                
                 mpbn_html_body="""
                     <html>
                         <body>
@@ -139,12 +149,12 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
    
 
     except FileNotFoundError:
-        working_directory=r"C:\Daily"
+        working_directory = r"C:\Daily"
         messagebox.showerror(" File not Found","Check {} for MPBN Daily Planning Sheet.xlsx".format(working_directory))
         return "Unsuccessful"
 
     except ValueError:
-         working_directory=r"C:\Daily"
+         working_directory = r"C:\Daily"
          messagebox.showwarning("    Value Error","Check {} for MPBN Daily Planning Sheet.xlsx for all the requirement sheet".format(working_directory))
          return "Unsuccessful"
 
@@ -152,4 +162,4 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         messagebox.showerror(" Data for tomorrow's date not found",error)
         return "Unsuccessful"
     
-paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx","","")
+#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx","","")

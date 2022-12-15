@@ -1,9 +1,7 @@
-from re import T
+import xlwings as xw
 import sys
 from datetime import datetime,timedelta
-import subprocess
 from openpyxl import load_workbook
-from openpyxl import Workbook
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
@@ -11,14 +9,13 @@ import pandas as pd
 from tkinter import *
 from tkinter import messagebox
 
-
 class TomorrowDataNotFound(Exception):
     def __init__(self,msg):
         self.msg = msg
 
-class DomainNotFound(Exception):
-    def __init__(self,msg):
-        self.msg = msg
+# class DomainNotFound(Exception):
+#     def __init__(self,msg):
+#         self.msg = msg
 
 #####################################################################
 #############################    Styling   ##########################
@@ -61,6 +58,7 @@ def styling(workbook,sheetname):
     #rows = ws.max_row
     
     
+    
     wb.save(workbook)
 
 
@@ -69,11 +67,25 @@ def styling(workbook,sheetname):
 def quit(event):
     sys.exit(0)
 
-def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
+# def dfizer(workbook):
+#     with xw.App(visible=False) as app:
+#         book = xw.Book(workbook)
+#         sheet = book.sheets['Planning Sheet'].used_range.value 
+#         plan_sheet = pd.DataFrame(sheet)
+#         plan_sheet.reset_index(drop = True, inplace = True)
+#         daily_plan_sheet = pd.DataFrame(plan_sheet.values[1:], columns = plan_sheet.iloc[0])
+#         del plan_sheet
+#         book.close()
+
+#     daily_plan_sheet["S.NO"] = daily_plan_sheet["S.NO"].astype('int64')
+#     #daily_plan_sheet['Execution Date'] = (daily_plan_sheet["Execution Date"].astype(str))
+#     return daily_plan_sheet
+
+def email_package__sheet_creater(daily_plan_sheet,workbook):
             #S.NO	Execution Date	Maintenance Window	CR NO	Activity Title	Risk	Location	Circle	"No. of Node Involved"
             #"CR Belongs to Same Activity of Previous CR - Yes/NO"	Change Responsible	Activity Checker	Activity Initiator	Impact	Planning Status	Domain	
             # Final Status	Reason For Rollback / Cancel	Design Availability	Technical Validator	Complexity	Activity-Type	Domain kpi	IMPACTED NODE	KPI DETAILS	oss name	oss ip	Total Time spent on Planned CRs (Mins)	Vendor	Protocol	Execution Projection	
-            # Interdomin KPI status	Second Level Validation Status	KPI status	MOP View Status
+            # Interdomin Inter-domain KPI status	Second Level Validation Status	Inter-domain KPI status	MOP View Status
             execution_date = []
             maintenance_window = []
             cr_no = []
@@ -108,8 +120,18 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
             second_level_validation_status = []
             kpi_status = []
             mop_view_status = []
+            
+            # excel = win32.Dispatch('Excel.Application')
+            # workbook_excel = excel.Workbooks.Open(workbook)
+            # plan_sheet = workbook_excel.Sheets('Planning Sheet')
+            # daily_plan_sheet = pd.DataFrame(plan_sheet.UsedRange())
+            # daily_plan_sheet = dfizer(daily_plan_sheet)
+            # dataframe = pd.DataFrame(daily_plan_sheet.values[1:],columns = daily_plan_sheet.iloc[0])
+            # del daily_plan_sheet
+            # daily_plan_sheet = dataframe.copy(deep=True)
+            # del dataframe
 
-            daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
+            # daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
             daily_plan_sheet_unique_cr = daily_plan_sheet['CR NO'].value_counts().index.to_list()
             for idx,cr in enumerate(daily_plan_sheet_unique_cr):
                 
@@ -154,7 +176,7 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                 for i in range(0,len(daily_plan_sheet)):
                     if (daily_plan_sheet.at[i,'CR NO'] == cr):
                         if (counter<count):
-                            if (count>1):
+                            if (count>1): 
                                 if (daily_plan_sheet.at[i,'Domain kpi'].upper().__contains__('RAN')):
 
                                     if (len(daily_plan_sheet.at[i,'IMPACTED NODE'].strip()) == 0) or (str(daily_plan_sheet.at[i,'IMPACTED NODE']).__contains__('NA')) or (str(daily_plan_sheet.at[i,'IMPACTED NODE']).__contains__('na')):
@@ -327,10 +349,10 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             execution_projection_temp  =  daily_plan_sheet.at[i,'Execution Projection']
 
                                     if (len(interdomain_kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Interdomain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Interdomain KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain Name']).__contains__('NA')):
                                             interdomain_kpi_status_temp  =  interdomain_kpi_status_temp
                                         else:
-                                            interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Interdomain KPI status']
+                                            interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain Name']
 
                                     if (len(second_level_validation_status_temp) == 0):
                                         if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Second Level Validation Status']).__contains__('NA')):
@@ -339,10 +361,10 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             second_level_validation_status_temp  =  daily_plan_sheet.at[i,'Second Level Validation Status']
 
                                     if (len(kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain KPI status']).__contains__('NA')):
                                             kpi_status_temp  =  kpi_status_temp
                                         else:
-                                            kpi_status_temp  =  daily_plan_sheet.at[i,'KPI status']
+                                            kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain KPI status']
 
                                     if (len(mop_view_status_temp) == 0):
                                         if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'MOP View Status']).__contains__('NA')):
@@ -361,10 +383,8 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             impacted_node_temp +=  ' || '+'('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'IMPACTED NODE'])
                                     
                                     if (len(domain_kpi_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Domain kpi']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Domain kpi']).__contains__('NA')):
-                                            raise DomainNotFound("Domain KPI can't be Empty ")
-                                        else:
-                                            domain_kpi_temp = daily_plan_sheet.at[i,'Domain kpi']
+                                        domain_kpi_temp = daily_plan_sheet.at[i,'Domain kpi']
+                                    
                                     elif (len(domain_kpi_temp)>0):
                                         domain_kpi_temp +=  ' || '+daily_plan_sheet.at[i,'Domain kpi']
                                     
@@ -525,10 +545,10 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             execution_projection_temp  =  daily_plan_sheet.at[i,'Execution Projection']
 
                                     if (len(interdomain_kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Interdomain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Interdomain KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain Name']).__contains__('NA')):
                                             interdomain_kpi_status_temp  =  interdomain_kpi_status_temp
                                         else:
-                                            interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Interdomain KPI status']
+                                            interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain Name']
 
                                     if (len(second_level_validation_status_temp) == 0):
                                         if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Second Level Validation Status']).__contains__('NA')):
@@ -537,10 +557,10 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             second_level_validation_status_temp  =  daily_plan_sheet.at[i,'Second Level Validation Status']
 
                                     if (len(kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain KPI status']).__contains__('NA')):
                                             kpi_status_temp  =  kpi_status_temp
                                         else:
-                                            kpi_status_temp  =  daily_plan_sheet.at[i,'KPI status']
+                                            kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain KPI status']
 
                                     if (len(mop_view_status_temp) == 0):
                                         if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'MOP View Status']).__contains__('NA')):
@@ -718,10 +738,10 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             execution_projection_temp  =  daily_plan_sheet.at[i,'Execution Projection']
 
                                     if (len(interdomain_kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Interdomain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Interdomain KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain Name']).__contains__('NA')):
                                             interdomain_kpi_status_temp  =  interdomain_kpi_status_temp
                                         else:
-                                            interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Interdomain KPI status']
+                                            interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain Name']
 
                                     if (len(second_level_validation_status_temp) == 0):
                                         if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Second Level Validation Status']).__contains__('NA')):
@@ -730,10 +750,10 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                                             second_level_validation_status_temp  =  daily_plan_sheet.at[i,'Second Level Validation Status']
 
                                     if (len(kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain KPI status']).__contains__('NA')):
                                             kpi_status_temp  =  kpi_status_temp
                                         else:
-                                            kpi_status_temp  =  daily_plan_sheet.at[i,'KPI status']
+                                            kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain KPI status']
 
                                     if (len(mop_view_status_temp) == 0):
                                         if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'MOP View Status']).__contains__('NA')):
@@ -808,13 +828,13 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
                 'Vendor':vendor,
                 'Protocol':protocol,
                 'Execution Projection':execution_projection,
-                'Interdomain KPI status':interdomain_kpi_status,
+                'Inter-domain Name':interdomain_kpi_status,
                 'Second Level Validation Status':second_level_validation_status,
-                'KPI status':kpi_status,
+                'Inter-domain KPI status':kpi_status,
                 'MOP View Status':mop_view_status
                 }
             df = pd.DataFrame(dictionary1)
-            df['Execution Date'] = df['Execution Date'].dt.strftime('%d-%m-%Y')
+            df['Execution Date'] = df['Execution Date'].dt.strftime('%m/%d/%Y')
             
             writer = pd.ExcelWriter(workbook,engine = 'openpyxl',mode = 'a',if_sheet_exists = 'replace')
             new_sheetname = 'Email-Package'
@@ -822,8 +842,8 @@ def email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook):
             #print(df)
             df.to_excel(writer,sheet_name = new_sheetname,index_label = 'S.NO')
             
-            writer.save()
-            
+            writer.close()
+            del df
             styling(workbook,new_sheetname)
 
             messagebox.showinfo("   Successful Completion",'Email-Package Sheet also prepared!')    
@@ -838,74 +858,87 @@ def paco_cscore(sender,workbook):
         #user = subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
 
         #workbook = r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
-        daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
-        daily_plan_sheet.fillna("NA",inplace = True)
-        input_error = []
-        tomorrow = datetime.now()+timedelta(1) # getting tomorrow date for data execution
         
-        for i in range(0,len(daily_plan_sheet)):
-            if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
-                input_error.append(str(daily_plan_sheet.iloc[i]['S.NO']))
-        daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
+        daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
+        tomorrow = datetime.today()+timedelta(1) # getting tomorrow date for data execution
+        tomorrow = tomorrow.strftime("%m/%d/%Y")
+        daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'],format='%m/%d/%Y')
+        df = daily_plan_sheet[daily_plan_sheet["Execution Date"] == tomorrow]
+        sr_no = set(daily_plan_sheet["S.NO"])
+        new_sr_no = set(df["S.NO"])
+        difference = list(sr_no - new_sr_no)
+        difference.sort()
+        
+
+        
 
         if len(daily_plan_sheet) == 0:
             raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
         
-        elif (len(input_error) > 0):
-            raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join(input_error)}")
+        if (len(difference) > 0):
+            raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join([str(num) for num in difference])}")
         
         else:
+            
+            daily_plan_sheet = daily_plan_sheet[daily_plan_sheet["Execution Date"] == tomorrow]
             Email_ID = pd.read_excel(workbook,"Mail Id")
 
             circle = Email_ID['Circle'].tolist()
-
+            original_change_responsible = Email_ID['Change Responsible'].tolist()
             input_error = []
             result_df = pd.DataFrame()
-
+            
+            daily_plan_sheet.fillna("NA",inplace = True)
+            circle_not_proper = []
+            change_responsible_not_proper = []
             for i in range(0,len(daily_plan_sheet)):
-                if daily_plan_sheet.at[i,'CR NO'] == "NA":
+                if (daily_plan_sheet.at[i,'CR NO'] == "NA") or (daily_plan_sheet.at[i,'CR NO'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
                 if (daily_plan_sheet.at[i,'Circle'] not in circle):
+                    circle_not_proper.append(daily_plan_sheet.at[i,'S.NO'])
+                    continue
+                if (daily_plan_sheet.at[i,'Change Responsible'] not in original_change_responsible):
+                    change_responsible_not_proper.append(daily_plan_sheet.at[i,'S.NO'])
+                    continue
+                if (daily_plan_sheet.at[i,'Activity Title'] == 'NA') or (daily_plan_sheet.at[i,'Activity Title'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Activity Title'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Circle'] == 'NA') or (daily_plan_sheet.at[i,'Circle'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Circle'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Risk'] == 'NA') or (daily_plan_sheet.at[i,'Risk'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Risk'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Location'] == 'NA') or (daily_plan_sheet.at[i,'Location'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Location'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Change Responsible'] == 'NA') or (daily_plan_sheet.at[i,'Change Responsible'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Change Responsible'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Impact'] == 'NA') or (daily_plan_sheet.at[i,'Impact'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Impact'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Technical Validator'] == 'NA') or (daily_plan_sheet.at[i,'Technical Validator'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Technical Validator'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Activity-Type'] == 'NA') or (daily_plan_sheet.at[i,'Activity-Type'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Activity-Type'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Vendor'] == 'NA') or (daily_plan_sheet.at[i,'Vendor'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Vendor'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Protocol'] == 'NA') or (daily_plan_sheet.at[i,'Protocol'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
-                if (daily_plan_sheet.at[i,'Protocol'] == 'NA'):
-                    input_error.append(daily_plan_sheet.at[i,'S.NO'])
-                    continue
-                if (daily_plan_sheet.at[i,'Execution Projection'] == 'NA'):
+                if (daily_plan_sheet.at[i,'Execution Projection'] == 'NA') or (daily_plan_sheet.at[i,'Execution Projection'] == None):
                     input_error.append(daily_plan_sheet.at[i,'S.NO'])
                     continue
                 else:
                     result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
             
             result_df.drop_duplicates(keep = 'first', inplace= True)
+            #print(result_df)
 
             del daily_plan_sheet
 
@@ -918,13 +951,18 @@ def paco_cscore(sender,workbook):
             if (len(input_error) > 0):
                 messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet for S.NO.: {','.join([str(num) for num in input_error])}")
                 return 'Unsuccessful'
-            
+            if (len(circle_not_proper) > 0):
+                messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
+                return 'Unsuccessful'
+            if (len(change_responsible_not_proper) > 0):
+                messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
+                return 'Unsuccessful'
             else:
             
                 sheetname = "PS Core-Inter Domain"
                 sheetname2 = "CS Core-Inter Domain"
                 sheetname3 = "RAN-Inter Domain"
-
+                sheetname4 = "VAS-Inter Domain"
 
                 category = "MPBN-MS"
                 owner_domain = "SRF MPBN"
@@ -990,7 +1028,7 @@ def paco_cscore(sender,workbook):
                 Kpis_to_be_monitored = []
                 for i in range(0,len(daily_plan_sheet)):
                     if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) :
-                        execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
+                        execution_date.append((daily_plan_sheet.iloc[i]['Execution Date']))
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
                         cr_category.append(category)
@@ -1032,7 +1070,7 @@ def paco_cscore(sender,workbook):
                 oss_IP = []
                 # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
                 for i in range(0,len(daily_plan_sheet)):
-                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().__contains__("RAN")):
+                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("RAN")):
                         execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -1059,12 +1097,54 @@ def paco_cscore(sender,workbook):
                 dictionary3 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored,'OSS Name':oss_name,'OSS IP':oss_IP}
                 df3 = pd.DataFrame(dictionary3)
                 
+                ##########################################################  Entering details for VAS  ########################################################################
+                
+                execution_date = []
+                maintenance_window = []
+                mpbn_cr_no = []
+                location = []
+                mpbn_change_responsible_executor = []
+                validator = []
+                impact = []
+                circle = []
+                mpbn_activity_title = []
+                cr_owner_domain = []
+                inter_domain = []
+                cr_category = []
+                impacted_node_details = []
+                Kpis_to_be_monitored = []
+                oss_name = []
+                oss_IP = []
+                for i in range(0,len(daily_plan_sheet)):
+                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('VAS')) :
+                        execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
+                        maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
+                        mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
+                        cr_category.append(category)
+                        impact.append(daily_plan_sheet.iloc[i]['Impact'])
+                        location.append(daily_plan_sheet.iloc[i]['Location'])
+                        txt = str(daily_plan_sheet.iloc[i]['Circle'])
+                        circle.append(txt.upper())
+                        mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
+                        cr_owner_domain.append(owner_domain)
+                        mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
+                        technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
+                        if technical_validator == team_leader:
+                            validator.append(team_leader)
+                        else:
+                            tech_validator_team_leader = technical_validator+"/"+team_leader
+                            validator.append(tech_validator_team_leader)
+                        inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
+                        impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
+                        Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
+
+                dictionary4 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
+                df4 = pd.DataFrame(dictionary4)
 
                 df.reset_index(drop = True,inplace = True)
                 df2.reset_index(drop = True,inplace = True)
                 df3.reset_index(drop = True,inplace = True)
-
-
+                df4.reset_index(drop = True,inplace = True)
 
                 
                 # writer = pd.ExcelWriter(workbook,engine = 'xlsxwriter')
@@ -1077,36 +1157,22 @@ def paco_cscore(sender,workbook):
 
 
                 writer = pd.ExcelWriter(workbook,engine = "openpyxl",mode = "a",if_sheet_exists = "replace")
-                wb = writer.book
-                # try:
-                #     wb.remove(wb[sheetname])
-                #     wb.remove(wb[sheetname2])
-                #     wb.remove(wb[sheetname3])
-                # # except:
-                # #     pass
-                # finally:
                 df.to_excel(writer,sheet_name = sheetname,index = False)
                 df2.to_excel(writer,sheet_name = sheetname2,index = False)
                 df3.to_excel(writer,sheet_name = sheetname3,index = False)
+                df4.to_excel(writer,sheet_name = sheetname4,index = False)
 
-
-                writer.save()
+                writer.close()
 
                 styling(workbook,sheetname)
                 styling(workbook,sheetname2)
                 styling(workbook,sheetname3)
-
+                styling(workbook,sheetname4)
                 messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Data Preparation Task Completed!")
 
-                email_package__sheet_creater(daily_plan_sheet,tomorrow,workbook)
+                email_package__sheet_creater(daily_plan_sheet,workbook)
 
                 return 'Successful'
-
-                
-
-                
-
-            
 
 
     # except FileNotFoundError:
@@ -1122,11 +1188,19 @@ def paco_cscore(sender,workbook):
     
 
     except TomorrowDataNotFound as error:
-        messagebox.showerror("  Data for tomorrow's date not found",error)
+        messagebox.showerror("  Data for today's maintenance not found",error)
+        return "Unsuccessful"
+    
+    except KeyError as e:
+        messagebox.showerror("  Check for the below Header ",e)
+        return "Unsuccessful"
+    
+    except AttributeError as e:
+        messagebox.showerror("  Exception Occured",e)
+        return "Unsuccessful"
+    
+    except Exception as e:
+        messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-    except DomainNotFound as error:
-        messagebox.showerror("  Domain KPI can't be Empty")
-        return "Unsuccessful"
-
-#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet.xlsx")
+paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy - Copy.xlsx")
