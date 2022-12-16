@@ -233,4 +233,4 @@ def fetch_details(sender,workbook):
     #     messagebox.showerror("  Exception Occurred",e)
     #     return "Unsuccessful"
     
-fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")

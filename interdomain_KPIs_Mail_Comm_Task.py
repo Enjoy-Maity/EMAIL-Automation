@@ -27,11 +27,10 @@ def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_r
     msg.Save()
     msg.Send()
 
-    #messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Communication Task completed")
 
 def quit(event):
     sys.exit(0)
-    
+
 def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_region):
     try: 
         #   user=subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 

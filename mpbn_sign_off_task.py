@@ -97,9 +97,9 @@ def email_package_writer(workbook,mail_bodies,email_package):
     styling(workbook,"Email-Package")
 
 def sendmail(dataframe):
-    # today = datetime.now()
-    # today = today.strftime("%d/%m/%Y")
-    today = ""
+    today = datetime.now()
+    today = today.strftime("%m/%d/%Y")
+    
     dataframe.fillna(" ")
     outlook_mailer=win32.Dispatch('Outlook.Application')
     msg=outlook_mailer.CreateItem(0)
@@ -139,6 +139,7 @@ def dfizer(body):
         
         if (np.dtype(columns) == "int64"):
             new_body = pd.DataFrame(body.values[1:],columns = body.iloc[0])
+            new_body.reset_index(drop = True, inplace = True)
             del body
             del columns
             return new_body
@@ -150,6 +151,7 @@ def dfizer(body):
         
         if (np.dtype(columns) == "int64"):
             new_body = pd.DataFrame(body.values[1:],columns = body.iloc[0])
+            new_body.reset_index(drop = True, inplace = True)
             del body
             del columns
             return new_body
@@ -159,8 +161,9 @@ def dfizer(body):
 
 def remainder_change_responsible_dict_getter(remainder_cr,email_package):
     remainder_change_responsible = dict()
+    
     for row in range(0,len(email_package)):
-        if (email_package.at[row,'CR NO'] in remainder_cr):
+        if ((email_package.at[row,'CR NO'] in remainder_cr) or (email_package.at[row,'CR No'] in remainder_cr)):
             if (email_package.at[row,'Change Responsible'] not in remainder_change_responsible):
                 remainder_change_responsible[email_package.at[row,'Change Responsible']] = []
                 remainder_change_responsible[email_package.at[row,'Change Responsible']].append(email_package.at[row,'CR NO'])
@@ -169,15 +172,30 @@ def remainder_change_responsible_dict_getter(remainder_cr,email_package):
 
     return remainder_change_responsible
 
+def reversed_remainder_change_responsible_dict_getter(remainder_cr,email_package):
+    remainder_change_responsible = dict()
+    
+    for row in range(0,len(email_package)):
+        if (email_package.at[row,'CR No'] in remainder_cr):
+            if (email_package.at[row,'Change Responsible'] not in remainder_change_responsible):
+                remainder_change_responsible[email_package.at[row,'Change Responsible']] = []
+                remainder_change_responsible[email_package.at[row,'Change Responsible']].append(email_package.at[row,'CR No'])
+            else:
+                remainder_change_responsible[email_package.at[row,'Change Responsible']].append(email_package.at[row,'CR No'])
+
+    return remainder_change_responsible
+
 def mail_bodies_generator():
     outlook = win32.Dispatch("Outlook.Application").GetNamespace("MAPI")    # MAPI is an API for messaging to do functions like fetching, and manipulation of mails in outlook
     inbox = outlook.GetDefaultFolder(6)
     flag_for_search = 0
-    # today = datetime.now()
-    # today = today.strftime("%d/%m/%Y")
-    today = '15/12/2022'
+    today = datetime.now()
+    yesterday = today - timedelta(days = 1)
+    yesterday = yesterday.replace(hour=23, minute=0, second=0).strftime('%Y-%m-%d %H:%M %p')
+    today = today.strftime("%d-%m-%Y")
     messages = inbox.Items
-    subject_we_are_looking_for = f"MPBN Activity Validation Sign Off : {today}"
+    messages = messages.Restrict("[ReceivedTime] >= '"+ yesterday + "'")
+    subject_we_are_looking_for = f"MPBN Activity Validation Sign Off"
     subject_we_are_looking_for = subject_we_are_looking_for.lower()
     mail_bodies = pd.DataFrame()
     
@@ -193,7 +211,7 @@ def mail_bodies_generator():
 
     if (flag_for_search == 0):
         messages = inbox.Folders["Karan Loomba Sir"].Items
-
+        messages = messages.Restrict("[ReceivedTime] >= '" + yesterday + "'")
         for message in messages:
             mail_subject = message.Subject
 
@@ -202,6 +220,7 @@ def mail_bodies_generator():
                 body = message.HTMLBody
                 body = pd.read_html(body)
                 body = dfizer(body)
+                body.loc[:,'Execution Date'] = today
                 mail_bodies =  pd.concat([mail_bodies,body],ignore_index=True)
                 
     
@@ -261,15 +280,14 @@ def mpbn_signoff_main_task(workbook,required_worksheet):
 
                     temp_str = ""
                     
-                    thread_for_remainder_change_responsible_dict_getter_for_mail_bodies = CustomThread(target = remainder_change_responsible_dict_getter, args = (reversed_remainder_cr,mail_bodies))
-                    thread_for_remainder_change_responsible_dict_getter_for_mail_bodies.daemon = True
-                    thread_for_remainder_change_responsible_dict_getter_for_mail_bodies.start()
-                    reversed_change_responsible_to_cr_dict = thread_for_remainder_change_responsible_dict_getter_for_mail_bodies.join()
+                    thread_for_reversed_remainder_change_responsible_dict_getter_for_mail_bodies = CustomThread(target = reversed_remainder_change_responsible_dict_getter, args = (reversed_remainder_cr,mail_bodies))
+                    thread_for_reversed_remainder_change_responsible_dict_getter_for_mail_bodies.start()
+                    reversed_change_responsible_to_cr_dict = thread_for_reversed_remainder_change_responsible_dict_getter_for_mail_bodies.join()
+                    
+                    for change_responsible_key,cr_list in reversed_change_responsible_to_cr_dict.items():
+                        temp_str += f"{change_responsible_key} : {', '.join(cr_list)}\n\n"
 
-                    for change_responsible_key.cr_list in reversed_change_responsible_to_cr_dict.items():
-                        temp_str += f"{change_responsible_key} : {', '.join(cr_list)}\n"
-
-                    messagebox.showwarning("    Extra CR Encountered!", f"Kindly, Enter the CR Details in Planning Sheet given below!\n{temp_str}")
+                    messagebox.showwarning("    Extra CR Encountered!", f"Below mentioned CR Details are missing in Planning Sheet, Kindly Check!\n\n{temp_str}")
                     return"Unsuccessful"
                 
                 if (len(reversed_remainder_cr) == 0):
@@ -280,9 +298,13 @@ def mpbn_signoff_main_task(workbook,required_worksheet):
                     
                     if (mail_status):
                         mail_bodies['Execution Date'] = pd.to_datetime(mail_bodies["Execution Date"])
-                        mail_bodies['Execution Date'] = mail_bodies['Execution Date'].dt.strftime("%m/%d/%Y")
+                        mail_bodies['Execution Date'] = mail_bodies['Execution Date'].dt.strftime("%d-%m-%Y")
                         mail_bodies['Second Level Validation Status'] = mail_bodies['Second Level Validation Status'].fillna("NA")
                         mail_bodies.fillna(" ",inplace = True)
+                        mail_bodies.drop(['S.No.'],axis = 1,inplace=True)
+
+                        mail_bodies.index += 1
+                        mail_bodies.insert(0,'S.NO', mail_bodies.index)
                         sendmail(mail_bodies)
                         messagebox.showinfo("   Mail Successfully Sent","   Consolidate Sign Off Mail Communication Successful!")
                     else:
@@ -294,7 +316,6 @@ def mpbn_signoff_main_task(workbook,required_worksheet):
                 
     except CustomException:
         return "Unsuccessful"
-    
     
 def mpbn_signoff(workbook):
     try:
@@ -324,4 +345,4 @@ def mpbn_signoff(workbook):
     #     messagebox.showerror("  Exception Occured",e)
     #     return "Unsuccessful"
 
-mpbn_signoff(r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")
+#mpbn_signoff(r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")

@@ -18,8 +18,62 @@ class TomorrowDataNotFound(Exception):
 #         self.msg = msg
 
 #####################################################################
+#########################  P1 P3 appender  ##########################
+#####################################################################
+
+def p_one_p_three_appender(email_package, sender):
+    unique_technical_validator_set = set(email_package['Technical Validator'].unique())
+    p1 = ''
+    p3 = ''
+    
+
+    if ('Arka Maiti' in unique_technical_validator_set):
+        p3 = 'Arka Maiti'
+    
+    if ('Manoj Kumar' in unique_technical_validator_set):
+        p1 = 'Manoj Kumar'
+        
+
+    if ((len(p1) > 0) and (len(p3) == 0)):
+        p3 = list(unique_technical_validator_set - set(p1))[0]
+    
+    if ((len(p3) > 0) and (len(p1) == 0)):
+        p1 = list(unique_technical_validator_set - set(p3))[0]
+    
+    if (sender == p1):
+        
+        p1_workbook_file = r'C:\Daily\MPBN Planning Automation Tracker P1.xlsx'
+        p1_sheet_name = 'MPBN Activity List'
+
+        p1_dataframe = email_package[email_package['Technical Validator'] == p1]
+
+        p1_workbook = load_workbook(p1_workbook_file)
+
+        p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row-1)
+        writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+        p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False, header = False)
+        writer1.close()
+    
+    if (sender == p3):
+        
+        p3_workbook_file = r'C:\Daily\MPBN Planning Automation Tracker P3.xlsx'
+        p3_sheet_name = 'MPBN Activity List'
+
+        p3_dataframe = email_package[email_package['Technical Validator'] == p3]
+        
+        p3_workbook = load_workbook(p3_workbook_file)
+
+        p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row-1)
+        writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+        p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = True,index_label = 'S.NO', header = False)
+        writer3.close()
+
+    messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+
+#####################################################################
 #############################    Styling   ##########################
 #####################################################################
+
 def styling(workbook,sheetname):
     wb  =  load_workbook(workbook)
     ws  =  wb[sheetname]
@@ -56,32 +110,16 @@ def styling(workbook,sheetname):
             cell.border = Border(top = Side(border_style = 'medium',color = '000000'),bottom = Side(border_style = 'medium',color = '000000'),left = Side(border_style = 'medium',color = '000000'),right = Side(border_style = 'medium',color = '000000'))
 
     #rows = ws.max_row
-    
-    
-    
     wb.save(workbook)
-
-
-
 
 def quit(event):
     sys.exit(0)
 
-# def dfizer(workbook):
-#     with xw.App(visible=False) as app:
-#         book = xw.Book(workbook)
-#         sheet = book.sheets['Planning Sheet'].used_range.value 
-#         plan_sheet = pd.DataFrame(sheet)
-#         plan_sheet.reset_index(drop = True, inplace = True)
-#         daily_plan_sheet = pd.DataFrame(plan_sheet.values[1:], columns = plan_sheet.iloc[0])
-#         del plan_sheet
-#         book.close()
+#####################################################################
+##################   Email package sheet creater   ##################
+#####################################################################
 
-#     daily_plan_sheet["S.NO"] = daily_plan_sheet["S.NO"].astype('int64')
-#     #daily_plan_sheet['Execution Date'] = (daily_plan_sheet["Execution Date"].astype(str))
-#     return daily_plan_sheet
-
-def email_package__sheet_creater(daily_plan_sheet,workbook):
+def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             #S.NO	Execution Date	Maintenance Window	CR NO	Activity Title	Risk	Location	Circle	"No. of Node Involved"
             #"CR Belongs to Same Activity of Previous CR - Yes/NO"	Change Responsible	Activity Checker	Activity Initiator	Impact	Planning Status	Domain	
             # Final Status	Reason For Rollback / Cancel	Design Availability	Technical Validator	Complexity	Activity-Type	Domain kpi	IMPACTED NODE	KPI DETAILS	oss name	oss ip	Total Time spent on Planned CRs (Mins)	Vendor	Protocol	Execution Projection	
@@ -833,21 +871,20 @@ def email_package__sheet_creater(daily_plan_sheet,workbook):
                 'Inter-domain KPI status':kpi_status,
                 'MOP View Status':mop_view_status
                 }
+            
             df = pd.DataFrame(dictionary1)
             df['Execution Date'] = df['Execution Date'].dt.strftime('%m/%d/%Y')
             
             writer = pd.ExcelWriter(workbook,engine = 'openpyxl',mode = 'a',if_sheet_exists = 'replace')
             new_sheetname = 'Email-Package'
             df.index +=  1
-            #print(df)
             df.to_excel(writer,sheet_name = new_sheetname,index_label = 'S.NO')
-            
             writer.close()
-            del df
             styling(workbook,new_sheetname)
 
-            messagebox.showinfo("   Successful Completion",'Email-Package Sheet also prepared!')    
-
+            messagebox.showinfo("   Email Package Data Preparation Status",'Email-Package Sheet also prepared!')
+            p_one_p_three_appender(df,sender)
+            del df
 
 #####################################################################
 #############################  Paco_cscore  #########################
@@ -1168,9 +1205,9 @@ def paco_cscore(sender,workbook):
                 styling(workbook,sheetname2)
                 styling(workbook,sheetname3)
                 styling(workbook,sheetname4)
-                messagebox.showinfo("   Successful Completion","Interdomain KPIs Mail Data Preparation Task Completed!")
+                messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
 
-                email_package__sheet_creater(daily_plan_sheet,workbook)
+                email_package__sheet_creater(daily_plan_sheet,workbook,sender)
 
                 return 'Successful'
 
@@ -1203,4 +1240,4 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy - Copy.xlsx")
+#paco_cscore("Arka Maiti",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")
