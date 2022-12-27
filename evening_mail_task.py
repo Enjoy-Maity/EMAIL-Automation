@@ -55,15 +55,16 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             '12' : 'Dec'
         }
 
-        exec_date = worksheet.at[0,'Execution Date'].strip().split('-')
+        exec_date = worksheet.at[0,'Execution Date'].strip().split('/')
 
         suffixes = { 1: 'st' , 2: 'nd' , 3: 'rd'}
         day = ''    
-        if (3 < int(exec_date[0]) < 21) or (23 < int(exec_date[0]) < 31):
-            day = f'{int(exec_date[0]):02d}th'
+        if (3 < int(exec_date[1]) < 21) or (23 < int(exec_date[1]) < 31):
+            day = f'{int(exec_date[1]):02d}th'
         else:
-            day = f'{int(exec_date[0]):02d}{suffixes[int(exec_date[0])%10]}'
-        execution_date= f'{day} {month_dictionary[exec_date[1]]} {exec_date[2]}'
+            day = f'{int(exec_date[1]):02d}{suffixes[int(exec_date[1])%10]}'
+
+        execution_date= f'{day} {month_dictionary[exec_date[0]]} {exec_date[2]}'
 
         
         resources_occupied_in_night_activities = len(worksheet['Change Responsible'].unique())

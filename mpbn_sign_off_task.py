@@ -210,7 +210,7 @@ def mail_bodies_generator():
             mail_bodies =  pd.concat([mail_bodies,body],ignore_index=True)
 
     if (flag_for_search == 0):
-        messages = inbox.Folders["Karan Loomba Sir"].Items
+        messages = inbox.Folders["Team Mails"].Items
         messages = messages.Restrict("[ReceivedTime] >= '" + yesterday + "'")
         for message in messages:
             mail_subject = message.Subject
@@ -317,7 +317,7 @@ def mpbn_signoff_main_task(workbook,required_worksheet):
     except CustomException:
         return "Unsuccessful"
     
-def mpbn_signoff(workbook):
+def mpbn_signoff(workbook,sender):
     try:
         if(len(workbook) == 0):
             raise CustomException(" File Not Selected"," Please Select the MPBN Planning Workbbok first!")

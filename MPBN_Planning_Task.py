@@ -647,11 +647,11 @@ class App(tk.Tk):
             self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
             self.evening_task_status.set(' Unsuccessful ')
         
-        except Exception as error:
-            messagebox.showerror(" Exception Occured",error)
-            self.evening_task_color_get.set(self.color[0])
-            self.evening_task_status_checker_flag = 0
-            self.evening_task_status.set(' Unsuccessful ')
+        # except Exception as error:
+        #     messagebox.showerror(" Exception Occured",error)
+        #     self.evening_task_color_get.set(self.color[0])
+        #     self.evening_task_status_checker_flag = 0
+        #     self.evening_task_status.set(' Unsuccessful ')
 
     def mpbn_signoff_task_func(self):
         if (self.mpbn_signoff_task_completed_status_checker_flag == 0):

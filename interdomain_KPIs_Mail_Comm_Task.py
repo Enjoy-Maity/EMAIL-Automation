@@ -41,6 +41,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         input_error = []
         tomorrow = datetime.now() + timedelta(1) # getting tomorrow date for data execution
             
+        daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
         for i in range(0,len(daily_plan_sheet)):
             if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
                 input_error.append(str(daily_plan_sheet.iloc[i]['S.NO']))
@@ -161,4 +162,4 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         messagebox.showerror(" Data for tomorrow's date not found",error)
         return "Unsuccessful"
     
-#paco_cscore("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx","","")
+#paco_cscore("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet new copy.xlsx","","")

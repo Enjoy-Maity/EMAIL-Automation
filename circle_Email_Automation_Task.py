@@ -132,7 +132,7 @@ def fetch_details(sender,workbook):
                 
                 del new_result_df
                 del result_df
-
+                #print(f"\n{daily_plan_sheet}\n")
                 remainder=list(set(circles)-set(mail_circles))
                 circles=list(set(circles)-set(remainder))
 
@@ -173,7 +173,7 @@ def fetch_details(sender,workbook):
                         dataframe.reset_index(drop=True,inplace=True)
                         dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
                         # dataframe['Execution Date']=pd.to_datetime(dataframe['Execution Date'])
-                        #dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'], format = "%d-%m-%Y")
+                        dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = '%m/%d/%Y')
                         dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%m/%d/%Y')
 
                         dataframe.replace(to_replace = 'NA',value = '')
@@ -233,4 +233,4 @@ def fetch_details(sender,workbook):
     #     messagebox.showerror("  Exception Occurred",e)
     #     return "Unsuccessful"
     
-#fetch_details("Enjoy Maity",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet new copy.xlsx")

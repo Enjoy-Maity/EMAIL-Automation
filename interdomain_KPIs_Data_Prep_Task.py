@@ -3,16 +3,21 @@ import sys
 from datetime import datetime,timedelta
 from openpyxl import load_workbook
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment
-from openpyxl import load_workbook
+from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 import pandas as pd
 from tkinter import *
 from tkinter import messagebox
-
+from pathlib import Path
 class TomorrowDataNotFound(Exception):
     def __init__(self,msg):
         self.msg = msg
 
+class CustomException(Exception):
+    def __init__(self,title,msg):
+        self.title = title
+        self.msg = msg
+        messagebox.showerror(self.title,self.msg)
 # class DomainNotFound(Exception):
 #     def __init__(self,msg):
 #         self.msg = msg
@@ -21,18 +26,21 @@ class TomorrowDataNotFound(Exception):
 #########################  P1 P3 appender  ##########################
 #####################################################################
 
-def p_one_p_three_appender(email_package, sender):
+def p_one_p_three_appender(email_package, sender,workbook):
     unique_technical_validator_set = set(email_package['Technical Validator'].unique())
     p1 = ''
     p3 = ''
     
-
+    if (sender not in unique_technical_validator_set):
+        raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
+    
     if ('Arka Maiti' in unique_technical_validator_set):
         p3 = 'Arka Maiti'
-    
+        unique_technical_validator_set.remove(p3)
+
     if ('Manoj Kumar' in unique_technical_validator_set):
         p1 = 'Manoj Kumar'
-        
+        unique_technical_validator_set.remove(p1)
 
     if ((len(p1) > 0) and (len(p3) == 0)):
         p3 = list(unique_technical_validator_set - set(p1))[0]
@@ -40,35 +48,62 @@ def p_one_p_three_appender(email_package, sender):
     if ((len(p3) > 0) and (len(p1) == 0)):
         p1 = list(unique_technical_validator_set - set(p3))[0]
     
-    if (sender == p1):
+    if (len(p1)>0 and len(p3)>0):
+        if (sender == p1):
+            file_path = workbook.split("/")
+            file_path.remove(file_path[-1])
+            file_path = '/'.join(file_path)
+            p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
+            p1_sheet_name = 'MPBN Activity List'
+            
+            if (Path(p1_workbook_file).exists() == False):
+                wb = Workbook()
+                wb.create_sheet(index=0,title = p1_sheet_name)
+                wb.save(p1_workbook_file)
+
+            
+            p1_dataframe = email_package[email_package['Technical Validator'] == p1]
+            p1_dataframe.reset_index(drop = True, inplace = True)
+            p1_workbook = load_workbook(p1_workbook_file)
+
+            p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
+            p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
+
+            writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+            p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False, header = False)
+            writer1.close()
+            styling(p1_workbook_file,p1_sheet_name)
+            messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
         
-        p1_workbook_file = r'C:\Daily\MPBN Planning Automation Tracker P1.xlsx'
-        p1_sheet_name = 'MPBN Activity List'
+        if (sender == p3):
+            file_path = workbook.split("/")
+            file_path.remove(file_path[-1])
+            file_path = "/".join(file_path)
+            p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
+            p3_sheet_name = 'MPBN Activity List'
 
-        p1_dataframe = email_package[email_package['Technical Validator'] == p1]
+            if (Path(p3_workbook_file).exists() == False):
+                wb = Workbook()
+                wb.create_sheet(index=0,title = p3_sheet_name)
+                wb.save(p3_workbook_file)
 
-        p1_workbook = load_workbook(p1_workbook_file)
+            p3_dataframe = email_package[email_package['Technical Validator'] == p3]
+            p3_dataframe.reset_index(drop = True, inplace = True)
+            p3_dataframe.fillna(" ")
+            p3_workbook = load_workbook(p3_workbook_file)
 
-        p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row-1)
-        writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-        p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False, header = False)
-        writer1.close()
-    
-    if (sender == p3):
+            p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
+            p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
+
+            writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+            p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
+            writer3.close()
+            styling(p3_workbook_file,p3_sheet_name)
+
+            messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
         
-        p3_workbook_file = r'C:\Daily\MPBN Planning Automation Tracker P3.xlsx'
-        p3_sheet_name = 'MPBN Activity List'
-
-        p3_dataframe = email_package[email_package['Technical Validator'] == p3]
-        
-        p3_workbook = load_workbook(p3_workbook_file)
-
-        p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row-1)
-        writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-        p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = True,index_label = 'S.NO', header = False)
-        writer3.close()
-
-    messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+    else:
+        messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
 
 #####################################################################
 #############################    Styling   ##########################
@@ -106,7 +141,7 @@ def styling(workbook,sheetname):
 
     for row in ws:
         for cell in row:
-            cell.alignment = Alignment(horizontal = 'center',vertical = 'center',wrap_text=True)
+            cell.alignment = Alignment(horizontal = 'center',vertical = 'center',wrap_text=False)
             cell.border = Border(top = Side(border_style = 'medium',color = '000000'),bottom = Side(border_style = 'medium',color = '000000'),left = Side(border_style = 'medium',color = '000000'),right = Side(border_style = 'medium',color = '000000'))
 
     #rows = ws.max_row
@@ -170,6 +205,8 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             # del dataframe
 
             # daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
+            daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
+            
             daily_plan_sheet_unique_cr = daily_plan_sheet['CR NO'].value_counts().index.to_list()
             for idx,cr in enumerate(daily_plan_sheet_unique_cr):
                 
@@ -215,28 +252,28 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
                     if (daily_plan_sheet.at[i,'CR NO'] == cr):
                         if (counter<count):
                             if (count>1): 
-                                if (daily_plan_sheet.at[i,'Domain kpi'].upper().__contains__('RAN')):
+                                if (daily_plan_sheet.at[i,'Domain kpi'].upper().startswith('RAN')):
 
                                     if (len(daily_plan_sheet.at[i,'IMPACTED NODE'].strip()) == 0) or (str(daily_plan_sheet.at[i,'IMPACTED NODE']).__contains__('NA')) or (str(daily_plan_sheet.at[i,'IMPACTED NODE']).__contains__('na')):
                                         impacted_node_temp = impacted_node_temp
                                     else:
                                         if (len(impacted_node_temp) == 0):
-                                            impacted_node_temp = '('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'IMPACTED NODE'])
+                                            impacted_node_temp = f"({str(daily_plan_sheet.at[i,'Domain kpi'])} ):- {str(daily_plan_sheet.at[i,'IMPACTED NODE'])}"
                                         else:
-                                            impacted_node_temp = '('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'IMPACTED NODE'])+' || '+impacted_node_temp
+                                            impacted_node_temp = f"({str(daily_plan_sheet.at[i,'Domain kpi'])} ):- {str(daily_plan_sheet.at[i,'IMPACTED NODE'])} || {impacted_node_temp}"
                                     
                                     if (len(domain_kpi_temp) == 0):
-                                        domain_kpi_temp = daily_plan_sheet.at[i,'Domain kpi']
-                                    elif (len(domain_kpi_temp)>0):
-                                        domain_kpi_temp = daily_plan_sheet.at[i,'Domain kpi']+' || '+domain_kpi_temp
+                                        domain_kpi_temp = f"{daily_plan_sheet.at[i,'Domain kpi']}"
+                                    elif (len(domain_kpi_temp) > 0):
+                                        domain_kpi_temp = f"{daily_plan_sheet.at[i,'Domain kpi']} || {domain_kpi_temp}"
                                     
-                                    if (len(daily_plan_sheet.at[i,'KPI DETAILS'].strip()) == 0) or (str(daily_plan_sheet.at[i,'KPI DETAILS']).__contains__('NA')) or (str(daily_plan_sheet.at[i,'KPI DETAILS']).__contains__('na')):
+                                    if (len(daily_plan_sheet.at[i,'KPI DETAILS'].strip()) == 0):
                                         kpi_details_temp = kpi_details_temp
                                     else:
                                         if (len(kpi_details_temp) == 0):
-                                            kpi_details_temp = '('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'KPI DETAILS'])
-                                        elif (len(kpi_details_temp)>0):
-                                            kpi_details_temp = '('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'KPI DETAILS'])+' || '+kpi_details_temp
+                                            kpi_details_temp = f"({str(daily_plan_sheet.at[i,'Domain kpi'])} ):- {(daily_plan_sheet.at[i,'KPI DETAILS'])}"
+                                        if (len(kpi_details_temp)>0):
+                                            kpi_details_temp = f"({str(daily_plan_sheet.at[i,'Domain kpi'])} ):- {(daily_plan_sheet.at[i,'KPI DETAILS'])} || {kpi_details_temp}"
                                     
                                     if (len(str(daily_plan_sheet.at[i,'oss name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'oss name']).__contains__('NA')) :
                                         oss_name_temp = oss_name_temp
@@ -426,182 +463,182 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
                                     elif (len(domain_kpi_temp)>0):
                                         domain_kpi_temp +=  ' || '+daily_plan_sheet.at[i,'Domain kpi']
                                     
-                                    if (len(daily_plan_sheet.at[i,'KPI DETAILS'].strip()) == 0) or (str(daily_plan_sheet.at[i,'KPI DETAILS']).__contains__('NA')):
+                                    if (len(daily_plan_sheet.at[i,'KPI DETAILS'].strip()) == 0):
                                         kpi_details_temp = kpi_details_temp
                                     else:
                                         if (len(kpi_details_temp) == 0):
-                                            kpi_details_temp = '('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'KPI DETAILS'])
+                                            kpi_details_temp = f"({str(daily_plan_sheet.at[i,'Domain kpi'])} ):- {str(daily_plan_sheet.at[i,'KPI DETAILS'])}"
                                         elif (len(kpi_details_temp)>0):
-                                            kpi_details_temp +=  ' || '+'('+str(daily_plan_sheet.at[i,'Domain kpi'])+' ):- '+str(daily_plan_sheet.at[i,'KPI DETAILS'])
+                                            kpi_details_temp +=  f" || ({str(daily_plan_sheet.at[i,'Domain kpi'])} ):- {str(daily_plan_sheet.at[i,'KPI DETAILS'])}"
                                     
-                                    if (len(str(daily_plan_sheet.at[i,'oss name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'oss name']).__contains__('NA')) :
+                                    if (len(str(daily_plan_sheet.at[i,'oss name']).strip()) == 0) :
                                         oss_name_temp = oss_name_temp
                                     else: 
                                         oss_name_temp = oss_name_temp
                                     
-                                    if (len(str(daily_plan_sheet.at[i,'oss ip']).strip()) == 0) or (str(daily_plan_sheet.at[i,'oss ip']).__contains__('NA')) :
+                                    if (len(str(daily_plan_sheet.at[i,'oss ip']).strip()) == 0) :
                                         oss_IP_temp = oss_IP_temp
                                     else:
                                         oss_IP_temp  =  daily_plan_sheet.at[i,'oss ip']
 
                                     if (len(maintenance_window_temp)) == 0:
-                                        if (len(str(daily_plan_sheet.at[i,'Maintenance Window']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Maintenance Window']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Maintenance Window']).strip()) == 0):
                                             maintenance_window_temp = maintenance_window_temp
                                         else:
                                             maintenance_window_temp  =  daily_plan_sheet.at[i,'Maintenance Window']
 
                                     if(len(activity_title_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity Title']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity Title']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity Title']).strip()) == 0) :
                                             activity_title_temp = activity_title_temp
                                         else:
                                             activity_title_temp  =  daily_plan_sheet.at[i,'Activity Title']
 
                                     if(len(risk_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Risk']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Risk']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Risk']).strip()) == 0) :
                                             risk_temp = risk_temp
                                         else:
                                             risk_temp  =  daily_plan_sheet.at[i,'Risk']
 
                                     if (len(location_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Location']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Location']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Location']).strip()) == 0) :
                                             location_temp = location_temp
                                         else:    
                                             location_temp  =  daily_plan_sheet.at[i,'Location']
 
                                     if (len(circle_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Circle']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Circle']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Circle']).strip()) == 0) :
                                             circle_temp = circle_temp
                                         else:
                                             circle_temp  =  daily_plan_sheet.at[i,'Circle']
                                     
                                     if (len(str(no_of_node_involved_temp)) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'No. of Node Involved']).strip()) == 0) or (str(daily_plan_sheet.at[i,'No. of Node Involved']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'No. of Node Involved']).strip()) == 0) :
                                             no_of_node_involved_temp = no_of_node_involved_temp
                                         else:
                                             no_of_node_involved_temp  =  daily_plan_sheet.at[i,'No. of Node Involved']
                                     
                                     if (len(cr_belongs_to_same_activity_of_previous_cr_yes_no_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']).strip()) == 0) or (str(daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']).strip()) == 0) :
                                             cr_belongs_to_same_activity_of_previous_cr_yes_no_temp = cr_belongs_to_same_activity_of_previous_cr_yes_no_temp
                                         else:
                                             cr_belongs_to_same_activity_of_previous_cr_yes_no_temp  =  daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']
                         
                                     if (len(change_responsible_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Change Responsible']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Change Responsible']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Change Responsible']).strip()) == 0):
                                             change_responsible_temp = change_responsible_temp
                                         else:
                                             change_responsible_temp =  daily_plan_sheet.at[i,'Change Responsible']
 
                                     if (len(activity_checker_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity Checker']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity Checker']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity Checker']).strip()) == 0) :
                                             activity_checker_temp = activity_checker_temp
                                         else:
                                             activity_checker_temp  =  daily_plan_sheet.at[i,'Activity Checker']
 
                                     if (len(activity_initiator_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity Initiator']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity Initiator']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity Initiator']).strip()) == 0) :
                                             activity_initiator_temp = activity_initiator_temp
                                         else:
                                             activity_initiator_temp  =  daily_plan_sheet.at[i,'Activity Initiator']
 
                                     if (len(impact_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Impact']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Impact']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Impact']).strip()) == 0):
                                             impact_temp = impact_temp
                                         else:
                                             impact_temp  =  daily_plan_sheet.at[i,'Impact']
 
                                     if (len(planning_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Planning Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Planning Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Planning Status']).strip()) == 0):
                                             planning_status_temp = planning_status_temp
                                         else:
                                             planning_status_temp  =  daily_plan_sheet.at[i,'Planning Status']
 
                                     if (len(domain_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Domain']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Domain']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Domain']).strip()) == 0):
                                             domain_temp = domain_temp
                                         else:
                                             domain_temp  =  daily_plan_sheet.at[i,'Domain']
 
                                     if (len(final_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Final Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Final Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Final Status']).strip()) == 0):
                                             final_status_temp = final_status_temp
                                         else:
                                             final_status_temp  =  daily_plan_sheet.at[i,'Final Status']
 
                                     if (len(reason_for_rollback_cancel_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Reason For Rollback / Cancel']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Reason For Rollback / Cancel']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Reason For Rollback / Cancel']).strip()) == 0) :
                                             reason_for_rollback_cancel_temp  =  reason_for_rollback_cancel_temp
                                         else:
                                             reason_for_rollback_cancel_temp  =  daily_plan_sheet.at[i,'Reason For Rollback / Cancel']
 
                                     if (len(design_availability_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Design Availability']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Design Availability']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Design Availability']).strip()) == 0):
                                             design_availability_temp  =  design_availability_temp
                                         else:
                                             design_availability_temp  =  daily_plan_sheet.at[i,'Design Availability']
 
                                     if (len(technical_validator_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Technical Validator']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Technical Validator']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Technical Validator']).strip()) == 0):
                                             technical_validator_temp  =  technical_validator_temp
                                         else:
                                             technical_validator_temp  =  daily_plan_sheet.at[i,'Technical Validator']
 
                                     if (len(complexity_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Complexity']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Complexity']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Complexity']).strip()) == 0):
                                             complexity_temp  =  complexity_temp
                                         else:
                                             complexity_temp  =  daily_plan_sheet.at[i,'Complexity']
 
                                     if (len(activity_type_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity-Type']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity-Type']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity-Type']).strip()) == 0):
                                             activity_type_temp  =  activity_type_temp
                                         else:
                                             activity_type_temp  =  daily_plan_sheet.at[i,'Activity-Type']
 
                                     if (len(total_time_spent_on_planned_crs_mins_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']).strip()) == 0):
                                             total_time_spent_on_planned_crs_mins_temp  =  total_time_spent_on_planned_crs_mins_temp
                                         else:
                                             total_time_spent_on_planned_crs_mins_temp  =  daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']
 
                                     if (len(vendor_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Vendor']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Vendor']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Vendor']).strip()) == 0):
                                             vendor_temp  =  vendor_temp
                                         else:
                                             vendor_temp  =  daily_plan_sheet.at[i,'Vendor']
 
                                     if (len(protocol_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Protocol']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Protocol']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Protocol']).strip()) == 0):
                                             protocol_temp  =  protocol_temp
                                         else:
                                             protocol_temp  =  daily_plan_sheet.at[i,'Protocol']
 
                                     if (len(execution_projection_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Execution Projection']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Execution Projection']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Execution Projection']).strip()) == 0):
                                             execution_projection_temp  =  execution_projection_temp
                                         else:
                                             execution_projection_temp  =  daily_plan_sheet.at[i,'Execution Projection']
 
                                     if (len(interdomain_kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain Name']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0):
                                             interdomain_kpi_status_temp  =  interdomain_kpi_status_temp
                                         else:
                                             interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain Name']
 
                                     if (len(second_level_validation_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Second Level Validation Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0):
                                             second_level_validation_status_temp  =  second_level_validation_status_temp
                                         else:
                                             second_level_validation_status_temp  =  daily_plan_sheet.at[i,'Second Level Validation Status']
 
                                     if (len(kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0):
                                             kpi_status_temp  =  kpi_status_temp
                                         else:
                                             kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain KPI status']
 
                                     if (len(mop_view_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'MOP View Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0):
                                             mop_view_status_temp  =  mop_view_status_temp
                                         else:
                                             mop_view_status_temp  =  daily_plan_sheet.at[i,'MOP View Status']
@@ -609,192 +646,192 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
                             elif (count == 1):
                                 if (daily_plan_sheet.at[i,'CR NO'] == cr):
                                     
-                                    if (len(daily_plan_sheet.at[i,'IMPACTED NODE'].strip()) == 0) or (daily_plan_sheet.at[i,'IMPACTED NODE'].__contains__('NA')) or (daily_plan_sheet.at[i,'IMPACTED NODE'].__contains__('na')):
+                                    if (len(daily_plan_sheet.at[i,'IMPACTED NODE'].strip()) == 0):
                                                 impacted_node_temp = impacted_node_temp
                                     else:
                                         if (len(impacted_node_temp) == 0):
                                             impacted_node_temp = str(daily_plan_sheet.at[i,'IMPACTED NODE'])
                                     
                                     if (len(domain_kpi_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Domain kpi']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Domain kpi']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Domain kpi']).strip()) == 0):
                                             domain_kpi_temp = domain_kpi_temp
                                         else:
                                             domain_kpi_temp = daily_plan_sheet.at[i,'Domain kpi']
                                     
-                                    if (len(daily_plan_sheet.at[i,'KPI DETAILS'].strip()) == 0) or (daily_plan_sheet.at[i,'KPI DETAILS'].__contains__('NA')) or (daily_plan_sheet.at[i,'KPI DETAILS'].__contains__('na')):
+                                    if (len(daily_plan_sheet.at[i,'KPI DETAILS'].strip()) == 0):
                                         kpi_details_temp = kpi_details_temp
                                     else:
                                         if (len(kpi_details_temp) == 0):
                                             kpi_details_temp = str(daily_plan_sheet.at[i,'KPI DETAILS'])
                                     
-                                    if (len(str(daily_plan_sheet.at[i,'oss name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'oss name']).__contains__('NA')) :
+                                    if (len(str(daily_plan_sheet.at[i,'oss name']).strip()) == 0):
                                         oss_name_temp = oss_name_temp   
                                     else: 
                                         oss_name_temp  =  daily_plan_sheet.at[i,'oss name']
                                     
-                                    if (len(str(daily_plan_sheet.at[i,'oss ip']).strip()) == 0) or (str(daily_plan_sheet.at[i,'oss ip']).__contains__('NA')) :
+                                    if (len(str(daily_plan_sheet.at[i,'oss ip']).strip()) == 0):
                                         oss_IP_temp = oss_IP_temp
                                     else:
                                         oss_IP_temp  =  daily_plan_sheet.at[i,'oss ip']
 
                                     if (len(maintenance_window_temp)) == 0:
-                                        if (len(str(daily_plan_sheet.at[i,'Maintenance Window']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Maintenance Window']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Maintenance Window']).strip()) == 0):
                                             maintenance_window_temp = maintenance_window_temp
                                         else:
                                             maintenance_window_temp  =  daily_plan_sheet.at[i,'Maintenance Window']
 
                                     if(len(activity_title_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity Title']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity Title']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity Title']).strip()) == 0):
                                             activity_title_temp = activity_title_temp
                                         else:
                                             activity_title_temp  =  daily_plan_sheet.at[i,'Activity Title']
 
                                     if(len(risk_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Risk']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Risk']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Risk']).strip()) == 0):
                                             risk_temp = risk_temp
                                         else:
                                             risk_temp  =  daily_plan_sheet.at[i,'Risk']
 
                                     if (len(location_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Location']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Location']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Location']).strip()) == 0):
                                             location_temp = location_temp
                                         else:    
                                             location_temp  =  daily_plan_sheet.at[i,'Location']
 
                                     if (len(circle_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Circle']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Circle']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Circle']).strip()) == 0):
                                             circle_temp = circle_temp
                                         else:
                                             circle_temp  =  daily_plan_sheet.at[i,'Circle']
                                     
                                     if (len(str(no_of_node_involved_temp)) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'No. of Node Involved']).strip()) == 0) or (str(daily_plan_sheet.at[i,'No. of Node Involved']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'No. of Node Involved']).strip()) == 0):
                                             no_of_node_involved_temp = no_of_node_involved_temp
                                         else:
                                             no_of_node_involved_temp  =  daily_plan_sheet.at[i,'No. of Node Involved']
                                     
                                     if (len(cr_belongs_to_same_activity_of_previous_cr_yes_no_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']).strip()) == 0) or (str(daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']).strip()) == 0):
                                             cr_belongs_to_same_activity_of_previous_cr_yes_no_temp = cr_belongs_to_same_activity_of_previous_cr_yes_no_temp
                                         else:
                                             cr_belongs_to_same_activity_of_previous_cr_yes_no_temp  =  daily_plan_sheet.at[i,'CR Belongs to Same Activity of Previous CR- Yes/NO']
                         
                                     if (len(change_responsible_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Change Responsible']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Change Responsible']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Change Responsible']).strip()) == 0):
                                             change_responsible_temp = change_responsible_temp
                                         else:
                                             change_responsible_temp =  daily_plan_sheet.at[i,'Change Responsible']
 
                                     if (len(activity_checker_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity Checker']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity Checker']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity Checker']).strip()) == 0):
                                             activity_checker_temp = activity_checker_temp
                                         else:
                                             activity_checker_temp  =  daily_plan_sheet.at[i,'Activity Checker']
 
                                     if (len(activity_initiator_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity Initiator']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity Initiator']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity Initiator']).strip()) == 0):
                                             activity_initiator_temp = activity_initiator_temp
                                         else:
                                             activity_initiator_temp  =  daily_plan_sheet.at[i,'Activity Initiator']
 
                                     if (len(impact_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Impact']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Impact']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Impact']).strip()) == 0):
                                             impact_temp = impact_temp
                                         else:
                                             impact_temp  =  daily_plan_sheet.at[i,'Impact']
 
                                     if (len(planning_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Planning Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Planning Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Planning Status']).strip()) == 0):
                                             planning_status_temp = planning_status_temp
                                         else:
                                             planning_status_temp  =  daily_plan_sheet.at[i,'Planning Status']
 
                                     if (len(domain_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Domain']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Domain']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Domain']).strip()) == 0):
                                             domain_temp = domain_temp
                                         else:
                                             domain_temp  =  daily_plan_sheet.at[i,'Domain']
 
                                     if (len(final_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Final Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Final Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Final Status']).strip()) == 0):
                                             final_status_temp = final_status_temp
                                         else:
                                             final_status_temp  =  daily_plan_sheet.at[i,'Final Status']
 
                                     if (len(reason_for_rollback_cancel_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Reason For Rollback / Cancel']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Reason For Rollback / Cancel']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Reason For Rollback / Cancel']).strip()) == 0):
                                             reason_for_rollback_cancel_temp  =  reason_for_rollback_cancel_temp
                                         else:
                                             reason_for_rollback_cancel_temp  =  daily_plan_sheet.at[i,'Reason For Rollback / Cancel']
 
                                     if (len(design_availability_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Design Availability']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Design Availability']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Design Availability']).strip()) == 0):
                                             design_availability_temp  =  design_availability_temp
                                         else:
                                             design_availability_temp  =  daily_plan_sheet.at[i,'Design Availability']
 
                                     if (len(technical_validator_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Technical Validator']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Technical Validator']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Technical Validator']).strip()) == 0):
                                             technical_validator_temp  =  technical_validator_temp
                                         else:
                                             technical_validator_temp  =  daily_plan_sheet.at[i,'Technical Validator']
 
                                     if (len(complexity_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Complexity']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Complexity']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Complexity']).strip()) == 0):
                                             complexity_temp  =  complexity_temp
                                         else:
                                             complexity_temp  =  daily_plan_sheet.at[i,'Complexity']
 
                                     if (len(activity_type_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Activity-Type']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Activity-Type']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Activity-Type']).strip()) == 0):
                                             activity_type_temp  =  activity_type_temp
                                         else:
                                             activity_type_temp  =  daily_plan_sheet.at[i,'Activity-Type']
 
                                     if (len(total_time_spent_on_planned_crs_mins_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']).strip()) == 0):
                                             total_time_spent_on_planned_crs_mins_temp  =  total_time_spent_on_planned_crs_mins_temp
                                         else:
                                             total_time_spent_on_planned_crs_mins_temp  =  daily_plan_sheet.at[i,'Total Time spent on Planned CRs (Mins)']
 
                                     if (len(vendor_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Vendor']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Vendor']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Vendor']).strip()) == 0):
                                             vendor_temp  =  vendor_temp
                                         else:
                                             vendor_temp  =  daily_plan_sheet.at[i,'Vendor']
 
                                     if (len(protocol_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Protocol']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Protocol']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Protocol']).strip()) == 0):
                                             protocol_temp  =  protocol_temp
                                         else:
                                             protocol_temp  =  daily_plan_sheet.at[i,'Protocol']
 
                                     if (len(execution_projection_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Execution Projection']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Execution Projection']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Execution Projection']).strip()) == 0):
                                             execution_projection_temp  =  execution_projection_temp
                                         else:
                                             execution_projection_temp  =  daily_plan_sheet.at[i,'Execution Projection']
 
                                     if (len(interdomain_kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain Name']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain Name']).strip()) == 0):
                                             interdomain_kpi_status_temp  =  interdomain_kpi_status_temp
                                         else:
                                             interdomain_kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain Name']
 
                                     if (len(second_level_validation_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Second Level Validation Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Second Level Validation Status']).strip()) == 0):
                                             second_level_validation_status_temp  =  second_level_validation_status_temp
                                         else:
                                             second_level_validation_status_temp  =  daily_plan_sheet.at[i,'Second Level Validation Status']
 
                                     if (len(kpi_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'Inter-domain KPI status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'Inter-domain KPI status']).strip()) == 0):
                                             kpi_status_temp  =  kpi_status_temp
                                         else:
                                             kpi_status_temp  =  daily_plan_sheet.at[i,'Inter-domain KPI status']
 
                                     if (len(mop_view_status_temp) == 0):
-                                        if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0) or (str(daily_plan_sheet.at[i,'MOP View Status']).__contains__('NA')):
+                                        if (len(str(daily_plan_sheet.at[i,'MOP View Status']).strip()) == 0):
                                             mop_view_status_temp  =  mop_view_status_temp
                                         else:
                                             mop_view_status_temp  =  daily_plan_sheet.at[i,'MOP View Status']
@@ -883,7 +920,7 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             styling(workbook,new_sheetname)
 
             messagebox.showinfo("   Email Package Data Preparation Status",'Email-Package Sheet also prepared!')
-            p_one_p_three_appender(df,sender)
+            p_one_p_three_appender(df,sender,workbook)
             del df
 
 #####################################################################
@@ -898,13 +935,11 @@ def paco_cscore(sender,workbook):
         
         daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
         tomorrow = datetime.today()+timedelta(1) # getting tomorrow date for data execution
-        tomorrow = tomorrow.strftime("%m/%d/%Y")
-        daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'],format='%m/%d/%Y')
-        df = daily_plan_sheet[daily_plan_sheet["Execution Date"] == tomorrow]
-        sr_no = set(daily_plan_sheet["S.NO"])
-        new_sr_no = set(df["S.NO"])
-        difference = list(sr_no - new_sr_no)
-        difference.sort()
+        difference = []
+        daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
+        for i in range(0,len(daily_plan_sheet)):
+            if (daily_plan_sheet.iloc[i]['Execution Date'].strftime('%Y-%m-%d') != tomorrow.strftime('%Y-%m-%d')):
+                difference.append(str(daily_plan_sheet.iloc[i]['S.NO']))
         
 
         
@@ -917,7 +952,7 @@ def paco_cscore(sender,workbook):
         
         else:
             
-            daily_plan_sheet = daily_plan_sheet[daily_plan_sheet["Execution Date"] == tomorrow]
+            daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
             Email_ID = pd.read_excel(workbook,"Mail Id")
 
             circle = Email_ID['Circle'].tolist()
@@ -1022,7 +1057,7 @@ def paco_cscore(sender,workbook):
                 Kpis_to_be_monitored = []
                 # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
                 for i in range(0,len(daily_plan_sheet)):
-                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS-CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS_CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('PACO')) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("PS")):
+                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS-CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS_CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('PACO')) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("PS")) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')):
                         execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -1064,7 +1099,7 @@ def paco_cscore(sender,workbook):
                 impacted_node_details = []
                 Kpis_to_be_monitored = []
                 for i in range(0,len(daily_plan_sheet)):
-                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) :
+                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')) :
                         execution_date.append((daily_plan_sheet.iloc[i]['Execution Date']))
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -1107,7 +1142,7 @@ def paco_cscore(sender,workbook):
                 oss_IP = []
                 # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
                 for i in range(0,len(daily_plan_sheet)):
-                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("RAN")):
+                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("RAN") and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED'))):
                         execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -1153,7 +1188,7 @@ def paco_cscore(sender,workbook):
                 oss_name = []
                 oss_IP = []
                 for i in range(0,len(daily_plan_sheet)):
-                    if (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('VAS')) :
+                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('VAS')) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')):
                         execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
                         maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
                         mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
@@ -1206,7 +1241,6 @@ def paco_cscore(sender,workbook):
                 styling(workbook,sheetname3)
                 styling(workbook,sheetname4)
                 messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
-
                 email_package__sheet_creater(daily_plan_sheet,workbook,sender)
 
                 return 'Successful'
@@ -1228,6 +1262,9 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Data for today's maintenance not found",error)
         return "Unsuccessful"
     
+    except CustomException as error:
+        return "Unsuccessful"
+    
     except KeyError as e:
         messagebox.showerror("  Check for the below Header ",e)
         return "Unsuccessful"
@@ -1240,4 +1277,4 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-#paco_cscore("Arka Maiti",r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")
+paco_cscore("Arka Maiti",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet new copy copy.xlsx")
