@@ -77,7 +77,7 @@ def fetch_details(sender,workbook):
                 #     daily_plan_sheet.at[i,'Circle'] = daily_plan_sheet.at[i,'Circle'].str.upper()
                 daily_plan_sheet['Circle'].str.upper()
                 daily_plan_sheet = daily_plan_sheet[['S.NO','Execution Date','Maintenance Window','CR NO','Activity Title','Risk','Location','Circle','Planning Status']]
-                
+                daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
                 input_error = []
                 result_df = pd.DataFrame()
                 circles=list(daily_plan_sheet['Circle'].unique())
@@ -133,8 +133,6 @@ def fetch_details(sender,workbook):
                 del new_result_df
                 del result_df
                 #print(f"\n{daily_plan_sheet}\n")
-                remainder=list(set(circles)-set(mail_circles))
-                circles=list(set(circles)-set(remainder))
 
                 input_error = list(set(input_error))
                 input_error.sort()
@@ -145,6 +143,8 @@ def fetch_details(sender,workbook):
                         return flag
                 
                 else:
+                    remainder=list(set(circles)-set(mail_circles))
+                    circles=list(set(circles)-set(remainder))
                     for i in range(0,len(circles)):
 
                         execution_date=[]       #  list for collecting execution date of each Cr
@@ -158,7 +158,7 @@ def fetch_details(sender,workbook):
                         for j in range(0,len(daily_plan_sheet)):
                             #print(str(tomorrow.strftime("%d-%m-%Y")))
                             
-                            if (daily_plan_sheet.iloc[j]['Circle']==circles[i]) and (daily_plan_sheet.iloc[j]['Planning Status'].strip().upper() == "PLANNED"): # Adding constraint to check for CRs for next date only
+                            if (daily_plan_sheet.iloc[j]['Circle']==circles[i]): # Adding constraint to check for CRs for next date only
             
                                 execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
                                 maintenance_window.append(daily_plan_sheet.iloc[j]['Maintenance Window'])
@@ -211,7 +211,7 @@ def fetch_details(sender,workbook):
                         #messagebox.showinfo("   Mail Successfully Sent",f"Mail Sent for the Circle {cir}\n\nPlease! Press The Enter Key or Click The OK Button To Proceed")
                     
                     flag = "Successful"
-                    messagebox.showinfo("  Mail Sent Successfully",f"All Mails for mentioned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
+                    messagebox.showinfo("  Mail Sent Successfully",f"All Mails for mentioned planned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
                 
                 return flag
 

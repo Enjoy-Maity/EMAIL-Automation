@@ -31,6 +31,9 @@ def p_one_p_three_appender(email_package, sender,workbook):
     p1 = ''
     p3 = ''
     
+    ''' If the User is not a technical validator then we are throwing an Exception so that only the respective Technical Validator file 
+        gets written out which are present in the Planning Sheet'''
+    
     if (sender not in unique_technical_validator_set):
         raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
     
@@ -55,22 +58,33 @@ def p_one_p_three_appender(email_package, sender,workbook):
             file_path = '/'.join(file_path)
             p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
             p1_sheet_name = 'MPBN Activity List'
+            p1_dataframe = email_package[email_package['Technical Validator'] == p1]
+            p1_dataframe.replace('NA'," ",inplace = True)
+            p1_columns = p1_dataframe.columns.to_list()
             
+            # Finding out whether the file for MPBN Planning Automation Tracker P1.xlsx exists or not
+            # If the File does not exists then in that case the file is created
+
             if (Path(p1_workbook_file).exists() == False):
                 wb = Workbook()
                 wb.create_sheet(index=0,title = p1_sheet_name)
+                ws = wb[p1_sheet_name]
+                ws['A1'] = 'S.NO'
+                for i in range(0,len(p1_columns)):
+                    col = get_column_letter(i+2)
+                    ws[col+'1'] = p1_columns[i]
                 wb.save(p1_workbook_file)
 
-            
-            p1_dataframe = email_package[email_package['Technical Validator'] == p1]
-            p1_dataframe.reset_index(drop = True, inplace = True)
-            p1_workbook = load_workbook(p1_workbook_file)
 
+            p1_workbook = load_workbook(p1_workbook_file)
+            p1_dataframe.reset_index(drop = True, inplace = True)
             p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
             p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
-
+            #p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
+            
             writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-            p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False, header = False)
+            p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
+            
             writer1.close()
             styling(p1_workbook_file,p1_sheet_name)
             messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
@@ -81,21 +95,31 @@ def p_one_p_three_appender(email_package, sender,workbook):
             file_path = "/".join(file_path)
             p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
             p3_sheet_name = 'MPBN Activity List'
+            p3_dataframe = email_package[email_package['Technical Validator'] == p3]
+            p3_dataframe.reset_index(drop = True, inplace = True)
+            p3_dataframe.replace('NA'," ",inplace = True)
+            p3_columns = p3_dataframe.columns.to_list()
 
+            # Finding out whether the file for MPBN Planning Automation Tracker P3.xlsx exists or not
+            # If the File does not exists then in that case the file is created
             if (Path(p3_workbook_file).exists() == False):
                 wb = Workbook()
                 wb.create_sheet(index=0,title = p3_sheet_name)
+                ws = wb[p3_sheet_name]
+                ws['A1'] = 'S.NO'
+                for i in range(0,len(p3_columns)):
+                    col = get_column_letter(i+2)
+                    ws[col+'1'] = p3_columns[i]
                 wb.save(p3_workbook_file)
 
-            p3_dataframe = email_package[email_package['Technical Validator'] == p3]
-            p3_dataframe.reset_index(drop = True, inplace = True)
-            p3_dataframe.fillna(" ")
             p3_workbook = load_workbook(p3_workbook_file)
 
             p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
             p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
 
             writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+            
+            
             p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
             writer3.close()
             styling(p3_workbook_file,p3_sheet_name)
@@ -115,13 +139,17 @@ def styling(workbook,sheetname):
     font_style  =  Font(color = "FFFFFF",bold = True)
     col_widths = []
 
-    for row in ws.iter_rows(values_only = True):
-        for j,value in enumerate(row):
+    # Iterating through the row values to find the length of string in each column in the row and appending it to the col_widths list
+
+    for row_values in ws.iter_rows(values_only = True):
+        for j,value in enumerate(row_values):
             if len(col_widths)>j:
                 if col_widths[j] < len(str(value)):
                     col_widths[j] = len(str(value))
             else:
                 col_widths.insert(j,len(str(value)))
+
+    # Standardising the length of each column in the sheet.
 
     for i,column_width in enumerate(col_widths,1):
         if column_width <= 47:
@@ -130,6 +158,7 @@ def styling(workbook,sheetname):
             ws.column_dimensions[get_column_letter(i)].width = 50
 
 
+    # Coloring the headers and alingning the headers text to center both horizontally and vertically.
     for column in range(1,ws.max_column+1):   # ws.max_column returns the total number of columns present
         col = get_column_letter(column)
         color_fill = PatternFill(start_color = '0033CC',end_color = '0033CC',fill_type = 'solid')
@@ -137,8 +166,8 @@ def styling(workbook,sheetname):
         ws[col+'1'].fill = color_fill
         ws[col+'1'].alignment = Alignment(horizontal = 'center',vertical = 'center')
 
-    border = Border(top = Side(border_style = 'thick',color = '000000'),bottom = Side(border_style = 'thick',color = '000000'),left = Side(border_style = 'thick',color = '000000'),right = Side(border_style = 'thick',color = '000000'))
-
+    # Styling all the occupied cells in the sheet, by adding border to the cells, aligning the text in the center
+    
     for row in ws:
         for cell in row:
             cell.alignment = Alignment(horizontal = 'center',vertical = 'center',wrap_text=False)
@@ -1277,4 +1306,4 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-paco_cscore("Arka Maiti",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet new copy copy.xlsx")
+#paco_cscore("Arka Maiti",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet new copy copy.xlsx")
