@@ -1,11 +1,10 @@
-import xlwings as xw
 import sys
-from datetime import datetime,timedelta
 from openpyxl import load_workbook
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 import pandas as pd
+from datetime import datetime, timedelta
 from tkinter import *
 from tkinter import messagebox
 from pathlib import Path
@@ -18,15 +17,13 @@ class CustomException(Exception):
         self.title = title
         self.msg = msg
         messagebox.showerror(self.title,self.msg)
-# class DomainNotFound(Exception):
-#     def __init__(self,msg):
-#         self.msg = msg
+
 
 #####################################################################
 #########################  P1 P3 appender  ##########################
 #####################################################################
 
-def p_one_p_three_appender(email_package, sender,workbook):
+def p_one_p_three_appender(email_package,sender,workbook):
     unique_technical_validator_set = set(email_package['Technical Validator'].unique())
     p1 = ''
     p3 = ''
@@ -80,14 +77,20 @@ def p_one_p_three_appender(email_package, sender,workbook):
             p1_dataframe.reset_index(drop = True, inplace = True)
             p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
             p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
-            #p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
             
-            writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-            p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
+            p1_file_read = pd.ExcelFile(p1_workbook_file)
+            p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
+            p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format = '%M/%d/%Y')
+            p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+            p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
+            todays_maintenance_date = email_package.at[0,'Execution Date']
             
-            writer1.close()
-            styling(p1_workbook_file,p1_sheet_name)
-            messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+            if (todays_maintenance_date not in p1_file_read_unique_execution_date):
+                writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+                p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
+                writer1.close()
+                styling(p1_workbook_file,p1_sheet_name)
+                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
         
         if (sender == p3):
             file_path = workbook.split("/")
@@ -117,14 +120,20 @@ def p_one_p_three_appender(email_package, sender,workbook):
             p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
             p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
 
-            writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+            p3_file_read = pd.ExcelFile(p3_workbook_file)
+            p3_file_read = pd.read_excel(p3_file_read, p3_sheet_name)
+            p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format = '%M/%d/%Y')
+            p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+            p3_file_read_unique_execution_date = list(p3_file_read['Execution Date'].unique())
             
+            todays_maintenance_date = email_package.at[1,'Execution Date']
             
-            p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
-            writer3.close()
-            styling(p3_workbook_file,p3_sheet_name)
-
-            messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+            if (todays_maintenance_date not in p3_file_read_unique_execution_date):
+                writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+                p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
+                writer3.close()
+                styling(p3_workbook_file,p3_sheet_name)
+                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
         
     else:
         messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
@@ -223,19 +232,32 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             kpi_status = []
             mop_view_status = []
             
-            # excel = win32.Dispatch('Excel.Application')
-            # workbook_excel = excel.Workbooks.Open(workbook)
-            # plan_sheet = workbook_excel.Sheets('Planning Sheet')
-            # daily_plan_sheet = pd.DataFrame(plan_sheet.UsedRange())
-            # daily_plan_sheet = dfizer(daily_plan_sheet)
-            # dataframe = pd.DataFrame(daily_plan_sheet.values[1:],columns = daily_plan_sheet.iloc[0])
-            # del daily_plan_sheet
-            # daily_plan_sheet = dataframe.copy(deep=True)
-            # del dataframe
-
-            # daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime('%Y-%m-%d')]
-            daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
+            planned_status_unique_values = list(daily_plan_sheet['Planning Status'].unique())
             
+            for i in range(0,len(planned_status_unique_values)):
+                planned_status_unique_values[i] = planned_status_unique_values[i].upper()
+            
+            if ((len(planned_status_unique_values) == 1) and (planned_status_unique_values[0] == "NA")):
+                raise CustomException(" Input Missing!","Kindly Enter the Planning Status input in uploaded sheet!")
+            
+            if ((len(planned_status_unique_values) > 1)):
+                if ("NA" in planned_status_unique_values):
+                    input_error = []
+                    for i in range(0,len(daily_plan_sheet)):
+                        if (daily_plan_sheet.at[i,'Planning Status'] == "NA"):
+                            input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                    
+                    raise CustomException(" Input Missing!",f"Planning Status Input is Missing for the below S.NO:\n{', '.join(str(num) for num in input_error)}")
+                
+                if ("PLANNED" in planned_status_unique_values):
+                    # Filtering the rows with planned crs
+                    daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
+
+                else:
+                    raise CustomException(" Incorrect Input","Kindly Check the Planning Status input in uploaded sheet!")
+            
+            # Writing into the Email-Package Sheet
+
             daily_plan_sheet_unique_cr = daily_plan_sheet['CR NO'].value_counts().index.to_list()
             for idx,cr in enumerate(daily_plan_sheet_unique_cr):
                 
@@ -944,6 +966,7 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             writer = pd.ExcelWriter(workbook,engine = 'openpyxl',mode = 'a',if_sheet_exists = 'replace')
             new_sheetname = 'Email-Package'
             df.index +=  1
+            df.replace("NA"," ", inplace=True)
             df.to_excel(writer,sheet_name = new_sheetname,index_label = 'S.NO')
             writer.close()
             styling(workbook,new_sheetname)
@@ -1294,16 +1317,16 @@ def paco_cscore(sender,workbook):
     except CustomException as error:
         return "Unsuccessful"
     
-    except KeyError as e:
-        messagebox.showerror("  Check for the below Header ",e)
-        return "Unsuccessful"
+    # except KeyError as e:
+    #     messagebox.showerror("  Check for the below Header ",e)
+    #     return "Unsuccessful"
     
-    except AttributeError as e:
-        messagebox.showerror("  Exception Occured",e)
-        return "Unsuccessful"
+    # except AttributeError as e:
+    #     messagebox.showerror("  Exception Occured",e)
+    #     return "Unsuccessful"
     
-    except Exception as e:
-        messagebox.showerror("  Exception Occured",e)
-        return "Unsuccessful"
+    # except Exception as e:
+    #     messagebox.showerror("  Exception Occured",e)
+    #     return "Unsuccessful"
 
-#paco_cscore("Arka Maiti",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet new copy copy.xlsx")
+paco_cscore("Arka Maiti",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet new copy.xlsx")

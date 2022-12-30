@@ -72,12 +72,13 @@ def fetch_details(sender,workbook):
                 
                 Email_ID=pd.read_excel(excel,'Mail Id')
 
-                # daily_plan_sheet['Circle'] = daily_plan_sheet['Circle'].str.upper()
-                # for i in range(0,len(daily_plan_sheet)):
-                #     daily_plan_sheet.at[i,'Circle'] = daily_plan_sheet.at[i,'Circle'].str.upper()
-                daily_plan_sheet['Circle'].str.upper()
+                daily_plan_sheet['Circle'] = daily_plan_sheet['Circle'].str.upper()
                 daily_plan_sheet = daily_plan_sheet[['S.NO','Execution Date','Maintenance Window','CR NO','Activity Title','Risk','Location','Circle','Planning Status']]
                 daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
+                
+                if (len(daily_plan_sheet) == 0):
+                    raise CustomException('Kindly Enter the Planning Status input in uploaded sheet!')
+                
                 input_error = []
                 result_df = pd.DataFrame()
                 circles=list(daily_plan_sheet['Circle'].unique())
@@ -88,6 +89,7 @@ def fetch_details(sender,workbook):
                 total_circles_in_planning_sheet = len(circles)
                 
                 mail_circles = Email_ID['Circle'].unique()
+                
                 for i in range(0,len(daily_plan_sheet)):
                     if (daily_plan_sheet.at[i,'CR NO'] == 'NA'):
                         input_error.append(daily_plan_sheet.at[i,'S.NO'])
@@ -100,14 +102,13 @@ def fetch_details(sender,workbook):
                     if (daily_plan_sheet.at[i,'Circle'] == 'NA'):
                         input_error.append(daily_plan_sheet.at[i,'S.NO'])
                         continue
+
                     if (daily_plan_sheet.at[i,'Circle'] not in mail_circles):
                         input_error.append(daily_plan_sheet.at[i,'S.NO'])
+                        continue
+
                     else:
                         result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T],ignore_index = True)
-                
-                
-                #print(len(circles))
-                #total_circles_in_planning_sheet = len(circles)
 
                 daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
                 
@@ -132,7 +133,6 @@ def fetch_details(sender,workbook):
                 
                 del new_result_df
                 del result_df
-                #print(f"\n{daily_plan_sheet}\n")
 
                 input_error = list(set(input_error))
                 input_error.sort()
@@ -156,8 +156,6 @@ def fetch_details(sender,workbook):
                         location=[]             #  list for collecting the location of each CR
 
                         for j in range(0,len(daily_plan_sheet)):
-                            #print(str(tomorrow.strftime("%d-%m-%Y")))
-                            
                             if (daily_plan_sheet.iloc[j]['Circle']==circles[i]): # Adding constraint to check for CRs for next date only
             
                                 execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
@@ -229,8 +227,11 @@ def fetch_details(sender,workbook):
         messagebox.showerror("  Data can't be found",error)
         return "Unsuccessful"
     
-    # except Exception as e:
-    #     messagebox.showerror("  Exception Occurred",e)
-    #     return "Unsuccessful"
+    except AttributeError as e:
+        messagebox.showerror("  Heading missing!",f"Kindly Check the below Heading in Planning Sheet\n{e}")
+        return "Unsuccessful"
+    except Exception as e:
+        messagebox.showerror("  Exception Occurred",e)
+        return "Unsuccessful"
     
-#fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet new copy.xlsx")
+fetch_details("Enjoy Maity",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet new copy.xlsx")

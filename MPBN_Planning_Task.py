@@ -28,7 +28,7 @@ import pandas as pd
 #     #     Thread.join(self)
 #     #     return self._returnvalue
 
-class EmptyString (Exception):
+class EmptyString(Exception):
     def __init__(self,msg):
         self.msg = msg
         super().__init__(self.msg)
