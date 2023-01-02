@@ -24,119 +24,130 @@ class CustomException(Exception):
 #####################################################################
 
 def p_one_p_three_appender(email_package,sender,workbook):
-    unique_technical_validator_set = set(email_package['Technical Validator'].unique())
-    p1 = ''
-    p3 = ''
-    
-    ''' If the User is not a technical validator then we are throwing an Exception so that only the respective Technical Validator file 
-        gets written out which are present in the Planning Sheet'''
-    
-    if (sender not in unique_technical_validator_set):
-        raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
-    
-    if ('Arka Maiti' in unique_technical_validator_set):
-        p3 = 'Arka Maiti'
-        unique_technical_validator_set.remove(p3)
-
-    if ('Manoj Kumar' in unique_technical_validator_set):
-        p1 = 'Manoj Kumar'
-        unique_technical_validator_set.remove(p1)
-
-    if ((len(p1) > 0) and (len(p3) == 0)):
-        p3 = list(unique_technical_validator_set - set(p1))[0]
-    
-    if ((len(p3) > 0) and (len(p1) == 0)):
-        p1 = list(unique_technical_validator_set - set(p3))[0]
-    
-    if (len(p1)>0 and len(p3)>0):
-        if (sender == p1):
-            file_path = workbook.split("/")
-            file_path.remove(file_path[-1])
-            file_path = '/'.join(file_path)
-            p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
-            p1_sheet_name = 'MPBN Activity List'
-            p1_dataframe = email_package[email_package['Technical Validator'] == p1]
-            p1_dataframe.replace('NA'," ",inplace = True)
-            p1_columns = p1_dataframe.columns.to_list()
-            
-            # Finding out whether the file for MPBN Planning Automation Tracker P1.xlsx exists or not
-            # If the File does not exists then in that case the file is created
-
-            if (Path(p1_workbook_file).exists() == False):
-                wb = Workbook()
-                wb.create_sheet(index=0,title = p1_sheet_name)
-                ws = wb[p1_sheet_name]
-                ws['A1'] = 'S.NO'
-                for i in range(0,len(p1_columns)):
-                    col = get_column_letter(i+2)
-                    ws[col+'1'] = p1_columns[i]
-                wb.save(p1_workbook_file)
-
-
-            p1_workbook = load_workbook(p1_workbook_file)
-            p1_dataframe.reset_index(drop = True, inplace = True)
-            p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
-            p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
-            
-            p1_file_read = pd.ExcelFile(p1_workbook_file)
-            p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
-            p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format = '%M/%d/%Y')
-            p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
-            p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
-            todays_maintenance_date = email_package.at[0,'Execution Date']
-            
-            if (todays_maintenance_date not in p1_file_read_unique_execution_date):
-                writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-                p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
-                writer1.close()
-                styling(p1_workbook_file,p1_sheet_name)
-                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+    try:
+        unique_technical_validator_set = set(email_package['Technical Validator'].unique())
+        p1 = ''
+        p3 = ''
         
-        if (sender == p3):
-            file_path = workbook.split("/")
-            file_path.remove(file_path[-1])
-            file_path = "/".join(file_path)
-            p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
-            p3_sheet_name = 'MPBN Activity List'
-            p3_dataframe = email_package[email_package['Technical Validator'] == p3]
-            p3_dataframe.reset_index(drop = True, inplace = True)
-            p3_dataframe.replace('NA'," ",inplace = True)
-            p3_columns = p3_dataframe.columns.to_list()
-
-            # Finding out whether the file for MPBN Planning Automation Tracker P3.xlsx exists or not
-            # If the File does not exists then in that case the file is created
-            if (Path(p3_workbook_file).exists() == False):
-                wb = Workbook()
-                wb.create_sheet(index=0,title = p3_sheet_name)
-                ws = wb[p3_sheet_name]
-                ws['A1'] = 'S.NO'
-                for i in range(0,len(p3_columns)):
-                    col = get_column_letter(i+2)
-                    ws[col+'1'] = p3_columns[i]
-                wb.save(p3_workbook_file)
-
-            p3_workbook = load_workbook(p3_workbook_file)
-
-            p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
-            p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
-
-            p3_file_read = pd.ExcelFile(p3_workbook_file)
-            p3_file_read = pd.read_excel(p3_file_read, p3_sheet_name)
-            p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format = '%M/%d/%Y')
-            p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
-            p3_file_read_unique_execution_date = list(p3_file_read['Execution Date'].unique())
-            
-            todays_maintenance_date = email_package.at[1,'Execution Date']
-            
-            if (todays_maintenance_date not in p3_file_read_unique_execution_date):
-                writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-                p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
-                writer3.close()
-                styling(p3_workbook_file,p3_sheet_name)
-                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+        ''' If the User is not a technical validator then we are throwing an Exception so that only the respective Technical Validator file 
+            gets written out which are present in the Planning Sheet'''
         
-    else:
-        messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
+        if (sender not in unique_technical_validator_set):
+            raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
+        
+        if ('Arka Maiti' in unique_technical_validator_set):
+            p3 = 'Arka Maiti'
+            unique_technical_validator_set.remove(p3)
+
+        if ('Manoj Kumar' in unique_technical_validator_set):
+            p1 = 'Manoj Kumar'
+            unique_technical_validator_set.remove(p1)
+
+        if ((len(p1) > 0) and (len(p3) == 0)):
+            p3 = list(unique_technical_validator_set - set(p1))[0]
+        
+        if ((len(p3) > 0) and (len(p1) == 0)):
+            p1 = list(unique_technical_validator_set - set(p3))[0]
+        
+        if (len(p1)>0 and len(p3)>0):
+            if (sender == p1):
+                file_path = workbook.split("/")
+                file_path.remove(file_path[-1])
+                file_path = '/'.join(file_path)
+                p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
+                p1_sheet_name = 'MPBN Activity List'
+                p1_dataframe = email_package[email_package['Technical Validator'] == p1]
+                p1_dataframe.replace('NA'," ",inplace = True)
+                p1_columns = p1_dataframe.columns.to_list()
+                
+                # Finding out whether the file for MPBN Planning Automation Tracker P1.xlsx exists or not
+                # If the File does not exists then in that case the file is created
+
+                if (Path(p1_workbook_file).exists() == False):
+                    wb = Workbook()
+                    wb.create_sheet(index=0,title = p1_sheet_name)
+                    ws = wb[p1_sheet_name]
+                    ws['A1'] = 'S.NO'
+                    for i in range(0,len(p1_columns)):
+                        col = get_column_letter(i+2)
+                        ws[col+'1'] = p1_columns[i]
+                    wb.save(p1_workbook_file)
+
+
+                p1_workbook = load_workbook(p1_workbook_file)
+                p1_dataframe.reset_index(drop = True, inplace = True)
+                p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
+                p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
+                
+                p1_file_read = pd.ExcelFile(p1_workbook_file)
+                p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
+                p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'])
+                p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+                p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
+                todays_maintenance_date = email_package.at[0,'Execution Date']
+                
+                if (todays_maintenance_date not in p1_file_read_unique_execution_date):
+                    writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+                    p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
+                    writer1.close()
+                    styling(p1_workbook_file,p1_sheet_name)
+                    messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+                
+                else:
+                    messagebox.showinfo("   Data already present","Data for today's mainteance date is already present in the MPBN Planning Automation Tracker")
+            
+            if (sender == p3):
+                file_path = workbook.split("/")
+                file_path.remove(file_path[-1])
+                file_path = "/".join(file_path)
+                p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
+                p3_sheet_name = 'MPBN Activity List'
+                p3_dataframe = email_package[email_package['Technical Validator'] == p3]
+                p3_dataframe.reset_index(drop = True, inplace = True)
+                p3_dataframe.replace('NA'," ",inplace = True)
+                p3_columns = p3_dataframe.columns.to_list()
+
+                # Finding out whether the file for MPBN Planning Automation Tracker P3.xlsx exists or not
+                # If the File does not exists then in that case the file is created
+                if (Path(p3_workbook_file).exists() == False):
+                    wb = Workbook()
+                    wb.create_sheet(index=0,title = p3_sheet_name)
+                    ws = wb[p3_sheet_name]
+                    ws['A1'] = 'S.NO'
+                    for i in range(0,len(p3_columns)):
+                        col = get_column_letter(i+2)
+                        ws[col+'1'] = p3_columns[i]
+                    wb.save(p3_workbook_file)
+
+                p3_workbook = load_workbook(p3_workbook_file)
+
+                p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
+                p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
+
+                p3_file_read = pd.ExcelFile(p3_workbook_file)
+                p3_file_read = pd.read_excel(p3_file_read, p3_sheet_name)
+                p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format="%M/%d/%Y")
+                p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+                p3_file_read_unique_execution_date = list(p3_file_read['Execution Date'].unique())
+                todays_maintenance_date = email_package.at[1,'Execution Date']
+                
+                if (todays_maintenance_date not in p3_file_read_unique_execution_date):
+                    writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+                    p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
+                    writer3.close()
+                    styling(p3_workbook_file,p3_sheet_name)
+                    messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+                
+                else:
+                    messagebox.showinfo("   Data already present","Data for today's mainteance date is already present in the MPBN Planning Automation Tracker")
+            
+        else:
+            messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
+    
+    except Exception as error:
+        messagebox.showerror("  Exception Occured",f"{error}")
+        return "Unsuccessful"
+
 
 #####################################################################
 #############################    Styling   ##########################
@@ -1293,6 +1304,7 @@ def paco_cscore(sender,workbook):
                 styling(workbook,sheetname3)
                 styling(workbook,sheetname4)
                 messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
+                
                 email_package__sheet_creater(daily_plan_sheet,workbook,sender)
 
                 return 'Successful'
@@ -1329,4 +1341,4 @@ def paco_cscore(sender,workbook):
     #     messagebox.showerror("  Exception Occured",e)
     #     return "Unsuccessful"
 
-paco_cscore("Arka Maiti",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet new copy.xlsx")
+#paco_cscore("Arka Maiti",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet new copy.xlsx")
