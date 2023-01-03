@@ -205,6 +205,8 @@ def fetch_details(sender,workbook):
                                 </body>
                             </html>
                             """
+                        dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format="%M/%d/%Y")
+                        dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime("%d-%M-%Y")
                         sendmail(dataframe,to,cc,body,subject,sender)
                         #messagebox.showinfo("   Mail Successfully Sent",f"Mail Sent for the Circle {cir}\n\nPlease! Press The Enter Key or Click The OK Button To Proceed")
                     
@@ -234,4 +236,4 @@ def fetch_details(sender,workbook):
         messagebox.showerror("  Exception Occurred",e)
         return "Unsuccessful"
     
-fetch_details("Enjoy Maity",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet new copy.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet new copy.xlsx")

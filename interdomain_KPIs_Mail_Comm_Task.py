@@ -60,13 +60,13 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             Email_Id=pd.read_excel(workbook,'Mail Id')
             list_of_interdomains=["CS-Core","PS-Core","RAN","VAS"]
             df2=pd.read_excel(workbook,sheet_name="CS Core-Inter Domain")
-            df2.fillna("NA",inplace=True)
+            df2.fillna(" ",inplace=True)
             df=pd.read_excel(workbook,sheet_name="PS Core-Inter Domain")
-            df.fillna("NA",inplace=True)
+            df.fillna(" ",inplace=True)
             df3=pd.read_excel(workbook,sheet_name="RAN-Inter Domain")
-            df3.fillna("NA",inplace=True)
+            df3.fillna(" ",inplace=True)
             df4=pd.read_excel(workbook,sheet_name="VAS-Inter Domain")
-            df4.fillna("NA",inplace=True)
+            df4.fillna(" ",inplace=True)
 
             suffix=["st","nd","rd","th"]
             date_end_digit = int(tomorrow.strftime("%d"))%10
@@ -162,4 +162,4 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         messagebox.showerror(" Data for tomorrow's date not found",error)
         return "Unsuccessful"
     
-#paco_cscore("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet new copy.xlsx","","")
+#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet new copy.xlsx","","")
