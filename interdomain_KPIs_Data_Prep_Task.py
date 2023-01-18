@@ -1393,9 +1393,9 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Permission Error1",f"Kindly close {e} as it's open in Excel!")
         return "Unsuccessful"
 
-    # except Exception as e:
-    #     print(type(e))
-    #     messagebox.showerror("  Exception Occured",e)
-    #     return "Unsuccessful"
+    except Exception as e:
+        print(type(e))
+        messagebox.showerror("  Exception Occured",e)
+        return "Unsuccessful"
 
 #paco_cscore("Manoj Kumar",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")

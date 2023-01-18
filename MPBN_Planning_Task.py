@@ -10,6 +10,8 @@ import circle_Email_Automation_Task
 import pandas as pd
 import interdomain_KPIs_Data_Prep_Task
 import mpbn_sign_off_task
+import Planning_sheet_creater
+
 # class ThreadWithReturnValue(Thread):
 #     def __init__(self):
 #         #super().__init__(group=None,target=None,name=None,*args,**kwargs)
@@ -123,14 +125,26 @@ class App(tk.Tk):
 
             self.main_win_canvas.create_image(
                 0, 0, image=self.main_win_background_img, anchor="nw")
+            
             self.file_browser_file = ""
             self.file_browser_btn = ttk.Button(
                 self.main_win, text="Browse", command=lambda: self.file_browser_func(1))
             self.file_browser_entry = ttk.Entry(
                 self.main_win, width=40, font=("Ericsson Hilda", 13))
 
+            self.itsm_file_browser_file = ""
+            
+            self.itsm_file_browser_btn = ttk.Button(
+                self.main_win, text="Browse", command=lambda: self.itsm_file_browser_func(1))
+            
+            self.itsm_file_browser_entry = ttk.Entry(
+                self.main_win, width=40, font=("Ericsson Hilda", 13))
+
+            self.planning_sheet_creater_task_btn = ttk.Button(
+                self.main_win, text = "    Planning Sheet Creation    ", command=self.planning_sheet_creater_task_func
+            )
             self.circle_email_automation_task_btn = ttk.Button(
-                self.main_win, text="  Circle Mail Communication  ", command=self.circle_email_automation_task_func_surity)
+                self.main_win, text = "  Circle Mail Communication  ", command=self.circle_email_automation_task_func_surity)
 
             self.interdomain_kpis_data_prep_btn = ttk.Button(
                 self.main_win, text="Interdomain KPIs Data Preparation", command=self.interdomain_kpis_data_prep_func)
@@ -141,8 +155,6 @@ class App(tk.Tk):
             self.evening_task_btn = ttk.Button(
                 self.main_win, text="           Evening Message          ", command=lambda: self.evening_task_func(1))
 
-            self.mpbn_signoff_task_btn = ttk.Button(
-                self.main_win, text="                 MPBN Signoff               ", command=self.mpbn_signoff_task_func)
 
             # self.main_win_canvas.create_window(840,182,anchor = "nw",window = self.file_browser_btn)
             # self.main_win_canvas.create_window(420,182,anchor = "nw",window = self.file_browser_entry)
@@ -152,6 +164,9 @@ class App(tk.Tk):
             # self.main_win_canvas.create_text(120,192,text = "Choose The File",fill = "#FFFFFF",font = ("Ericsson Hilda",18,"bold"))
 
             ##################################################### Status setter variables #####################################################################################################################
+            self.planning_sheet_creater_task_status = StringVar(self.main_win_canvas)
+            self.planning_sheet_creater_task_status.set("")
+
             self.circle_email_automation_task_status = StringVar(
                 self.main_win_canvas)
             self.circle_email_automation_task_status.set("")
@@ -168,32 +183,29 @@ class App(tk.Tk):
             self.evening_task_status = StringVar(self.main_win_canvas)
             self.evening_task_status.set("")
 
-            self.mpbn_signoff_task_status = StringVar(self.main_win_canvas)
-            self.mpbn_signoff_task_status.set("Unsuccessful")
-
             self.color = ["#FF0000", "#00FF00", "#FFFFFF"]
+            
+            self.planning_sheet_creater_task_color_get = StringVar(self.main_win_canvas)
+            self.planning_sheet_creater_task_color_get.set("")
 
-            self.circle_email_automation_task_color_get = StringVar()
+            self.circle_email_automation_task_color_get = StringVar(self.main_win_canvas)
             self.circle_email_automation_task_color_get.set("")
 
-            self.interdomain_kpis_data_prep_color_get = StringVar()
+            self.interdomain_kpis_data_prep_color_get = StringVar(self.main_win_canvas)
             self.interdomain_kpis_data_prep_color_get.set("")
 
-            self.interdomain_kpis_mail_communication_color_get = StringVar()
+            self.interdomain_kpis_mail_communication_color_get = StringVar(self.main_win_canvas)
             self.interdomain_kpis_mail_communication_color_get.set("")
 
-            self.evening_task_color_get = StringVar()
+            self.evening_task_color_get = StringVar(self.main_win_canvas)
             self.evening_task_color_get.set("")
 
-            self.mpbn_signoff_task_color_get = StringVar()
-            self.mpbn_signoff_task_color_get.set("")
-
         ########################################################## Status checker flags #######################################################################################################################
-            self.circle_email_automation_status_checker_flag = 0
-            self.interdomain_kpis_data_prep_status_checker_flag = 0
+            self.planning_sheet_creater_task_status_checker_flag    = 0
+            self.circle_email_automation_status_checker_flag        = 0
+            self.interdomain_kpis_data_prep_status_checker_flag     = 0
             self.interdomain_kpis_mail_communication_status_checker_flag = 0
             self.evening_task_status_checker_flag = 0
-            self.mpbn_signoff_task_completed_status_checker_flag = 0
             self.update(1)
 
         self.acceptable_change_responsible = ["Select Your Name!                ",
@@ -267,37 +279,46 @@ class App(tk.Tk):
             0, 0, image=self.main_win_background_img, anchor="nw")
         self.main_win_canvas.create_image(
             870, 2, image=self.frame, anchor="nw")
-        self.main_win_canvas.create_text(220, 194, text="Choose Daily Planning Sheet :-",
+
+        self.main_win_canvas.create_text(220, 194, text="Choose ITSM RAW Report :-", 
+                                         fill="#FFFFFF", font=("Ericsson Hilda ExtraBold",21,"bold underline"))
+        self.main_win_canvas.create_text(220, 247, text="Choose Daily Planning Sheet :-",
                                          fill="#FFFFFF", font=("Ericsson Hilda ExtraBold", 21, "bold underline"))
+        
         self.main_win_canvas.create_window(
-            420, 182, anchor="nw", window=self.file_browser_entry)
+            420, 182, anchor="nw", window=self.itsm_file_browser_entry)
         self.main_win_canvas.create_window(
-            840, 180, anchor="nw", window=self.file_browser_btn)
+            840, 180, anchor="nw", window=self.itsm_file_browser_btn)
+        
+        self.main_win_canvas.create_window(
+            420, 236, anchor="nw", window=self.file_browser_entry)
+        self.main_win_canvas.create_window(
+            840, 234, anchor="nw", window=self.file_browser_btn)
 
         self.main_win_canvas.create_window(
-            100, 268, anchor="nw", window=self.circle_email_automation_task_btn)
-        self.main_win_canvas.create_text(137, 300, anchor="nw", text=self.circle_email_automation_task_status.get(
-        ), fill=self.circle_email_automation_task_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
+            100, 298, anchor="nw", window = self.planning_sheet_creater_task_btn)
+        self.main_win_canvas.create_text(137, 330, anchor="nw", text = self.planning_sheet_creater_task_status.get(
+        ), fill = self.planning_sheet_creater_task_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         self.main_win_canvas.create_window(
-            359, 268, anchor="nw", window=self.interdomain_kpis_data_prep_btn)
-        self.main_win_canvas.create_text(406, 300, anchor="nw", text=self.interdomain_kpis_data_prep_task_status.get(
-        ), fill=self.interdomain_kpis_data_prep_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
+            359, 298, anchor="nw", window = self.circle_email_automation_task_btn)
+        self.main_win_canvas.create_text(406, 330, anchor="nw", text = self.circle_email_automation_task_status.get(
+        ), fill = self.circle_email_automation_task_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))
 
         self.main_win_canvas.create_window(
-            655, 268, anchor="nw", window=self.interdomain_kpis_mail_communication_btn)
-        self.main_win_canvas.create_text(710, 300, anchor="nw", text=self.interdomain_kpis_mail_communication_status.get(
-        ), fill=self.interdomain_kpis_mail_communication_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
+            655, 298, anchor="nw", window = self.interdomain_kpis_data_prep_btn)
+        self.main_win_canvas.create_text(710, 330, anchor="nw", text = self.interdomain_kpis_data_prep_task_status.get(
+        ), fill = self.interdomain_kpis_data_prep_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         self.main_win_canvas.create_window(
-            100, 388, anchor="nw", window=self.evening_task_btn)
-        self.main_win_canvas.create_text(137, 420, anchor="nw", text=self.evening_task_status.get(
-        ), fill=self.evening_task_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
+            100, 418, anchor="nw", window = self.interdomain_kpis_mail_communication_btn)
+        self.main_win_canvas.create_text(137, 450, anchor="nw", text = self.interdomain_kpis_mail_communication_status.get(
+        ), fill = self.interdomain_kpis_mail_communication_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         self.main_win_canvas.create_window(
-            359, 388, anchor="nw", window=self.mpbn_signoff_task_btn)
-        self.main_win_canvas.create_text(406, 420, anchor="nw", text=self.mpbn_signoff_task_status.get(
-        ), fill=self.mpbn_signoff_task_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))  # self.mpbn_signoff_task_color_get.get()
+            359, 418, anchor="nw", window=self.evening_task_btn)
+        self.main_win_canvas.create_text(406, 450, anchor="nw", text = self.evening_task_status.get(
+        ), fill = self.evening_task_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))  
 
         # Solves the flickering problem when the frame gets updated
         self.main_win_canvas.update_idletasks()
@@ -315,6 +336,61 @@ class App(tk.Tk):
             ("Excel Files (.xlsx)", "*.xlsx"), ("Excel Files (.xls)", "*.xls"), ("All Files", "*.*")))
         self.file_browser_entry.insert(0, self.mystring)
         self.file_browser_file = self.mystring
+    
+    def itsm_file_browser_func(self, event):
+        self.itsm_file_browser_entry.delete(0, END)
+        self.mystring = filedialog.askopenfilename(initialdir="C:\\", title="  Choose report csv file", filetypes=(
+            ("CSV Files (.csv)", "*.csv"), ("All Files", "*.*")))
+        self.itsm_file_browser_entry.insert(0, self.mystring)
+        self.itsm_file_browser_file = self.mystring
+    
+    def planning_sheet_creater_task_func(self):
+        if (self.planning_sheet_creater_task_status_checker_flag == 0):
+            try:
+                self.planning_sheet_creater_task_color_get.set(self.color[2])
+                self.planning_sheet_creater_task_status.set(" In Progress ")
+
+
+                if (len(self.file_browser_file) == 0):
+                    raise FileNotSelected(
+                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
+                
+                if (len(self.itsm_file_browser_file) == 0):
+                    raise FileNotSelected(
+                        " Please Select the ITSM Raw Report first!", "File Not Selected")
+
+                else:
+                    self.planning_sheet_creater_task_status_flag = Planning_sheet_creater.planning_sheet_creater(
+                        self.itsm_file_browser_file, self.file_browser_file)
+
+                    if (self.planning_sheet_creater_task_status_flag == "Successful"):
+                        self.planning_sheet_creater_task_status.set(
+                            " Successful ")
+                        self.planning_sheet_creater_task_color_get.set(
+                            self.color[1])
+                        self.planning_sheet_creater_task_status_checker_flag = 1
+
+                    if (self.planning_sheet_creater_task_status_flag == "Unsuccessful"):
+                        self.planning_sheet_creater_task_status.set(
+                            " Unsuccessful ")
+                        self.planning_sheet_creater_task_color_get.set(
+                            self.color[0])
+                        self.planning_sheet_creater_task_status_checker_flag = 0
+
+            except FileNotSelected:
+                self.planning_sheet_creater_task_color_get.set(self.color[0])
+                self.planning_sheet_creater_task_status_checker_flag = 0
+                self.planning_sheet_creater_task_status.set(" Unsuccessful ")
+
+            except Exception as error:
+                messagebox.showerror(" Exception Occured", error)
+                self.planning_sheet_creater_task_color_get.set(self.color[0])
+                self.planning_sheet_creater_task_status_checker_flag = 0
+                self.planning_sheet_creater_task_status.set(" Unsuccessful ")
+
+        else:
+            raise CustomWarning("  Planning Sheet Creation Task Already Successfully Completed", " Task Already Done")
+        
 
     def circle_email_automation_task_func_surity(self):
         self.circle_email_automation_task_surity_check = messagebox.askyesno(
@@ -332,7 +408,7 @@ class App(tk.Tk):
 
                 if (len(self.file_browser_file) == 0):
                     raise FileNotSelected(
-                        " Please Select the MPBN Planning Workbbok first!", "File Not Selected")
+                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
 
                 else:
                     self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(
@@ -358,15 +434,13 @@ class App(tk.Tk):
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
 
             except Exception as error:
-                # self.circle_email_automation_task_thread.join()
                 messagebox.showerror(" Exception Occured", error)
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
 
         else:
-            raise CustomWarning(
-                "  Circle Automation Task Already Successfully Completed", " Task Already Done")
+            raise CustomWarning("  Circle Automation Task Already Successfully Completed", " Task Already Done")
 
     def interdomain_kpis_data_prep_func(self):
         if (self.interdomain_kpis_data_prep_status_checker_flag == 0):
@@ -775,40 +849,12 @@ class App(tk.Tk):
             self.evening_task_status_checker_flag = 0
             self.evening_task_status.set(' Unsuccessful ')
 
-    def mpbn_signoff_task_func(self):
-        if (self.mpbn_signoff_task_completed_status_checker_flag == 0):
-            self.mpbn_signoff_task_status.set("In Progress")
-            self.mpbn_signoff_task_color_get.set(self.color[2])
-
-            try:
-                self.mpbn_signoff_task_status_checker_flag = mpbn_sign_off_task.mpbn_signoff(
-                    self.file_browser_file)
-
-                if (self.mpbn_signoff_task_status_checker_flag == "Successful"):
-                    self.mpbn_signoff_task_completed_status_checker_flag = 1
-                    self.mpbn_signoff_task_color_get.set(self.color[1])
-                    self.mpbn_signoff_task_status.set(" Successful ")
-
-                if (self.mpbn_signoff_task_status_checker_flag == "Unsuccessful"):
-                    self.mpbn_signoff_task_completed_status_checker_flag = 0
-                    self.mpbn_signoff_task_color_get.set(self.color[0])
-                    self.mpbn_signoff_task_status.set(" Unsuccessful ")
-
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.mpbn_signoff_task_color_get.set(self.color[0])
-                self.mpbn_signoff_task_completed_status_checker_flag = 0
-                self.mpbn_signoff_task_status.set(" Unsuccessful ")
-        else:
-            raise CustomWarning(
-                " Signoff Task Already Successfully Completed", "   Task Already Done")
-
     def submit_sender_name(self, event):
         self.sender = str(self.sender_win_entry_var.get()).strip()
         if (self.sender.strip() == "Select your Name!"):
             raise EmptyString("Please select your name to proceed!")
 
-        elif (self.sender.strip() == "N"):
+        elif (self.sender.strip() == "No"):
             sys.exit(0)  # exiting the program
 
         else:
@@ -848,8 +894,6 @@ def main():
     except Exception as e:
         messagebox.showerror("  Exception Occured", e)
 
-    # except Exception as e:
-    #     messagebox.showerror("  Exception Occurred",e)
     root.mainloop()
 
 

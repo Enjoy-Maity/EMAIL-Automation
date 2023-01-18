@@ -10,7 +10,7 @@ class TomorrowDataNotFound(Exception):
         self.msg=msg
 
 # Function for sending the mail.
-def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_region,sender):
+def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_region,sender,i):
     # Creating an COM object of Microsoft Office Client Suite (Outlook) through win32com.client module.
     outlook_mailer=win32.Dispatch('Outlook.Application')
     msg=outlook_mailer.CreateItem(0)                            # Creating Mail for sending.
@@ -31,7 +31,7 @@ def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_r
     '''
         Adding all the relevant data to the mail body like sender details, data table, etc. before sending the mail.
     '''
-    msg.HTMLBody=html_body.format(north_and_west_region,east_and_south_region,dataframe.to_html(index=False),sender) 
+    msg.HTMLBody=html_body.format(i,north_and_west_region,east_and_south_region,dataframe.to_html(index=False),sender) 
     
     '''
         Saving the mail first to mail drafts, incase there's any failure before sending the mail like power failure, or other such failures, 
@@ -167,7 +167,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                             <div>
                                     <p>Hi Team,</p>
                                     <p>Please find below the list of MPBN activity which includes Core nodes, so KPI monitoring required. Impacted nodes with KPI details given below. Please share KPI monitoring resource from your end.<br><br></p>
-                                    <p>@Core Team: Please contact below spoc region wise if any issue with KPI input.<br><br></p>
+                                    <p>@{} Team: Please contact below spoc region wise if any issue with KPI input.<br><br></p>
                                     <p>{}: North region and west region <br>
                                        {}: East region and South region <br></p>
                                     <p>Note:-If there is any deviation in KPI please call to Executer before 6 AM. After that please call to technical validator/Team Lead.<br><br></p>
@@ -183,7 +183,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                     </html>
                 """
                 # Calling the Sendmail function with relevant arguments for sending the mails to relevant interdomain mail recepients according to the data served.
-                sendmail(dataframe,to,cc,mpbn_html_body,subject,north_and_west_region,east_region_and_south_region,sender)
+                sendmail(dataframe,to,cc,mpbn_html_body,subject,north_and_west_region,east_region_and_south_region,sender,i)
                 
                 # Message showing that the respective selected interdomain mail has been sent.
                 messagebox.showinfo("     Mail Sent Info",f"Mail sent for {i} Interdomain KPIs!")
@@ -210,4 +210,4 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         messagebox.showerror(" Data for tomorrow's date not found",error)
         return "Unsuccessful"
     
-#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet new copy.xlsx","","")
+#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx","","")

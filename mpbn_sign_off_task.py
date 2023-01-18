@@ -341,8 +341,8 @@ def mpbn_signoff(workbook,sender):
     except CustomException:
         return "Unsuccessful"
 
-    # except Exception as e:
-    #     messagebox.showerror("  Exception Occured",e)
-    #     return "Unsuccessful"
+    except Exception as e:
+        messagebox.showerror("  Exception Occured",e)
+        return "Unsuccessful"
 
 #mpbn_signoff(r"C:\Daily\MPBN Daily Planning Sheet new copy.xlsx")
