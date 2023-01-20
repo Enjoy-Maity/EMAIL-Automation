@@ -1,14 +1,14 @@
-from subprocess import Popen        # Importing for opening applications like notebook through cmd line command.
-import pandas as pd                 # Importing for reading Excel Sheet data and Manipulating it.
-from tkinter import messagebox      # Impoprting for showing messages.
+from subprocess import Popen                # Importing for opening applications like notebook through cmd line command.
+import pandas as pd                         # Importing for reading Excel Sheet data and Manipulating it.
+from tkinter import messagebox              # Impoprting for showing messages.
 
+# Method(Function) for creating the evening message text.
 def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
     wb=pd.ExcelFile(workbook)
     ws=wb.sheet_names
     worksheet=''
 
-    #print(f"\n\n{workbook}\n\n")
-    
+    # Finding the Email package worksheet.
     for sheet in ws:
         if sheet == 'Email-Package':
             worksheet=sheet
@@ -27,18 +27,23 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             messagebox.showwarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
             return 'Unsuccessful'
         
-        total_no_of_crs=len(worksheet)
-        total_no_of_resource = 16
-        critical = 0        # Risk Level 1
+        total_no_of_crs=len(worksheet)      # getting the total number of Crs
+        total_no_of_resource = 16           
+        
+        # Initializing the variables for counting number of CRs with Critical, Major Risk levels for all the circles along with Delhi's seperate 
+        # count of Risk levels.
+        critical = 0                        # Risk Level 1
         delhi_critical = 0
-        major = 0           # Risk Level 2
+        major = 0                           # Risk Level 2 
         delhi_major = 0
 
+        # Initializing the variables for counting the manual, create, enable and partially automated CR's.
         manual = 0
         create = 0
         enable = 0
         partially_automation = 0
 
+        # Getting the maintenance windo from the excel sheet.
         maintenance_window = f"({worksheet.at[0,'Maintenance Window']})"
         
         # Creating a dictionary to give the subscipt of the month name based on the month number.

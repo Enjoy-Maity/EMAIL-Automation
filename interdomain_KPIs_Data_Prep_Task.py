@@ -26,12 +26,15 @@ class CustomException(Exception):
 #####################################################################
 
 def p_one_p_three_appender(email_package,sender,workbook):
+    # Getting the unique technical validator.
     unique_technical_validator_set = set(email_package['Technical Validator'].unique())
     p1 = ''
     p3 = ''
     
-    ''' If the User is not a technical validator then we are throwing an Exception so that only the respective Technical Validator file 
-        gets written out which are present in the Planning Sheet'''
+    ''' 
+        If the User is not a technical validator then we are throwing an Exception so that only the respective Technical Validator file 
+        gets written out which are present in the Planning Sheet.
+    '''
     
     if (sender not in unique_technical_validator_set):
         raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
@@ -85,6 +88,7 @@ def p_one_p_three_appender(email_package,sender,workbook):
             p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
             p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
             
+            # Reading the Excel file in pandas.
             p1_file_read = pd.ExcelFile(p1_workbook_file)
             p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
 
@@ -99,17 +103,22 @@ def p_one_p_three_appender(email_package,sender,workbook):
             todays_maintenance_date = email_package.iloc[1]['Execution Date']
             
             ''' 
-            In this condition we are trying to check whether today's maintenance date is present in the MPBN Planning Automation Tracker Workbook's 
-            MPBN Activity List 
+                In this condition we are trying to check whether today's maintenance date is present in the MPBN Planning Automation Tracker Workbook's 
+                MPBN Activity List 
             '''
             if (todays_maintenance_date not in p1_file_read_unique_execution_date):
                 writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
                 p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
                 writer1.close()
+                
+                # Styling the worksheet.
                 styling(p1_workbook_file,p1_sheet_name)
+                
+                # message showing MPBN Planning Automation Tracker Status is successfully edited.
                 messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
         
             else:
+                # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
                 messagebox.showinfo("   Data already present","Data for today's maintenance date is already present in the MPBN Planning Automation Tracker")
         
             
@@ -148,26 +157,41 @@ def p_one_p_three_appender(email_package,sender,workbook):
             p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
             p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
 
+            # Reading the Excel sheet in pandas.
             p3_file_read = pd.ExcelFile(p3_workbook_file)
             p3_file_read = pd.read_excel(p3_file_read, p3_sheet_name)
+
+            # Formatting the 'Execution Date' to pandas datetime datatype for further usage in the program.
             p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format="%M/%d/%Y")
             p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+
+            # Getting the unique 'Execution Date' from the Execution Date Column of the MPBN Planning Automation Tracker.
             p3_file_read_unique_execution_date = list(p3_file_read['Execution Date'].unique())
             
             # Assigning a Variable to get the today's maintenance date to check whether today's maintenance date's data is present in the MPBN Planning Automation Tracker
             todays_maintenance_date = email_package.iloc[1]['Execution Date']
             
+            ''' 
+                In this condition we are trying to check whether today's maintenance date is present in the MPBN Planning Automation Tracker Workbook's 
+                MPBN Activity List 
+            '''
             if (todays_maintenance_date not in p3_file_read_unique_execution_date):
                 writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
                 p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
                 writer3.close()
+
+                # Styling the worksheet.
                 styling(p3_workbook_file,p3_sheet_name)
+
+                # message showing MPBN Planning Automation Tracker Status is successfully edited.
                 messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
             
             else:
+                # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
                 messagebox.showinfo("   Data already present","Data for today's mainteance date is already present in the MPBN Planning Automation Tracker")
 
     else:
+        # Message showing that the user who is running the application is not a technical validator.
         messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
         return "Unsuccessful"
 
@@ -176,13 +200,14 @@ def p_one_p_three_appender(email_package,sender,workbook):
 #############################    Styling   ##########################
 #####################################################################
 
+# Method(Function) for styling the worksheet.
 def styling(workbook,sheetname):
-    wb  =  load_workbook(workbook)
-    ws  =  wb[sheetname]
-    font_style  =  Font(color = "FFFFFF",bold = True)
-    col_widths = []
+    wb  =  load_workbook(workbook)                          # loading the workbook.
+    ws  =  wb[sheetname]                                    # loading the worksheet.
+    font_style  =  Font(color = "FFFFFF",bold = True)       # Setting the font style with color.
+    col_widths = []                                         # Empty list for entering the max length of string in each column.
 
-    # Iterating through the row values to find the length of string in each column in the row and appending it to the col_widths list
+    # Iterating through the row values to find the max length of string in each column in the row and appending it to the col_widths list
 
     for row_values in ws.iter_rows(values_only = True):
         for j,value in enumerate(row_values):
@@ -216,9 +241,10 @@ def styling(workbook,sheetname):
             cell.alignment = Alignment(horizontal = 'center',vertical = 'center',wrap_text=False)
             cell.border = Border(top = Side(border_style = 'medium',color = '000000'),bottom = Side(border_style = 'medium',color = '000000'),left = Side(border_style = 'medium',color = '000000'),right = Side(border_style = 'medium',color = '000000'))
 
-    #rows = ws.max_row
+    # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
 
+# Method(Function) for quitting the application.
 def quit(event):
     sys.exit(0)
 
@@ -232,6 +258,7 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             #"CR Belongs to Same Activity of Previous CR - Yes/NO"	Change Responsible	Activity Checker	Activity Initiator	Impact	Planning Status	Domain	
             # Final Status	Reason For Rollback / Cancel	Design Availability	Technical Validator	Complexity	Activity-Type	Domain kpi	IMPACTED NODE	KPI DETAILS	oss name	oss ip	Total Time spent on Planned CRs (Mins)	Vendor	Protocol	Execution Projection	
             # Interdomin Inter-domain KPI status	Second Level Validation Status	Inter-domain KPI status	MOP View Status
+            # Creating the empty lists for the column enteries of the email package sheet.
             execution_date = []
             maintenance_window = []
             cr_no = []
@@ -267,28 +294,36 @@ def email_package__sheet_creater(daily_plan_sheet,workbook,sender):
             kpi_status = []
             mop_view_status = []
             
+            # Getting the unique values of the planning status column of the excel sheet.
             planned_status_unique_values = list(daily_plan_sheet['Planning Status'].unique())
             
             for i in range(0,len(planned_status_unique_values)):
-                planned_status_unique_values[i] = planned_status_unique_values[i].upper()
+                # Changing the state of the unique inputs in the planning status column of the excel sheet.
+                planned_status_unique_values[i] = planned_status_unique_values[i].strip().upper()
             
             if ((len(planned_status_unique_values) == 1) and (planned_status_unique_values[0] == "NA")):
+                # Raising custom exception for condition when there's no input in the planning status column of the Excel Sheet.
                 raise CustomException(" Input Missing!","Kindly Enter the Planning Status input in uploaded sheet!")
             
             if ((len(planned_status_unique_values) > 1)):
                 if ("NA" in planned_status_unique_values):
+                    # Empty list for adding S.NO of rows with wrong input.
                     input_error = []
                     for i in range(0,len(daily_plan_sheet)):
                         if (daily_plan_sheet.iloc[i]['Planning Status'] == "NA"):
+                            # Appending the S.NO of row with wrong input.
                             input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     
+                    # Raising the Exception for rows with no planning status.
                     raise CustomException(" Input Missing!",f"Planning Status Input is Missing for the below S.NO:\n{', '.join(str(num) for num in input_error)}")
                 
                 if ("PLANNED" in planned_status_unique_values):
                     # Filtering the rows with planned crs
+                    daily_plan_sheet['Planning Status'] = daily_plan_sheet['Planning Status'].str.strip()
                     daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
 
                 else:
+                    # Raising Custom Exception for not finding any dataframe row with Planning Status.
                     raise CustomException(" Incorrect Input","Kindly Check the Planning Status input in uploaded sheet!")
             
             # Writing into the Email-Package Sheet
@@ -1058,6 +1093,10 @@ def paco_cscore(sender,workbook):
             circle = Email_ID['Circle'].tolist()
             original_change_responsible = Email_ID['Change Responsible'].tolist()
 
+            # Changing the case of each original change responsible to upper.
+            for i in range(0,len(original_change_responsible)):
+                original_change_responsible[i] = original_change_responsible[i].strip().upper()
+
             # Creating an empty list and empty dataframe to append the S.NO. of rows with input errors and creating a new dataframe from the daily_plan_sheet dataframe with only required data(rows).
             input_error = []
             result_df = pd.DataFrame()
@@ -1079,7 +1118,7 @@ def paco_cscore(sender,workbook):
                 if (daily_plan_sheet.iloc[i]['Circle'] not in circle):
                     circle_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Change Responsible'] not in original_change_responsible):
+                if (daily_plan_sheet.iloc[i]['Change Responsible'].strip().upper() not in original_change_responsible):
                     change_responsible_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
                 if (daily_plan_sheet.iloc[i]['Activity Title'] == 'NA') or (daily_plan_sheet.iloc[i]['Activity Title'] == None):
@@ -1325,6 +1364,7 @@ def paco_cscore(sender,workbook):
                 df4 = pd.DataFrame(dictionary4)
                 df4.drop_duplicates(subset = 'CR', keep = "first", inplace = True)
 
+                # Dropping the Index of each Dataframe so that they're not written into the excel sheets.
                 df.reset_index(drop = True,inplace = True)
                 df2.reset_index(drop = True,inplace = True)
                 df3.reset_index(drop = True,inplace = True)
@@ -1339,7 +1379,7 @@ def paco_cscore(sender,workbook):
                 # df3.to_excel(writer,sheet_name = sheetname3,index = False)
                 # Email_Id.to_excel(writer,sheet_name = 'Mail Id',index = False)
 
-
+                # Writing the dataframes into the worksheets.
                 writer = pd.ExcelWriter(workbook,engine = "openpyxl",mode = "a",if_sheet_exists = "replace")
                 df.to_excel(writer,sheet_name = sheetname,index = False)
                 df2.to_excel(writer,sheet_name = sheetname2,index = False)
@@ -1348,44 +1388,41 @@ def paco_cscore(sender,workbook):
 
                 writer.close()
 
+                # Styling the worksheets.
                 styling(workbook,sheetname)
                 styling(workbook,sheetname2)
                 styling(workbook,sheetname3)
                 styling(workbook,sheetname4)
+                
+                # Message showing that all the Interdomain Sheets have been written.
                 messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
                 
+                # Calling the Method(Function) that can write into the Email-package sheet.
                 email_package__sheet_creater(daily_plan_sheet,workbook,sender)
 
                 return 'Successful'
 
 
-    # except FileNotFoundError:
-    #     working_directory = r"C:\Daily"
-    #     messagebox.showerror("  File not Found","Check {} for MPBN Daily Planning Sheet.xlsx".format(working_directory))
-    #     sys.exit(0)
-    
-    # except ValueError:
-    #     working_directory = r"C:\Daily"
-    #     messagebox.showwarning("   Value Error","Check {} for MPBN Daily Planning Sheet.xlsx for all the requirement sheet".format(working_directory))
-    #     sys.exit(0)
-
-    
-
+    # Exception for condition when Today's maintenance date is not present.
     except TomorrowDataNotFound as error:
         messagebox.showerror("  Data for today's maintenance not found",error)
         return "Unsuccessful"
     
+    # Handling Custom Exception
     except CustomException as error:
         return "Unsuccessful"
     
+    # Handling Key Error 
     except KeyError as e:
         messagebox.showerror("  Check for the below Header ",e)
         return "Unsuccessful"
     
+    # Handling Attribute Error 
     except AttributeError as e:
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
     
+    # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
         e = str(e).split(":")
         e.remove(e[0])
@@ -1393,8 +1430,8 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Permission Error1",f"Kindly close {e} as it's open in Excel!")
         return "Unsuccessful"
 
+    # Handling any other Exception that has not been handled.
     except Exception as e:
-        print(type(e))
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 

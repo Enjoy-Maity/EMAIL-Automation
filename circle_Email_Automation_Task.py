@@ -41,10 +41,11 @@ def sendmail(dataframe,to,cc,body,subject,sender):
 ############################# Fetch-details #########################
 #####################################################################
 
-# Function for quitting the programe entirely.
+# Method(Function) for quitting the program entirely.
 def quit(event):
     sys.exit(0)
 
+# Method(Function) that drives the task.
 def fetch_details(sender,workbook):
     try:
         #user=subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
@@ -107,7 +108,10 @@ def fetch_details(sender,workbook):
                     daily_plan_sheet = daily_plan_sheet[['S.NO','Execution Date','Maintenance Window','CR NO','Activity Title','Risk','Location','Circle','Planning Status']]
                     
                     # Filtering all the data from the daily_plan_sheet which are planned.
-                    daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
+                    daily_plan_sheet['Planning Status'] = daily_plan_sheet['Planning Status'].str.strip()
+                    daily_plan_sheet['Planning Status'] = daily_plan_sheet['Planning Status'].str.upper()
+                    daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'] == 'PLANNED']
+                
                     
                     if (len(daily_plan_sheet) == 0):
                         raise CustomException('Kindly Enter the Planning Status input in uploaded sheet!')
@@ -129,6 +133,19 @@ def fetch_details(sender,workbook):
                     
                     # Finding all the unique mail circles defined in Email ID worksheet of the MPBN Planing workbook, so that the duplicated circles are ignored.
                     mail_circles = Email_ID['Circle'].unique()
+
+                    # Getting the remainder circles which are mismatch with the Mail ID Sheet and removing it from the circles.
+                    remainder=list(set(circles)-set(mail_circles))
+                    circles=list(set(circles)-set(remainder))
+
+                    '''
+                        Checking if length of remainder list is bigger than zero, which indicates that there are circles in in the planning sheet
+                        which are mismatch with the Mail ID sheet.
+                    '''
+                    if (len(remainder) > 0):
+                        remainder.sort()
+                        raise CustomException(f"The mails for these circles will not be sent as there's no mail IDs present in the Mail ID sheet\n{', '.join(remainder)}\nKindly Check! and then retry!")
+                    
                     
                     # Finding the data where the data fields which should be non-blank or always correct are left blank or incorrect.
                     for i in range(0,len(daily_plan_sheet)):
@@ -151,6 +168,13 @@ def fetch_details(sender,workbook):
                         else:
                             result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T],ignore_index = True)
 
+                    input_error = list(set(input_error))
+                    input_error.sort()
+
+                    if len(input_error)>0:
+                            messagebox.showwarning("  Input Error Detected",f"Input Error! Kindly Check CR NO, Activity title and Circle fields in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
+                            return "Unsuccessful"
+                    
                     daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
                     
                     del daily_plan_sheet
@@ -189,101 +213,84 @@ def fetch_details(sender,workbook):
                     
                     del new_result_df
                     del result_df
-
-                    input_error = list(set(input_error))
-                    input_error.sort()
-
-                    if len(input_error)>0:
-                            messagebox.showwarning("  Input Error Detected",f"Input Error! Kindly Check CR NO, Activity title and Circle fields in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
-                            return "Unsuccessful"
                     
-                    else:
-                        remainder=list(set(circles)-set(mail_circles))
-                        circles=list(set(circles)-set(remainder))
-                        for i in range(0,len(circles)):
+                    for i in range(0,len(circles)):
+                        execution_date=[]       #  list for collecting execution date of each Cr
+                        circle=[]               #  list for collecting circle of each CR
+                        maintenance_window=[]   #  list for collecting the maintenance window of each CR
+                        cr_no=[]                #  list for collecting the CR No
+                        activity_title=[]       #  list for collecting the activity title each CR
+                        risk=[]                 #  list for collecting the risk level of each CR
+                        location=[]             #  list for collecting the location of each CR
 
-                            execution_date=[]       #  list for collecting execution date of each Cr
-                            circle=[]               #  list for collecting circle of each CR
-                            maintenance_window=[]   #  list for collecting the maintenance window of each CR
-                            cr_no=[]                #  list for collecting the CR No
-                            activity_title=[]       #  list for collecting the activity title each CR
-                            risk=[]                 #  list for collecting the risk level of each CR
-                            location=[]             #  list for collecting the location of each CR
+                        for j in range(0,len(daily_plan_sheet)):
+                            if (daily_plan_sheet.iloc[j]['Circle']==circles[i]): # Adding constraint to check for CRs for next date only
+                                execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
+                                maintenance_window.append(daily_plan_sheet.iloc[j]['Maintenance Window'])
+                                cr_no.append(daily_plan_sheet.iloc[j]['CR NO'])
+                                activity_title.append(daily_plan_sheet.iloc[j]['Activity Title'])
+                                risk.append(daily_plan_sheet.iloc[j]['Risk'])
+                                circle.append(daily_plan_sheet.iloc[j]['Circle'])
+                                location.append(daily_plan_sheet.iloc[j]['Location'])
 
-                            for j in range(0,len(daily_plan_sheet)):
-                                if (daily_plan_sheet.iloc[j]['Circle']==circles[i]): # Adding constraint to check for CRs for next date only
-                
-                                    execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
-                                    maintenance_window.append(daily_plan_sheet.iloc[j]['Maintenance Window'])
-                                    cr_no.append(daily_plan_sheet.iloc[j]['CR NO'])
-                                    activity_title.append(daily_plan_sheet.iloc[j]['Activity Title'])
-                                    risk.append(daily_plan_sheet.iloc[j]['Risk'])
-                                    circle.append(daily_plan_sheet.iloc[j]['Circle'])
-                                    location.append(daily_plan_sheet.iloc[j]['Location'])
+                        dictionary_for_insertion={'Execution Date':execution_date, 'Maintenance Window':maintenance_window, 'CR NO':cr_no, 'Activity Title':activity_title, 'Risk':risk,'Location':location,'Circle':circle}
+                        dataframe=pd.DataFrame(dictionary_for_insertion)
+                        dataframe.reset_index(drop=True,inplace=True)
+                        dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
+                        dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = '%m/%d/%Y')
+                        dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%m/%d/%Y')
 
-                            dictionary_for_insertion={'Execution Date':execution_date, 'Maintenance Window':maintenance_window, 'CR NO':cr_no, 'Activity Title':activity_title, 'Risk':risk,'Location':location,'Circle':circle}
-                            dataframe=pd.DataFrame(dictionary_for_insertion)
-                            dataframe.reset_index(drop=True,inplace=True)
-                            dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
-                            # dataframe['Execution Date']=pd.to_datetime(dataframe['Execution Date'])
-                            dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = '%m/%d/%Y')
-                            dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%m/%d/%Y')
+                        # Taking the circle in the cir variable to avoid writing circles[i] again & again.
+                        cir=circles[i]
 
-                            dataframe.replace(to_replace = 'NA',value = '')
-                        
-                        
-                            cir=circles[i]
-
-                            for i in range(0,len(Email_ID)):
-                                if (Email_ID.at[i,'Circle'] == cir):
-                                    row_to_fetch = i
-                                    to=Email_ID.iloc[row_to_fetch]['To Mail List']
-                                    cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
-                                    
-                                    subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%d-%m-%Y')}"
-                                    body="""
-                                        <html>        
-                                            <body>
-                                                <div><p>Hi team,<br></p>
-                                                    <p>Please confirm below points so that we will approve CR’s.<br></p>
-                                                    <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>
-                                                    <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>
-                                                    <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.<br><br></p>
-                                                </div>
-                                                <div>
-                                                    <p>{}</p>
-                                                </div>
-                                                <div>
-                                                    <p>Regards<br>{}<br>Ericsson India Global Services Pvt. Ltd.</p>
-                                                    </div>
-                                            </body>
-                                        </html>
-                                        """
-                                    dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format="%M/%d/%Y")
-                                    dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime("%d-%M-%Y")
-                                    sendmail(dataframe,to,cc,body,subject,sender)
+                        # Creating the mail body and sending the circle mails.
+                        for i in range(0,len(Email_ID)):
+                            if (Email_ID.at[i,'Circle'] == cir):
+                                row_to_fetch = i
+                                to=Email_ID.iloc[row_to_fetch]['To Mail List']
+                                cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
                                 
-                        messagebox.showinfo("  Mail Sent Successfully!",f"All Mails for mentioned planned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
-                        return "Successful"
+                                subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%d-%m-%Y')}"
+                                body="""
+                                    <html>        
+                                        <body>
+                                            <div><p>Hi team,<br></p>
+                                                <p>Please confirm below points so that we will approve CR’s.<br></p>
+                                                <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>
+                                                <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>
+                                                <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.<br><br></p>
+                                            </div>
+                                            <div>
+                                                <p>{}</p>
+                                            </div>
+                                            <div>
+                                                <p>Regards<br>{}<br>Ericsson India Global Services Pvt. Ltd.</p>
+                                                </div>
+                                        </body>
+                                    </html>
+                                    """
+                                # Formatting the dataframe's 'Execution Date' column to "dd-mm-YYYY" format.
+                                dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = "%m/%d/%Y")
+                                dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime("%d-%m-%Y")
+                                
+                                # Calling the Sendmail Method(Function) for sending circle emails.
+                                sendmail(dataframe,to,cc,body,subject,sender)
 
-    # except FileNotFoundError:
-    #     working_directory=workbook
-    #     messagebox.showwarning("    File not Found","Check {} for the Planning Sheet".format(working_directory))
-    #     return "Unsuccessful"
+                    # Message Showing that the all the mails to all the present circles have been successfully sent.
+                    messagebox.showinfo("  Mail Sent Successfully!",f"All Mails for mentioned planned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
+                    return "Successful"
     
-    # except ValueError:
-    #      working_directory=workbook
-    #      messagebox.showwarning(" Value Error"," Check {} for all the requirement sheets".format(working_directory))
-    #      return "Unsuccessful"
-    
+    # Handling Custom Exceptions which are raised in the above try section.
     except CustomException as error:
         messagebox.showerror("  Data can't be found",error)
         return "Unsuccessful"
     
+    # Handling the AttributeError Exception.
     except AttributeError as e:
         messagebox.showerror("  Heading missing!",f"Kindly Check the below Heading in Planning Sheet\n{e}")
         return "Unsuccessful"
     
+    # Handling the Exception when the file that's required for the task is opened in background.
     except PermissionError as e:
         e = str(e).split(":")
         e.remove(e[0])
@@ -291,8 +298,9 @@ def fetch_details(sender,workbook):
         messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
         return "Unsuccessful"
 
+    # Handling other exceptions that are not handled.
     except Exception as e:
         messagebox.showerror("  Exception Occurred",e)
         return "Unsuccessful"
     
-#fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")

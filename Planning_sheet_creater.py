@@ -4,6 +4,7 @@ from openpyxl import load_workbook                                  # Importing 
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing classes from openpyxl to style the excel workbooks.
 from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
 
+# Method(Function)  for styling the worksheets.
 def styling(workbook,sheetname):
     wb  =  load_workbook(workbook)
     ws  =  wb[sheetname]
@@ -57,7 +58,7 @@ class CustomException(Exception):
         messagebox.showerror(self.title, self.message)
 
 # Creating the main function
-def planning_sheet_creater(report_path,planning_workbook):
+def planning_sheet_creater(report_path,planning_workbook,sender):
     try:
         # Checking if the length of report_path is given or not
         if (len(report_path) == 0):
@@ -144,7 +145,7 @@ def planning_sheet_creater(report_path,planning_workbook):
             daily_planning_sheet['Final Status']                                        =   " "
             daily_planning_sheet['Reason For Rollback / Cancel']                        =   " "
             daily_planning_sheet['Design Availability']                                 =   " "
-            daily_planning_sheet['Technical Validator']                                 =   " "
+            daily_planning_sheet['Technical Validator']                                 =   sender
             daily_planning_sheet['Complexity']                                          =   " "
             daily_planning_sheet['Activity-Type']                                       =   report["Operational Categorization Tier 3"]
             daily_planning_sheet['Domain kpi']                                          =   " "
@@ -166,7 +167,7 @@ def planning_sheet_creater(report_path,planning_workbook):
             daily_planning_sheet.insert(0,"S.NO",daily_planning_sheet.index)
             daily_planning_sheet.reset_index(drop = True, inplace = True)
             
-            # Iterating through the report dataframe for writing into 
+            # Iterating through the report dataframe for writing into the planning sheet
             for i in range(0, len(report)):          
                 if(report.iloc[i]['Impact*'].__contains__("1-Extensive/Widespread")):
                     daily_planning_sheet.at[i,"Risk"] = "Level 1"
@@ -174,21 +175,36 @@ def planning_sheet_creater(report_path,planning_workbook):
                 if(report.iloc[i]['Impact*'].__contains__("2-Significant/Large")):
                     daily_planning_sheet.at[i,"Risk"] = "Level 2"
                 
+                if ((report.iloc[i]['Impact*'].strip() != "2-Significant/Large") and (report.iloc[i]['Impact*'].strip() != "1-Extensive/Widespread")):
+                    daily_planning_sheet.at[i,"Risk"] = report.iloc[i]['Impact*']
+                
                 if(report.iloc[i]['Operational Categorization Tier 1+'].__contains__("MPBN")):
                     daily_planning_sheet.at[i,"Domain"] = "MPBN-MS"
 
+            # Creating the writer for writing into the planning sheet.
             writer = pd.ExcelWriter(planning_workbook,engine = "openpyxl", mode = "a", if_sheet_exists = "replace")
-            daily_planning_sheet.to_excel(writer,"Planning Sheet",index = False)
+            daily_planning_sheet.to_excel(writer,"Planning Sheet",index = False)    # writing daily_planning_sheet into the planning sheet.
             writer.close()
 
+            # styling the worksheet.
             styling(planning_workbook,"Planning Sheet")
+            
+            # deleting the dataframes no longer in use.
             del daily_planning_sheet
             del report
             
-            messagebox.showinfo("   Sheet Creation Successful!","MPBN Planning Sheet data successfully written!")
+            # Message shown after successful task running.
+            messagebox.showinfo("   Sheet Creation Successful!","Tonight CRs Parameter Copied in MPBN Planning Sheet!")
             return "Successful"
 
     except CustomException:
+        return "Unsuccessful"
+    
+    except PermissionError as e:
+        e = str(e).split(":")
+        e.remove(e[0])
+        e = ':'.join(e)
+        messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
         return "Unsuccessful"
 
     except Exception as error:
