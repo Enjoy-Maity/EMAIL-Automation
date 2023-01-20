@@ -1091,11 +1091,14 @@ def paco_cscore(sender,workbook):
             
             # Finding the Circles and Change Responsible available in the Mail ID worksheet of the MPBN Daily Planning workbook.
             circle = Email_ID['Circle'].tolist()
-            original_change_responsible = Email_ID['Change Responsible'].tolist()
+            original_change_responsible = list(Email_ID['Change Responsible'].unique())
 
             # Changing the case of each original change responsible to upper.
             for i in range(0,len(original_change_responsible)):
-                original_change_responsible[i] = original_change_responsible[i].strip().upper()
+                original_change_responsible[i] = str(original_change_responsible[i]).strip().upper()
+                
+            # Removing the NAN value from the list.
+            original_change_responsible.remove('NAN')
 
             # Creating an empty list and empty dataframe to append the S.NO. of rows with input errors and creating a new dataframe from the daily_plan_sheet dataframe with only required data(rows).
             input_error = []
@@ -1418,9 +1421,9 @@ def paco_cscore(sender,workbook):
         return "Unsuccessful"
     
     # Handling Attribute Error 
-    except AttributeError as e:
-        messagebox.showerror("  Exception Occured",e)
-        return "Unsuccessful"
+    # except AttributeError as e:
+    #     messagebox.showerror("  Exception Occured",e)
+    #     return "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -1431,8 +1434,8 @@ def paco_cscore(sender,workbook):
         return "Unsuccessful"
 
     # Handling any other Exception that has not been handled.
-    except Exception as e:
-        messagebox.showerror("  Exception Occured",e)
-        return "Unsuccessful"
+    # except Exception as e:
+    #     messagebox.showerror("  Exception Occured",e)
+    #     return "Unsuccessful"
 
-#paco_cscore("Manoj Kumar",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx")
