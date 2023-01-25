@@ -371,7 +371,7 @@ def paco_cscore(sender,workbook):
             input_error.sort()
 
             if (len(input_error) > 0):
-                messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Change Responsible', 'Impact','Vendor', 'Protocol', 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
+                messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
                 return 'Unsuccessful'
             if (len(circle_not_proper) > 0):
                 messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")

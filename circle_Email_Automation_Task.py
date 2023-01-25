@@ -1,9 +1,9 @@
-import sys
-from datetime import datetime,timedelta
-import pandas as pd
-import win32com.client as win32
-from tkinter import *
-from tkinter import messagebox
+import sys                                  # Importing the sys to run cmd commands from the script itself.
+from datetime import datetime,timedelta     # Importing datetime and timedelta to get today's maintenance date based on system's current date and time settings.
+import pandas as pd                         # Importing Pandas to manipulate the data from the excel sheet.
+import win32com.client as win32             # Importing the win32com.client module to create Microsoft Office Suite COM object for sending mails.
+from tkinter import *                       # Importing all the classes from tkinter GUI Module of python.
+from tkinter import messagebox              # Importing Messagebox from tkinter for displaying messages.
 
 # Creating the Custom Exception class inheriting the base Exception Class defined in the defaul python libraries, for raising and handling 
 # custom Exceptions
