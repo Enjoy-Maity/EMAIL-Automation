@@ -25,6 +25,9 @@ def sendmail(dataframe,to,cc,body,subject,sender):
     msg.To=to                                   # Assigning the Mail Receipient for mail through COM Object
     msg.CC=cc                                   # Assigning the Mail CC Receipients for mail through COM Object
     
+    # Filling the Nan of the dataframe with string 'NA'
+    dataframe.fillna("NA",inplace = True)
+
     # Stylising the dataframe table to make it more presentable in the mail body through the usage of inline CSS.
     dataframe=dataframe.style.set_table_styles([
         {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},

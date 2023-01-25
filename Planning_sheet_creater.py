@@ -3,8 +3,17 @@ from tkinter import messagebox                                      # Importing 
 from openpyxl import load_workbook                                  # Importing load_workbook class from the openpyxl to load existing excel workbook.
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing classes from openpyxl to style the excel workbooks.
 from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
+from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in planning sheet.
 
-# Method(Function)  for styling the worksheets.
+# Creating Custom Exception inheriting base default Exception class for raising, handling and custom exceptions.
+class CustomException(Exception):
+    def __init__(self,title,message):
+        self.title = title
+        self.message = message
+        super().__init__(title,message)
+        messagebox.showerror(self.title, self.message)
+
+# Method(Function) for styling the worksheets.
 def styling(workbook,sheetname):
     wb  =  load_workbook(workbook)
     ws  =  wb[sheetname]
@@ -48,14 +57,42 @@ def styling(workbook,sheetname):
     #rows = ws.max_row
     wb.save(workbook)
 
+# Adding Data Validation
+def validation_adder(workbook,worksheet):
+    wb                          = load_workbook(workbook)
+    ws                          = wb[worksheet]
+    # getting max occupied rows
+    maxrows                     = ws.max_row
 
-# Creating Custom Exception inheriting base default Exception class for raising, handling and custom exceptions.
-class CustomException(Exception):
-    def __init__(self,title,message):
-        self.title = title
-        self.message = message
-        super().__init__(title,message)
-        messagebox.showerror(self.title, self.message)
+    # Rule for data validation with their error message, title and prompt message, title.
+    rule1               = DataValidation(type = "list", formula1 = '"Planned, Discussed"',allow_blank = True)
+    rule1.error         = "Your Entry is Invalid!"
+    rule1.errorTitle    = "Invalid Entry!"
+
+    rule1.prompt        = "Please Select from the list"
+    rule1.promptTitle   = "List Selection"
+
+    rule3               = DataValidation(type = "list", formula1 = '"Create, Enable, Manual, Manual/Enable, Create/Manual"',allow_blank = True)
+    rule3.error         = "Your Entry is Invalid!"
+    rule3.errorTitle    = "Invalid Entry!"
+
+    rule3.prompt        = "Please Select from the list"
+    rule3.promptTitle   = "List Selection"
+
+    # Adding the rules to the woksheet.
+    ws.add_data_validation(rule1)
+    ws.add_data_validation(rule3)
+
+    # Setting the rows for the rules.
+    range_setter_var_planning_status       = f'O2:O{maxrows}'
+    range_setter_var_execution_projection  = f'AE2:AE{maxrows}'
+
+    # Adding the ranges to the rules.
+    rule1.add(range_setter_var_planning_status)
+    rule3.add(range_setter_var_execution_projection)
+
+    # Saving the Workbook
+    wb.save(workbook)
 
 # Creating the main function
 def planning_sheet_creater(report_path,planning_workbook,sender):
@@ -131,36 +168,36 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             daily_planning_sheet['Maintenance Window']                                  =   "00:00 To 06:00 Hrs"
             daily_planning_sheet['CR NO']                                               =   report["Change ID*+"]
             daily_planning_sheet['Activity Title']                                      =   report["Summary*"]
-            daily_planning_sheet['Risk']                                                =   " "
-            daily_planning_sheet['Location']                                            =   " "
+            daily_planning_sheet['Risk']                                                =   ""
+            daily_planning_sheet['Location']                                            =   ""
             daily_planning_sheet['Circle']                                              =   report["Site Group"]
-            daily_planning_sheet['No. of Node Involved']                                =   " "
-            daily_planning_sheet['CR Belongs to Same Activity of Previous CR- Yes/NO']  =   " "
-            daily_planning_sheet['Change Responsible']                                  =   " "
-            daily_planning_sheet['Activity Checker']                                    =   " "
+            daily_planning_sheet['No. of Node Involved']                                =   ""
+            daily_planning_sheet['CR Belongs to Same Activity of Previous CR- Yes/NO']  =   ""
+            daily_planning_sheet['Change Responsible']                                  =   ""
+            daily_planning_sheet['Activity Checker']                                    =   ""
             daily_planning_sheet['Activity Initiator']                                  =   report["Submitter*"]
-            daily_planning_sheet['Impact']                                              =   " "
-            daily_planning_sheet['Planning Status']                                     =   " "
-            daily_planning_sheet['Domain']                                              =   " "
-            daily_planning_sheet['Final Status']                                        =   " "
-            daily_planning_sheet['Reason For Rollback / Cancel']                        =   " "
-            daily_planning_sheet['Design Availability']                                 =   " "
+            daily_planning_sheet['Impact']                                              =   ""
+            daily_planning_sheet['Planning Status']                                     =   ""
+            daily_planning_sheet['Domain']                                              =   ""
+            daily_planning_sheet['Final Status']                                        =   ""
+            daily_planning_sheet['Reason For Rollback / Cancel']                        =   ""
+            daily_planning_sheet['Design Availability']                                 =   ""
             daily_planning_sheet['Technical Validator']                                 =   sender
-            daily_planning_sheet['Complexity']                                          =   " "
+            daily_planning_sheet['Complexity']                                          =   ""
             daily_planning_sheet['Activity-Type']                                       =   report["Operational Categorization Tier 3"]
-            daily_planning_sheet['Domain kpi']                                          =   " "
-            daily_planning_sheet['IMPACTED NODE']                                       =   " "
-            daily_planning_sheet['KPI DETAILS']                                         =   " "
-            daily_planning_sheet['oss name']                                            =   " "
-            daily_planning_sheet['oss ip']                                              =   " "
-            daily_planning_sheet['Total Time spent on Planned CRs (Mins)']              =   " "
-            daily_planning_sheet['Vendor']                                              =   " "
-            daily_planning_sheet['Protocol']                                            =   " "
-            daily_planning_sheet['Execution Projection']                                =   " "
-            daily_planning_sheet['Inter-domain Name']                                   =   " "
-            daily_planning_sheet['Second Level Validation Status']                      =   " "
-            daily_planning_sheet['Inter-domain KPI status']                             =   " "
-            daily_planning_sheet['MOP View Status']                                     =   " "
+            daily_planning_sheet['Domain kpi']                                          =   ""
+            daily_planning_sheet['IMPACTED NODE']                                       =   ""
+            daily_planning_sheet['KPI DETAILS']                                         =   ""
+            daily_planning_sheet['oss name']                                            =   ""
+            daily_planning_sheet['oss ip']                                              =   ""
+            daily_planning_sheet['Total Time spent on Planned CRs (Mins)']              =   ""
+            daily_planning_sheet['Vendor']                                              =   ""
+            daily_planning_sheet['Protocol']                                            =   ""
+            daily_planning_sheet['Execution Projection']                                =   ""
+            daily_planning_sheet['Inter-domain Name']                                   =   ""
+            daily_planning_sheet['Second Level Validation Status']                      =   ""
+            daily_planning_sheet['Inter-domain KPI status']                             =   ""
+            daily_planning_sheet['MOP View Status']                                     =   ""
             
             daily_planning_sheet.reset_index(drop = True, inplace = True)
             daily_planning_sheet.index += 1
@@ -189,6 +226,9 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             # styling the worksheet.
             styling(planning_workbook,"Planning Sheet")
             
+            # adding the data validation.
+            validation_adder(planning_workbook,"Planning Sheet")
+
             # deleting the dataframes no longer in use.
             del daily_planning_sheet
             del report

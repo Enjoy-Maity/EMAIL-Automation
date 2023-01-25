@@ -198,6 +198,14 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         working_directory = r"C:\Daily"
         messagebox.showerror(" File not Found","Check {} for MPBN Daily Planning Sheet.xlsx".format(working_directory))
         return "Unsuccessful"
+    
+    # Handling the Exception when the file that's required for the task is opened in background.
+    except PermissionError as e:
+        e = str(e).split(":")
+        e.remove(e[0])
+        e = ':'.join(e)
+        messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
+        return "Unsuccessful"
 
     # Exception for handling Value error, in our case when the relevant Sheet is missing the workbook.
     except ValueError:
