@@ -68,6 +68,8 @@ def p_one_p_three_appender(sender,workbook):
 
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
             p1_dataframe = email_package[email_package['Technical Validator'] == p1]
+            p1_dataframe.drop("S.NO",axis = "columns",inplace = True)
+
             p1_dataframe.replace('NA'," ",inplace = True)
             p1_columns = p1_dataframe.columns.to_list()
             
@@ -139,6 +141,7 @@ def p_one_p_three_appender(sender,workbook):
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
             p3_dataframe = email_package[email_package['Technical Validator'] == p3]
             p3_dataframe.reset_index(drop = True, inplace = True)
+            p3_dataframe.drop("S.NO",axis = "columns", inplace = True)
             p3_dataframe.replace('NA'," ",inplace = True)
             p3_columns = p3_dataframe.columns.to_list()
 
@@ -653,4 +656,4 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx")
+#paco_cscore("Karan Loomba",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
