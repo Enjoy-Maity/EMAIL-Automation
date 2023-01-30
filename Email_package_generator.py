@@ -915,8 +915,8 @@ def email_package_sheet_creater(workbook):
         messagebox.showerror("  Permission Error!",f"Kindly close {e} as it's open in Excel!")
         return "Unsuccessful"
     
-    # except Exception as error:
-    #     messagebox.showerror("  Exception Occured!",error)
-    #     return "Unsuccessful"
+    except Exception as error:
+        messagebox.showerror("  Exception Occured!",error)
+        return "Unsuccessful"
 
 #email_package_sheet_creater(r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")

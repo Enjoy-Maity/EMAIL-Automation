@@ -328,9 +328,9 @@ class App(tk.Tk):
         '''
             Creating the labels for selection of ITSM Raw Report and the MPBN Planning Sheet workbook.
         '''
-        self.main_win_canvas.create_text(220, 194, text="Choose ITSM RAW Report :-", 
+        self.main_win_canvas.create_text(220, 194, text="Select ITSM RAW Report :-", 
                                          fill="#FFFFFF", font=("Ericsson Hilda ExtraBold",21,"bold underline"))
-        self.main_win_canvas.create_text(220, 247, text="Choose Daily Planning Sheet :-",
+        self.main_win_canvas.create_text(220, 247, text="Select Daily Planning Sheet :-",
                                          fill="#FFFFFF", font=("Ericsson Hilda ExtraBold", 21, "bold underline"))
         
         '''
@@ -418,7 +418,7 @@ class App(tk.Tk):
         self.file_browser_entry.delete(0, END)
         
         # Creating a browser window for searching and selecting the file.
-        self.mystring = filedialog.askopenfilename(initialdir="C:\\", title="  Choose the worksheet", filetypes=(
+        self.mystring = filedialog.askopenfilename(initialdir="C:\\", title="  Select the worksheet", filetypes=(
             ("Excel Files (.xlsx)", "*.xlsx"), ("Excel Files (.xls)", "*.xls"), ("All Files", "*.*")))
         
         # Setting the File Browser Entry value to the path selected.
@@ -433,7 +433,7 @@ class App(tk.Tk):
         self.itsm_file_browser_entry.delete(0, END)
 
         # Creating a browser window for searching and selecting the file.
-        self.mystring = filedialog.askopenfilename(initialdir="C:\\", title="  Choose report csv file", filetypes=(
+        self.mystring = filedialog.askopenfilename(initialdir="C:\\", title="  Select report csv file", filetypes=(
             ("CSV Files (.csv)", "*.csv"), ("All Files", "*.*")))
         
         # Setting the File Browser Entry value to the path selected.

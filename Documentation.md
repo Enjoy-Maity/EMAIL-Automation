@@ -20,5 +20,5 @@
 The requirements are :-
 
 1. The sheet name where all the planning data are kept, must be named 'Planning Sheet'
-2. The Workbook containing 'Planning Sheet' should also contain 'Mail ID' sheet with the details of all the circles mail ids To & CCwhich the mails are to be sent.
+2. The Workbook containing 'Planning Sheet' should also contain 'Mail ID' sheet with the details of all the circles mail ids To & CC which the mails are to be sent.
 3.
