@@ -29,6 +29,13 @@ def p_one_p_three_appender(sender,workbook):
     # Getting the email-package-sheet
     wb              = pd.ExcelFile(workbook)
     email_package   = pd.read_excel(wb,"Email-Package")
+    planning_sheet  = pd.read_excel(wb,"Planning Sheet")
+
+    planning_sheet = planning_sheet[planning_sheet['Planning Status'] == 'Discussed']
+    planning_sheet['Execution Date'] = pd.to_datetime(planning_sheet['Execution Date'], format="%d-%b-%Y")
+    planning_sheet['Execution Date'] = planning_sheet['Execution Date'].dt.strftime("%m/%d/%Y")
+
+    email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
     # Getting the unique technical validator.
     unique_technical_validator_set = set(email_package['Technical Validator'].unique())
