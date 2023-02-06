@@ -198,7 +198,7 @@ def p_one_p_three_appender(sender,workbook):
                 styling(p3_workbook_file,p3_sheet_name)
 
                 # message showing MPBN Planning Automation Tracker Status is successfully edited.
-                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator '{sender}' has been updated in MPBN Planning Automation Tracker!")
             
             else:
                 # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
