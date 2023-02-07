@@ -366,7 +366,7 @@ Regards,
         evening_message_workbook_message.fillna(" ",inplace = True)
 
         # Calling the Email Package Workbook generator and mail drafter.
-        email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window)
+        email_package_workbook_generator(sender,worksheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
         del evening_message_workbook_message
         del evening_message_workbook
