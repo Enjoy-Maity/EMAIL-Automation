@@ -161,27 +161,25 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                         continue
                 
                 # Creating the mail body for the mail in HTML with spaces left by {} for the data to be formatted in during sending the mail.
-                mpbn_html_body="""
-                    <html>
-                        <body>
-                            <div>
-                                    <p>Hi Team,</p>
-                                    <p>Please find below the list of MPBN activity which includes Core nodes, so KPI monitoring required. Impacted nodes with KPI details given below. Please share KPI monitoring resource from your end.<br><br></p>
-                                    <p>@{} Team: Please contact below spoc region wise if any issue with KPI input.<br><br></p>
-                                    <p>{}: North region and west region <br>
-                                       {}: East region and South region <br></p>
-                                    <p>Note:-If there is any deviation in KPI please call to Executer before 6 AM. After that please call to technical validator/Team Lead.<br><br></p>
-                            
-                            </div>
-                            <div>
-                                {}
-                            </div>
-                            <div>
-                                    <p>With Regards<br>{}<br>Ericsson India Global Services Pvt. Ltd.</p>
-                            </div>
-                        </body>
-                    </html>
-                """
+                mpbn_html_body="\
+                    <html>\
+                        <body>\
+                            <div>\
+                                    <p>Hi Team,</p>\
+                                    <p>Please find below the list of MPBN activity which includes Core nodes, so KPI monitoring required. Impacted nodes with KPI details given below. Please share KPI monitoring resource from your end.<br><br></p>\
+                                    <p>@{} Team: Please contact below spoc region wise if any issue with KPI input.<br><br></p>\
+                                    <p>{}: North region and west region <br>\
+                                       {}: East region and South region <br></p>\
+                                    <p>Note:-If there is any deviation in KPI please call to Executer before 6 AM. After that please call to technical validator/Team Lead.<br><br></p>\
+                            </div>\
+                            <div>\
+                                {}\
+                            </div>\
+                            <div>\
+                                    <p>With Regards<br>{}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.</p>\
+                            </div>\
+                        </body>\
+                    </html>"
                 # Calling the Sendmail function with relevant arguments for sending the mails to relevant interdomain mail recepients according to the data served.
                 sendmail(dataframe,to,cc,mpbn_html_body,subject,north_and_west_region,east_region_and_south_region,sender,i)
                 

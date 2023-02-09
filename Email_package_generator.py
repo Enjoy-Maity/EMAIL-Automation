@@ -1,4 +1,5 @@
 import pandas as pd                                                 # Importing pandas with alias pd for reading the excel sheet and manipulating it freely.
+import numpy as np
 from tkinter import messagebox                                      # Importing Messagebox from tkinter to display messages.
 from openpyxl import load_workbook                                  # Importing load_workbook class from the openpyxl to load existing excel workbook.
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing classes from openpyxl to style the excel workbooks.
@@ -99,7 +100,7 @@ def validation_adder(workbook,worksheet):
     
     
     # Setting the rows for the rules.
-    range_setter_var_change_responsible    = f'K2:K{maxrows}'
+    range_setter_var_change_responsible    = f'L2:L{maxrows}'
     
     # Adding the ranges to the rules.
     rule1.add(range_setter_var_change_responsible)
@@ -153,32 +154,33 @@ def email_package_sheet_creater(workbook):
                 # Filling the NA(Blank) cells with TempNA string.
                 daily_plan_sheet.fillna("TempNA", inplace = True)
 
-                execution_date = []
-                maintenance_window = []
-                cr_no = []
-                activity_title = []
-                risk = []
-                location = []
-                circle = []
-                no_of_node_involved = []
-                cr_belongs_to_same_activity_of_previous_cr_yes_no = []
-                activity_initiator = []
-                impact = []
-                planning_status = []
-                domain = []
-                design_availability = []
-                technical_validator = []
-                complexity = []
-                activity_type = []
-                domain_kpi = []
-                impacted_node = []
-                kpi_details = []
-                oss_name = []
-                oss_IP = []
-                total_time_spent_on_planned_crs_mins = []
-                vendor = []
-                protocol = []
-                execution_projection = []
+                execution_date                                      = []
+                maintenance_window                                  = []
+                cr_no                                               = []
+                activity_title                                      = []
+                risk                                                = []
+                location                                            = []
+                circle                                              = []
+                no_of_node_involved                                 = []
+                cr_belongs_to_same_activity_of_previous_cr_yes_no   = []
+                activity_checker                                    = []
+                activity_initiator                                  = []
+                impact                                              = []
+                planning_status                                     = []
+                domain                                              = []
+                design_availability                                 = []
+                technical_validator                                 = []
+                complexity                                          = []
+                activity_type                                       = []
+                domain_kpi                                          = []
+                impacted_node                                       = []
+                kpi_details                                         = []
+                oss_name                                            = []
+                oss_IP                                              = []
+                total_time_spent_on_planned_crs_mins                = []
+                vendor                                              = []
+                protocol                                            = []
+                execution_projection                                = []
                 # Getting the unique values of the planning status column of the excel sheet.
                 planned_status_unique_values = list(daily_plan_sheet['Planning Status'].unique())
                 
@@ -281,7 +283,6 @@ def email_package_sheet_creater(workbook):
                     # Creating temp variables to hold the temporary data until that temporary data is written onto the result dataframe.
                     """
                     Change responsible	(K)
-                    Activity Checker		(L)
                     Final Status		(Q)
                     Reason For Rollback / Cancel(R)
                     Inter-domain Name	(AF)
@@ -289,33 +290,34 @@ def email_package_sheet_creater(workbook):
                     Inter-domain KPI status	(AH)
                     MOP View Status		(AI)
                     """
-                    execution_date_temp = daily_plan_sheet.iloc[0]['Execution Date']
-                    cr_no_temp = cr
-                    maintenance_window_temp  =  ''
-                    activity_title_temp  =  ''
-                    risk_temp  =  ''
-                    location_temp  =  ''
-                    circle_temp  =  ''
-                    no_of_node_involved_temp  =  ''
+                    execution_date_temp                                     = daily_plan_sheet.iloc[0]['Execution Date']
+                    cr_no_temp                                              = cr
+                    maintenance_window_temp                                 =  ''
+                    activity_title_temp                                     =  ''
+                    risk_temp                                               =  ''
+                    location_temp                                           =  ''
+                    circle_temp                                             =  ''
+                    no_of_node_involved_temp                                =  ''
                     cr_belongs_to_same_activity_of_previous_cr_yes_no_temp  =  ''
-                    activity_initiator_temp  =  ''
-                    impact_temp  =  ''
-                    planning_status_temp  =  ''
-                    domain_temp  =  ''
-                    reason_for_rollback_cancel_temp  =  ''
-                    design_availability_temp  =  ''
-                    technical_validator_temp  =  ''
-                    complexity_temp  =  ''
-                    activity_type_temp  =  ''
-                    domain_kpi_temp  =  ''
-                    impacted_node_temp  =  ''
-                    kpi_details_temp  =  ''
-                    oss_name_temp  =  ''
-                    oss_IP_temp  =  ''
-                    total_time_spent_on_planned_crs_mins_temp  =  ''
-                    vendor_temp  =  ''
-                    protocol_temp  =  ''
-                    execution_projection_temp  =  ''
+                    activity_checker_temp                                   =  ''
+                    activity_initiator_temp                                 =  ''
+                    impact_temp                                             =  ''
+                    planning_status_temp                                    =  ''
+                    domain_temp                                             =  ''
+                    reason_for_rollback_cancel_temp                         =  ''
+                    design_availability_temp                                =  ''
+                    technical_validator_temp                                =  ''
+                    complexity_temp                                         =  ''
+                    activity_type_temp                                      =  ''
+                    domain_kpi_temp                                         =  ''
+                    impacted_node_temp                                      =  ''
+                    kpi_details_temp                                        =  ''
+                    oss_name_temp                                           =  ''
+                    oss_IP_temp                                             =  ''
+                    total_time_spent_on_planned_crs_mins_temp               =  ''
+                    vendor_temp                                             =  ''
+                    protocol_temp                                           =  ''
+                    execution_projection_temp                               =  ''
 
                     # Starting another loop to collect all data of particular CR no. from the daily_plan_sheet dataframe to assess the data and manipulate it according to our needs.
                     for i in range(0,len(daily_plan_sheet)):
@@ -406,6 +408,12 @@ def email_package_sheet_creater(workbook):
                                             else:
                                                 cr_belongs_to_same_activity_of_previous_cr_yes_no_temp  =  str(daily_plan_sheet.iloc[i]['CR Belongs to Same Activity of Previous CR- Yes/NO'])
                             
+                                        if (len(str(activity_checker_temp)) == 0):
+                                            if (len(str(daily_plan_sheet.iloc[i]['Activity Checker']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Checker']).strip() == 'TempNA'):
+                                                activity_checker_temp = str(activity_checker_temp)
+                                            else:
+                                                activity_checker_temp  =  str(daily_plan_sheet.iloc[i]['Activity Checker'])
+
 
                                         if (len(str(activity_initiator_temp)) == 0):
                                             if (len(str(daily_plan_sheet.iloc[i]['Activity Initiator']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Initiator']).strip() == 'TempNA'):
@@ -525,6 +533,7 @@ def email_package_sheet_creater(workbook):
                                                 maintenance_window_temp = maintenance_window_temp
                                             else:
                                                 maintenance_window_temp  =  daily_plan_sheet.iloc[i]['Maintenance Window']
+                                        
 
                                         if(len(activity_title_temp) == 0):
                                             if ((len(str(daily_plan_sheet.iloc[i]['Activity Title']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Title']).strip() == 'TempNA')):
@@ -562,6 +571,11 @@ def email_package_sheet_creater(workbook):
                                             else:
                                                 cr_belongs_to_same_activity_of_previous_cr_yes_no_temp  =  daily_plan_sheet.iloc[i]['CR Belongs to Same Activity of Previous CR- Yes/NO']
                             
+                                        if (len(str(activity_checker_temp)) == 0):
+                                            if (len(str(daily_plan_sheet.iloc[i]['Activity Checker']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Checker']).strip() == 'TempNA'):
+                                                activity_checker_temp = str(activity_checker_temp)
+                                            else:
+                                                activity_checker_temp  =  str(daily_plan_sheet.iloc[i]['Activity Checker'])
 
                                         if (len(str(activity_initiator_temp)) == 0):
                                             if ((len(str(daily_plan_sheet.iloc[i]['Activity Initiator']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Initiator']).strip() == 'TempNA')):
@@ -708,6 +722,12 @@ def email_package_sheet_creater(workbook):
                                             else:
                                                 cr_belongs_to_same_activity_of_previous_cr_yes_no_temp  =  str(daily_plan_sheet.iloc[i]['CR Belongs to Same Activity of Previous CR- Yes/NO'])
 
+                                        if (len(str(activity_checker_temp)) == 0):
+                                            if (len(str(daily_plan_sheet.iloc[i]['Activity Checker']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Checker']).strip() == 'TempNA'):
+                                                activity_checker_temp = str(activity_checker_temp)
+                                            else:
+                                                activity_checker_temp  =  str(daily_plan_sheet.iloc[i]['Activity Checker'])
+
                                         if (len(str(activity_initiator_temp)) == 0):
                                             if ((len(str(daily_plan_sheet.iloc[i]['Activity Initiator']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Activity Initiator']).strip() == 'TempNA')):
                                                 activity_initiator_temp = str(activity_initiator_temp)
@@ -787,6 +807,7 @@ def email_package_sheet_creater(workbook):
                     circle.append(circle_temp)
                     no_of_node_involved.append(no_of_node_involved_temp)
                     cr_belongs_to_same_activity_of_previous_cr_yes_no.append(cr_belongs_to_same_activity_of_previous_cr_yes_no_temp)
+                    activity_checker.append(activity_checker_temp)
                     activity_initiator.append(activity_initiator_temp)
                     impact.append(impact_temp)
                     planning_status.append(planning_status_temp)
@@ -852,7 +873,7 @@ def email_package_sheet_creater(workbook):
                 df['No. of Node Involved']                                  = no_of_node_involved
                 df['CR Belongs to Same Activity of Previous CR- Yes/NO']    = cr_belongs_to_same_activity_of_previous_cr_yes_no
                 df['Change Responsible']                                    = ''
-                df['Activity Checker']                                      = ''
+                df['Activity Checker']                                      = activity_checker
                 df['Activity Initiator']                                    = activity_initiator
                 df['Impact']                                                = impact
                 df['Planning Status']                                       = planning_status
@@ -919,4 +940,4 @@ def email_package_sheet_creater(workbook):
         messagebox.showerror("  Exception Occured!",error)
         return "Unsuccessful"
 
-#email_package_sheet_creater(r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
+email_package_sheet_creater(r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")

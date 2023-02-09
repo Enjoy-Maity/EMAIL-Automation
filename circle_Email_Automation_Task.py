@@ -254,24 +254,24 @@ def fetch_details(sender,workbook):
                                 cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
                                 
                                 subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%d-%m-%Y')}"
-                                body="""
-                                    <html>        
-                                        <body>
-                                            <div><p>Hi team,<br></p>
-                                                <p>Please confirm below points so that we will approve CR’s.<br></p>
-                                                <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>
-                                                <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>
-                                                <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.<br><br></p>
-                                            </div>
-                                            <div>
-                                                <p>{}</p>
-                                            </div>
-                                            <div>
-                                                <p>Regards<br>{}<br>Ericsson India Global Services Pvt. Ltd.</p>
-                                                </div>
-                                        </body>
-                                    </html>
-                                    """
+                                body="\
+                                    <html>\
+                                        <body>\
+                                            <div><p>Hi team,<br></p>\
+                                                <p>Please confirm below points so that we will approve CR’s.<br></p>\
+                                                <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>\
+                                                <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>\
+                                                <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.<br><br></p>\
+                                            </div>\
+                                            <div>\
+                                                <p>{}</p>\
+                                            </div>\
+                                            <div>\
+                                                <p>Regards,<br>{}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.</p>\
+                                                </div>\
+                                        </body>\
+                                    </html>\
+                                    "
                                 # Formatting the dataframe's 'Execution Date' column to "dd-mm-YYYY" format.
                                 dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = "%m/%d/%Y")
                                 dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime("%d-%m-%Y")

@@ -84,8 +84,8 @@ def validation_adder(workbook,worksheet):
     ws.add_data_validation(rule3)
 
     # Setting the rows for the rules.
-    range_setter_var_planning_status       = f'O2:O{maxrows}'
-    range_setter_var_execution_projection  = f'AE2:AE{maxrows}'
+    range_setter_var_planning_status       = f'P2:P{maxrows}'
+    range_setter_var_execution_projection  = f'AF2:AF{maxrows}'
 
     # Adding the ranges to the rules.
     rule1.add(range_setter_var_planning_status)
@@ -110,132 +110,158 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
         else:
             # Reading the report csv file. 
             # By default the encoding of the report csv file is in ANSI encoding, so to read it in pandas we have to set encoding "mbcs" or "cp1252"
-            report = pd.read_csv(report_path, encoding="mbcs")
+            try:
+                report = pd.read_csv(report_path, encoding = "mbcs")
             
-            # Columns for the planning sheet in the planning workbook.
-            columns_for_planning_sheet =    ["Execution Date",
-                                            "Maintenance Window",
-                                            "CR NO",
-                                            "Activity Title",
-                                            "Risk",
-                                            "Location",
-                                            "Circle",
-                                            "No. of Node Involved",
-                                            "CR Belongs to Same Activity of Previous CR- Yes/NO",
-                                            "Change Responsible",
-                                            "Activity Checker",
-                                            "Activity Initiator",
-                                            "Impact",
-                                            "Planning Status",
-                                            "Domain",
-                                            "Final Status",
-                                            "Reason For Rollback / Cancel",
-                                            "Design Availability",
-                                            "Technical Validator",
-                                            "Complexity",
-                                            "Activity-Type",
-                                            "Domain kpi",
-                                            "IMPACTED NODE",
-                                            "KPI DETAILS",
-                                            "oss name",
-                                            "oss ip",
-                                            "Total Time spent on Planned CRs (Mins)",
-                                            "Vendor",
-                                            "Protocol",
-                                            "Execution Projection",
-                                            "Inter-domain Name",
-                                            "Second Level Validation Status",
-                                            "Inter-domain KPI status",
-                                            "MOP View Status"]
-            
-            # Creating the dataframe for daily_planning_sheet to write into the planning sheet of the planning workbook.
-            daily_planning_sheet = pd.DataFrame(columns= columns_for_planning_sheet)
-            
-            # Filtering out the rows from the report excluding rows where report[Status*] = Draft
-            report = report[report["Status*"] != "Draft"]
-
-            # Resetting the index values of report
-            report.reset_index(drop = True,inplace = True)
-            # Taking out only required data from the report
-            report = report[['Scheduled Start Date+','Change ID*+','Summary*','Impact*','Site Group','Submitter*','Operational Categorization Tier 1+','Operational Categorization Tier 3']]
-
-            # Formatting the date of the report['Scheduled Start Date+'].
-            report["Scheduled Start Date+"] = pd.to_datetime(report["Scheduled Start Date+"])
-            report["Scheduled Start Date+"] = report["Scheduled Start Date+"].dt.strftime("%d-%b-%Y")
-            
-            # Selecting the data from the raw report and entering it in the daily_planning_sheet
-            daily_planning_sheet['Execution Date']                                      =   report["Scheduled Start Date+"]
-            daily_planning_sheet['Maintenance Window']                                  =   "00:00 To 06:00 Hrs"
-            daily_planning_sheet['CR NO']                                               =   report["Change ID*+"]
-            daily_planning_sheet['Activity Title']                                      =   report["Summary*"]
-            daily_planning_sheet['Risk']                                                =   ""
-            daily_planning_sheet['Location']                                            =   ""
-            daily_planning_sheet['Circle']                                              =   report["Site Group"]
-            daily_planning_sheet['No. of Node Involved']                                =   ""
-            daily_planning_sheet['CR Belongs to Same Activity of Previous CR- Yes/NO']  =   ""
-            daily_planning_sheet['Change Responsible']                                  =   ""
-            daily_planning_sheet['Activity Checker']                                    =   ""
-            daily_planning_sheet['Activity Initiator']                                  =   report["Submitter*"]
-            daily_planning_sheet['Impact']                                              =   ""
-            daily_planning_sheet['Planning Status']                                     =   ""
-            daily_planning_sheet['Domain']                                              =   ""
-            daily_planning_sheet['Final Status']                                        =   ""
-            daily_planning_sheet['Reason For Rollback / Cancel']                        =   ""
-            daily_planning_sheet['Design Availability']                                 =   ""
-            daily_planning_sheet['Technical Validator']                                 =   sender
-            daily_planning_sheet['Complexity']                                          =   ""
-            daily_planning_sheet['Activity-Type']                                       =   report["Operational Categorization Tier 3"]
-            daily_planning_sheet['Domain kpi']                                          =   ""
-            daily_planning_sheet['IMPACTED NODE']                                       =   ""
-            daily_planning_sheet['KPI DETAILS']                                         =   ""
-            daily_planning_sheet['oss name']                                            =   ""
-            daily_planning_sheet['oss ip']                                              =   ""
-            daily_planning_sheet['Total Time spent on Planned CRs (Mins)']              =   ""
-            daily_planning_sheet['Vendor']                                              =   ""
-            daily_planning_sheet['Protocol']                                            =   ""
-            daily_planning_sheet['Execution Projection']                                =   ""
-            daily_planning_sheet['Inter-domain Name']                                   =   ""
-            daily_planning_sheet['Second Level Validation Status']                      =   ""
-            daily_planning_sheet['Inter-domain KPI status']                             =   ""
-            daily_planning_sheet['MOP View Status']                                     =   ""
-            
-            daily_planning_sheet.reset_index(drop = True, inplace = True)
-            daily_planning_sheet.index += 1
-            daily_planning_sheet.insert(0,"S.NO",daily_planning_sheet.index)
-            daily_planning_sheet.reset_index(drop = True, inplace = True)
-            
-            # Iterating through the report dataframe for writing into the planning sheet
-            for i in range(0, len(report)):          
-                if(report.iloc[i]['Impact*'].__contains__("1-Extensive/Widespread")):
-                    daily_planning_sheet.at[i,"Risk"] = "Level 1"
+            except:
+                try:
+                    report = pd.read_csv(report_path, encoding = "cp1252")
                 
-                if(report.iloc[i]['Impact*'].__contains__("2-Significant/Large")):
-                    daily_planning_sheet.at[i,"Risk"] = "Level 2"
-                
-                if ((report.iloc[i]['Impact*'].strip() != "2-Significant/Large") and (report.iloc[i]['Impact*'].strip() != "1-Extensive/Widespread")):
-                    daily_planning_sheet.at[i,"Risk"] = report.iloc[i]['Impact*']
-                
-                if(report.iloc[i]['Operational Categorization Tier 1+'].__contains__("MPBN")):
-                    daily_planning_sheet.at[i,"Domain"] = "MPBN-MS"
-
-            # Creating the writer for writing into the planning sheet.
-            writer = pd.ExcelWriter(planning_workbook,engine = "openpyxl", mode = "a", if_sheet_exists = "replace")
-            daily_planning_sheet.to_excel(writer,"Planning Sheet",index = False)    # writing daily_planning_sheet into the planning sheet.
-            writer.close()
-
-            # styling the worksheet.
-            styling(planning_workbook,"Planning Sheet")
+                except Exception as error:
+                    messagebox.showerror("  Exception Occured!",error)
             
-            # adding the data validation.
-            validation_adder(planning_workbook,"Planning Sheet")
-
-            # deleting the dataframes no longer in use.
-            del daily_planning_sheet
-            del report
+            else:
             
-            # Message shown after successful task running.
-            messagebox.showinfo("   Sheet Creation Successful!","Tonight CRs Parameter Copied in MPBN Planning Sheet!")
-            return "Successful"
+                # Columns for the planning sheet in the planning workbook.
+                columns_for_planning_sheet =    ["Execution Date",
+                                                "Maintenance Window",
+                                                "CR NO",
+                                                "Activity Title",
+                                                "Risk",
+                                                "Location",
+                                                "Circle",
+                                                "Region",
+                                                "No. of Node Involved",
+                                                "CR Belongs to Same Activity of Previous CR- Yes/NO",
+                                                "Change Responsible",
+                                                "Activity Checker",
+                                                "Activity Initiator",
+                                                "Impact",
+                                                "Planning Status",
+                                                "Domain",
+                                                "Final Status",
+                                                "Reason For Rollback / Cancel",
+                                                "Design Availability",
+                                                "Technical Validator",
+                                                "Complexity",
+                                                "Activity-Type",
+                                                "Domain kpi",
+                                                "IMPACTED NODE",
+                                                "KPI DETAILS",
+                                                "oss name",
+                                                "oss ip",
+                                                "Total Time spent on Planned CRs (Mins)",
+                                                "Vendor",
+                                                "Protocol",
+                                                "Execution Projection",
+                                                "Inter-domain Name",
+                                                "Second Level Validation Status",
+                                                "Inter-domain KPI status",
+                                                "MOP View Status"]
+                
+                # Creating the dataframe for daily_planning_sheet to write into the planning sheet of the planning workbook.
+                daily_planning_sheet = pd.DataFrame(columns= columns_for_planning_sheet)
+                
+                # Filtering out the rows from the report excluding rows where report[Status*] = Draft
+                report = report[report["Status*"] != "Draft"]
+
+                # Resetting the index values of report
+                report.reset_index(drop = True,inplace = True)
+                # Taking out only required data from the report
+                report = report[['Scheduled Start Date+','Change ID*+','Summary*','Impact*','Site Group','Submitter*','Operational Categorization Tier 1+','Operational Categorization Tier 3']]
+
+                # Reading the Mail ID for getting the region from the sheet corresponding to circle or site group.
+                mail_id_sheet_region = pd.ExcelFile(planning_workbook)
+                mail_id_sheet_region = pd.read_excel(mail_id_sheet_region,"Mail Id")
+
+                # Filtering only needed columns.
+                mail_id_sheet_region = mail_id_sheet_region[['Circle','Region']]
+                
+                # Making a dictionary object from the two columns of the circle vs region.
+                mail_id_sheet_region_dictionary_from_circle_to_region = dict(zip(mail_id_sheet_region['Circle'],mail_id_sheet_region['Region']))
+
+                # Formatting the date of the report['Scheduled Start Date+'].
+                report["Scheduled Start Date+"] = pd.to_datetime(report["Scheduled Start Date+"])
+                report["Scheduled Start Date+"] = report["Scheduled Start Date+"].dt.strftime("%d-%b-%Y")
+                
+                # Selecting the data from the raw report and entering it in the daily_planning_sheet
+                daily_planning_sheet['Execution Date']                                      =   report["Scheduled Start Date+"]
+                daily_planning_sheet['Maintenance Window']                                  =   "00:00 To 06:00 Hrs"
+                daily_planning_sheet['CR NO']                                               =   report["Change ID*+"]
+                daily_planning_sheet['Activity Title']                                      =   report["Summary*"]
+                daily_planning_sheet['Risk']                                                =   ""
+                daily_planning_sheet['Location']                                            =   ""
+                daily_planning_sheet['Circle']                                              =   report["Site Group"]
+                daily_planning_sheet['Region']                                              =   report["Site Group"].map(mail_id_sheet_region_dictionary_from_circle_to_region)
+                daily_planning_sheet['No. of Node Involved']                                =   ""
+                daily_planning_sheet['CR Belongs to Same Activity of Previous CR- Yes/NO']  =   ""
+                daily_planning_sheet['Change Responsible']                                  =   ""
+                daily_planning_sheet['Activity Checker']                                    =   ""
+                daily_planning_sheet['Activity Initiator']                                  =   report["Submitter*"]
+                daily_planning_sheet['Impact']                                              =   ""
+                daily_planning_sheet['Planning Status']                                     =   ""
+                daily_planning_sheet['Domain']                                              =   ""
+                daily_planning_sheet['Final Status']                                        =   ""
+                daily_planning_sheet['Reason For Rollback / Cancel']                        =   ""
+                daily_planning_sheet['Design Availability']                                 =   ""
+                daily_planning_sheet['Technical Validator']                                 =   sender
+                daily_planning_sheet['Complexity']                                          =   ""
+                daily_planning_sheet['Activity-Type']                                       =   report["Operational Categorization Tier 3"]
+                daily_planning_sheet['Domain kpi']                                          =   ""
+                daily_planning_sheet['IMPACTED NODE']                                       =   ""
+                daily_planning_sheet['KPI DETAILS']                                         =   ""
+                daily_planning_sheet['oss name']                                            =   ""
+                daily_planning_sheet['oss ip']                                              =   ""
+                daily_planning_sheet['Total Time spent on Planned CRs (Mins)']              =   ""
+                daily_planning_sheet['Vendor']                                              =   ""
+                daily_planning_sheet['Protocol']                                            =   ""
+                daily_planning_sheet['Execution Projection']                                =   ""
+                daily_planning_sheet['Inter-domain Name']                                   =   ""
+                daily_planning_sheet['Second Level Validation Status']                      =   ""
+                daily_planning_sheet['Inter-domain KPI status']                             =   ""
+                daily_planning_sheet['MOP View Status']                                     =   ""
+                
+                daily_planning_sheet.reset_index(drop = True, inplace = True)
+                daily_planning_sheet.index += 1
+                daily_planning_sheet.insert(0,"S.NO",daily_planning_sheet.index)
+                daily_planning_sheet.reset_index(drop = True, inplace = True)
+                
+                # Iterating through the report dataframe for writing into the planning sheet
+                for i in range(0, len(report)):          
+                    if(report.iloc[i]['Impact*'].__contains__("1-Extensive/Widespread")):
+                        daily_planning_sheet.at[i,"Risk"] = "Level 1"
+                    
+                    if(report.iloc[i]['Impact*'].__contains__("2-Significant/Large")):
+                        daily_planning_sheet.at[i,"Risk"] = "Level 2"
+                    
+                    if ((report.iloc[i]['Impact*'].strip() != "2-Significant/Large") and (report.iloc[i]['Impact*'].strip() != "1-Extensive/Widespread")):
+                        daily_planning_sheet.at[i,"Risk"] = report.iloc[i]['Impact*']
+                    
+                    if(report.iloc[i]['Operational Categorization Tier 1+'].__contains__("MPBN")):
+                        daily_planning_sheet.at[i,"Domain"] = "MPBN-MS"
+
+                # Creating the writer for writing into the planning sheet.
+                writer = pd.ExcelWriter(planning_workbook,engine = "openpyxl", mode = "a", if_sheet_exists = "replace")
+                daily_planning_sheet.to_excel(writer,"Planning Sheet",index = False)    # writing daily_planning_sheet into the planning sheet.
+                writer.close()
+
+                # styling the worksheet.
+                styling(planning_workbook,"Planning Sheet")
+                
+                # adding the data validation.
+                validation_adder(planning_workbook,"Planning Sheet")
+
+                # deleting the dataframes no longer in use.
+                del daily_planning_sheet
+                del mail_id_sheet_region
+                del report
+                
+                # Deleting variables no longer in use
+                del mail_id_sheet_region_dictionary_from_circle_to_region
+
+                # Message shown after successful task running.
+                messagebox.showinfo("   Sheet Creation Successful!","Tonight CRs Parameter Copied in MPBN Planning Sheet!")
+                return "Successful"
 
     except CustomException:
         return "Unsuccessful"
@@ -251,4 +277,4 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
         messagebox.showerror("  Exception Occured!",error)    
         return "Unsuccessful"
 
-#planning_sheet_creater(r"C:/Users/emaienj/OneDrive - Ericsson/Documents/Report.csv",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
+planning_sheet_creater(r"C:/Users/emaienj/OneDrive - Ericsson/Documents/Report.csv",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx","Enjoy Maity")

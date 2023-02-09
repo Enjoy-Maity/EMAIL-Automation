@@ -76,34 +76,32 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     worksheet.to_excel(writer,"Email-Package",index = False)
 
     # Creating the Html Body for the Body
-    html_body = """<html>
-                        <body>
-                            <div>
-                                <p>Hi Team,</p>
-
-                                <p>Please find the Activity Executor and Checker details for tonight planned activity list  dated  <strong>{}</strong>   MW<br>
-                                   Also, find the attached e-mail package and filter by your name your will get activity detail assigned to you.</p>
-
-                                <p><span style = "background-color:#FFFF00"><strong>Note: Final CR Status may vary post cab call-</strong></span></p>
-                            </div>
-                            <div>
-                                <br>
-                                    {}
-                                <br>
-                            </div>
-                            <div>
-                                {}
-                                <br>
-                                <br>
-                                <br>
-                                <br>
-                                <br>
-                            </div>
-                            <div>
-                                <p>Thanks & Regards, <br>{}</p>
-                            </div>
-                        </body>
-                    </html>"""
+    html_body = "<html>\
+                        <body>\
+                            <div>\
+                                <p>Hi Team,</p>\
+                                <p>Please find the Activity Executor and Checker details for tonight planned activity list  dated  <strong>{}</strong>   MW<br>\
+                                   Also, find the attached e-mail package and filter by your name your will get activity detail assigned to you.</p>\
+                                <p><span style = 'background-color:#FFFF00'><strong>Note: Final CR Status may vary post cab call-</strong></span></p>\
+                            </div>\
+                            <div>\
+                                <br>\
+                                    {}\
+                                <br>\
+                            </div>\
+                            <div>\
+                                {}\
+                                <br>\
+                                <br>\
+                                <br>\
+                                <br>\
+                                <br>\
+                            </div>\
+                            <div>\
+                                <p>Thanks & Regards,<br>{}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.</p>\
+                            </div>\
+                        </body>\
+                    </html>"
     
     # Filtering out required columns
     worksheet = worksheet[['S.NO',

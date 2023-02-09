@@ -262,16 +262,80 @@ def styling(workbook,sheetname):
 def quit(event):
     sys.exit(0)
 
+
+#####################################################################
+#############################  Validation   #########################
+#####################################################################
+
+# Method(Function) for adding data validation like vlookup or index match
+def validation_adder(workbook,worksheet):
+    try:
+        # Loading the parent workbook and the worksheet in the memory of the computer.
+        wb = pd.read_excel(workbook,"Email-Package")
+
+        blank_change_responsible_field = []
+        
+        wb['Change Responsible'].fillna("TempNA",inplace = True)
+
+        # Checking the Change Responsible for each row to be non-blank.
+        for i in range(0,len(wb)):
+            if (wb.iloc[i]['Change Responsible'] == 'TempNA'):
+                blank_change_responsible_field.append(wb.iloc[i]['S.NO'])
+            
+        
+        if(len(blank_change_responsible_field) > 0):
+            raise CustomException(" Blank Change Responsible Field!",f"Kindly Enter the Change Responsible detail for S.NO:\n{', '.join(blank_change_responsible_field)}")
+        
+        else:
+            dictionary_from_cr_to_change_responsible_email_package = dict(zip(wb['CR NO'],wb['Change Responsible']))
+
+            daily_plan_sheet = pd.read_excel(workbook,worksheet)
+            
+            try:
+                daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
+            
+            except:
+                try:
+                    daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'], format = "%d-%b-%Y")
+                
+                except:
+                    daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'], format = "%m/%d/%Y")
+            
+            else:
+                daily_plan_sheet['Execution Date'] = daily_plan_sheet['Execution Date'].dt.strftime('%d-%b-%Y')
+                daily_plan_sheet['Change Responsible'] = daily_plan_sheet['CR NO'].map(dictionary_from_cr_to_change_responsible_email_package)
+
+                daily_plan_sheet.reset_index(drop = True, inplace = True)
+                writer = pd.ExcelWriter(workbook, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
+                daily_plan_sheet.to_excel(writer,sheet_name = worksheet,index = False)
+                
+                writer.close()
+
+                styling(workbook,worksheet)
+
+    except CustomException:
+        return "Unsuccessful"
+
+    except Exception as e:
+        messagebox.showerror("  Exception Occured!",e)
+        return "Unsuccessful"
+
+    
+
 #####################################################################
 #############################  Paco_cscore  #########################
 #####################################################################
 
+# Driver Method(Function)
 def paco_cscore(sender,workbook):
     try:
         #user = subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
 
-        #workbook = r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
+        #workbook = r"C:/Daily/MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
         
+        # Calling the method to add vlookup to the column of Change Responsible in Planning Sheet
+        validation_adder(workbook,"Planning Sheet")
+
         daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
         tomorrow = datetime.today()+timedelta(1) # getting tomorrow date for data execution
         difference = []
@@ -314,8 +378,9 @@ def paco_cscore(sender,workbook):
             result_df = pd.DataFrame()
             
             # Replacing all the blank fields(excel cells) in the dataframe with 'NA'
-            daily_plan_sheet.fillna("NA",inplace = True)
+            daily_plan_sheet.fillna("TempNA",inplace = True)
 
+            
             # Creating empty list to find out the serial numbers of the rows where the Circle input and the Change responsible is not properly entered by the user.
             circle_not_proper = []
             change_responsible_not_proper = []
@@ -324,7 +389,7 @@ def paco_cscore(sender,workbook):
             # numbers of the rows where the Circle input and the Change responsible is not properly entered by the user and any other fields that should be left unblank
             # by the user.
             for i in range(0,len(daily_plan_sheet)):
-                if (daily_plan_sheet.iloc[i]['CR NO'] == "NA") or (daily_plan_sheet.iloc[i]['CR NO'] == None):
+                if (daily_plan_sheet.iloc[i]['CR NO'] == "TempNA") or (daily_plan_sheet.iloc[i]['CR NO'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
                 if (daily_plan_sheet.iloc[i]['Circle'] not in circle):
@@ -333,37 +398,37 @@ def paco_cscore(sender,workbook):
                 if (daily_plan_sheet.iloc[i]['Change Responsible'].strip().upper() not in original_change_responsible):
                     change_responsible_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Activity Title'] == 'NA') or (daily_plan_sheet.iloc[i]['Activity Title'] == None):
+                if (daily_plan_sheet.iloc[i]['Activity Title'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Activity Title'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Circle'] == 'NA') or (daily_plan_sheet.iloc[i]['Circle'] == None):
+                if (daily_plan_sheet.iloc[i]['Circle'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Circle'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Risk'] == 'NA') or (daily_plan_sheet.iloc[i]['Risk'] == None):
+                if (daily_plan_sheet.iloc[i]['Risk'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Risk'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Location'] == 'NA') or (daily_plan_sheet.iloc[i]['Location'] == None):
+                if (daily_plan_sheet.iloc[i]['Location'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Location'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Change Responsible'] == 'NA') or (daily_plan_sheet.iloc[i]['Change Responsible'] == None):
+                if (daily_plan_sheet.iloc[i]['Change Responsible'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Change Responsible'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Impact'] == 'NA') or (daily_plan_sheet.iloc[i]['Impact'] == None):
+                if (daily_plan_sheet.iloc[i]['Impact'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Impact'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Technical Validator'] == 'NA') or (daily_plan_sheet.iloc[i]['Technical Validator'] == None):
+                if (daily_plan_sheet.iloc[i]['Technical Validator'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Technical Validator'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Activity-Type'] == 'NA') or (daily_plan_sheet.iloc[i]['Activity-Type'] == None):
+                if (daily_plan_sheet.iloc[i]['Activity-Type'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Activity-Type'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Vendor'] == 'NA') or (daily_plan_sheet.iloc[i]['Vendor'] == None):
+                if (daily_plan_sheet.iloc[i]['Vendor'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Vendor'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Protocol'] == 'NA') or (daily_plan_sheet.iloc[i]['Protocol'] == None):
+                if (daily_plan_sheet.iloc[i]['Protocol'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Protocol'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Execution Projection'] == 'NA') or (daily_plan_sheet.iloc[i]['Execution Projection'] == None):
+                if (daily_plan_sheet.iloc[i]['Execution Projection'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Execution Projection'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
                 else:
@@ -390,7 +455,6 @@ def paco_cscore(sender,workbook):
                 messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
                 return 'Unsuccessful'
             else:
-            
                 sheetname = "PS Core-Inter Domain"
                 sheetname2 = "CS Core-Inter Domain"
                 sheetname3 = "RAN-Inter Domain"
@@ -442,6 +506,7 @@ def paco_cscore(sender,workbook):
                 dictionary1 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
                 df = pd.DataFrame(dictionary1)
                 df.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
+                df.replace("TempNA","",inplace = True)
 
                 ######################################################### Entering details for Cs core #######################################################################
                 execution_date = []
@@ -483,6 +548,7 @@ def paco_cscore(sender,workbook):
                 dictionary2 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
                 df2 = pd.DataFrame(dictionary2)
                 df2.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
+                df2.replace("TempNA","",inplace = True)
 
                 ##########################################################  Entering details for RAN  ########################################################################
                 execution_date = []
@@ -530,6 +596,7 @@ def paco_cscore(sender,workbook):
                 dictionary3 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored,'OSS Name':oss_name,'OSS IP':oss_IP}
                 df3 = pd.DataFrame(dictionary3)
                 df3.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
+                df3.replace("TempNA","",inplace = True)
 
                 ##########################################################  Entering details for VAS  ########################################################################
                 
@@ -575,6 +642,7 @@ def paco_cscore(sender,workbook):
                 dictionary4 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
                 df4 = pd.DataFrame(dictionary4)
                 df4.drop_duplicates(subset = 'CR', keep = "first", inplace = True)
+                df4.replace("TempNA","",inplace = True)
 
                 # Dropping the Index of each Dataframe so that they're not written into the excel sheets.
                 df.reset_index(drop = True,inplace = True)
@@ -663,4 +731,4 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-#paco_cscore("Karan Loomba",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+paco_cscore("Karan Loomba",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx")
