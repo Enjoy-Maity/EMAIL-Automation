@@ -303,6 +303,7 @@ def validation_adder(workbook,worksheet):
             
             else:
                 daily_plan_sheet['Execution Date'] = daily_plan_sheet['Execution Date'].dt.strftime('%d-%b-%Y')
+                
                 daily_plan_sheet['Change Responsible'] = daily_plan_sheet['CR NO'].map(dictionary_from_cr_to_change_responsible_email_package)
 
                 daily_plan_sheet.reset_index(drop = True, inplace = True)
@@ -731,4 +732,4 @@ def paco_cscore(sender,workbook):
         messagebox.showerror("  Exception Occured",e)
         return "Unsuccessful"
 
-paco_cscore("Karan Loomba",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx")
+#paco_cscore("Karan Loomba",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")

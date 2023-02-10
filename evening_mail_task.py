@@ -64,7 +64,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
         wb.save(workbook)
 
         wb = load_workbook(workbook)
-        sheets = wb.sheet_names
+        sheets = wb.sheetnames
 
         # Removing Extra sheets which were created while creating the required sheet by default, to place the required sheet in the given index.
         for sheet in sheets:

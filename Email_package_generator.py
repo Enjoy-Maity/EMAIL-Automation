@@ -100,7 +100,7 @@ def validation_adder(workbook,worksheet):
     
     
     # Setting the rows for the rules.
-    range_setter_var_change_responsible    = f'L2:L{maxrows}'
+    range_setter_var_change_responsible    = f'K2:K{maxrows}'
     
     # Adding the ranges to the rules.
     rule1.add(range_setter_var_change_responsible)
@@ -940,4 +940,4 @@ def email_package_sheet_creater(workbook):
         messagebox.showerror("  Exception Occured!",error)
         return "Unsuccessful"
 
-email_package_sheet_creater(r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
+#email_package_sheet_creater(r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
