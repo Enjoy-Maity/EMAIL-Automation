@@ -25,7 +25,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
     mail_draft          = mail_draft.CreateItem(0)
     mail_draft.To       = 'enjoy.maity@ericsson.com'
     mail_draft.CC       = 'karan.k.loomba@ericsson.com'
-    mail_draft.Subject  = f"Activities For Tonight (Activity Window {execution_date} {maintenance_window} )"
+    mail_draft.Subject  = f"MPBN CRs For Tonight Maintenance Window - {execution_date} {maintenance_window}"
 
     dataframe = dataframe.style.set_table_styles([
         {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},
@@ -44,7 +44,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
 
     dataframe_for_top_table = dataframe_for_top_table.hide(axis='index') # hiding the index coloumn
 
-    mail_draft.HTMLBody = html_body.format(execution_date,dataframe_for_top_table.to_html(index = False,headers = False),dataframe.to_html(index = False),sender)
+    mail_draft.HTMLBody = html_body.format(execution_date,maintenance_window,dataframe_for_top_table.to_html(index = False,headers = False),dataframe.to_html(index = False),sender)
     mail_draft.Attachments.Add(email_package_workbook)
     
     # Saving the mail draft
@@ -80,20 +80,17 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
                         <body>\
                             <div>\
                                 <p>Hi Team,</p>\
-                                <p>Please find the Activity Executor and Checker details for tonight planned activity list  dated  <strong>{}</strong>   MW<br>\
-                                   Also, find the attached e-mail package and filter by your name your will get activity detail assigned to you.</p>\
-                                <p><span style = 'background-color:#FFFF00'><strong>Note: Final CR Status may vary post cab call-</strong></span></p>\
+                                <p>Please find the list of MPBN planned activities for tonight Maintenance Window <strong>{} {}</strong>.<br><br>\
+                                   Also, Please find the attached e-mail package and filter by your name - you will get the activity detail assigned to you.</p>\
+                                <p><span style = 'background-color:#FFFF00'><strong>Note: Final CR Status may vary post CAB discussion.</strong></span></p>\
                             </div>\
                             <div>\
                                 <br>\
                                     {}\
-                                <br>\
+                                <br><br>\
                             </div>\
                             <div>\
                                 {}\
-                                <br>\
-                                <br>\
-                                <br>\
                                 <br>\
                                 <br>\
                             </div>\
@@ -166,7 +163,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             partially_automation = 0
 
             # Getting the maintenance windo from the excel sheet.
-            maintenance_window = f"(  {worksheet.at[0,'Maintenance Window']}  )"
+            maintenance_window = f"({worksheet.at[0,'Maintenance Window']})"
             
             # Creating a dictionary to give the subscipt of the month name based on the month number.
             month_dictionary = {

@@ -160,7 +160,7 @@ class App(tk.Tk):
 
             # Creating button for the Email Package Data Preparation task
             self.email_package_prep_btn = ttk.Button(
-                self.main_win, text="   Email Package Preparation   ", command=self.email_package_prep_func)
+                self.main_win, text="         Email Package Preparation      ", command=self.email_package_prep_func)
 
             # Creating button for the Interdoman KPIs Data Preparation task
             self.interdomain_kpis_data_prep_btn = ttk.Button(
@@ -172,7 +172,7 @@ class App(tk.Tk):
 
             # Creating button for the Evening message task
             self.evening_task_btn = ttk.Button(
-                self.main_win, text="           Evening Message          ", command=lambda: self.evening_task_func(1))
+                self.main_win, text=" Email Package & Evening Message ", command=lambda: self.evening_task_func(1))
 
             ##################################################### Status setter variables #####################################################################################################################
             self.planning_sheet_creater_task_status = StringVar(self.main_win_canvas)
