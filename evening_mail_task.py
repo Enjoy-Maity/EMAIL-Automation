@@ -1,10 +1,14 @@
-from subprocess import Popen                # Importing for opening applications like notebook through cmd line command.
-import pandas as pd                         # Importing for reading Excel Sheet data and Manipulating it.
-from tkinter import messagebox              # Impoprting for showing messages.
-from pathlib import Path                    # Importing Path from pathlib module to check validate the path of a file if exists or not.
-from openpyxl import Workbook               # Importing the Workbook from openpyxl module, so that we can create new workbook and sheets if required.
-from openpyxl import load_workbook          # Importing the Workbook from openpyxl module, to load and check whether extra sheets are created or not.
-import win32com.client as win32             # Importing the win32com.client for creating the COM Object of win32
+from subprocess import Popen                                        # Importing for opening applications like notebook through cmd line command.
+import pandas as pd                                                 # Importing for reading Excel Sheet data and Manipulating it.
+from tkinter import messagebox                                      # Impoprting for showing messages.
+from pathlib import Path                                            # Importing Path from pathlib module to check validate the path of a file if exists or not.
+from openpyxl import Workbook                                       # Importing the Workbook from openpyxl module, so that we can create new workbook and sheets if required.
+from openpyxl import load_workbook                                  # Importing the Workbook from openpyxl module, to load and check whether extra sheets are created or not.
+import win32com.client as win32                                     # Importing the win32com.client for creating the COM Object of win32
+from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing classes from openpyxl to style the excel workbooks.
+from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
+from datetime import datetime, timedelta                            # Importing the datetime and timedelta from datetime module, to filter out the excel sheet basd on today's maintenance date.
+from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in email-package
 
 # Creating classes for custom made exceptions inheriting the default Exception class for raising and handling custom raised exceptions.
 class CustomException(Exception):
@@ -18,6 +22,51 @@ class CustomException(Exception):
         
         # Displaying the message with the custom exception title passed to the object of the class for the CustomException.
         messagebox.showerror(self.title, self.message)
+
+# Creating method for styling the worksheet.
+def styling(workbook,sheetname):
+    wb  =  load_workbook(workbook)                          # loading the workbook.
+    ws  =  wb[sheetname]                                    # loading the worksheet.
+    font_style  =  Font(color = "FFFFFF",bold = True)       # Setting the font style with color.
+    col_widths = []                                         # Empty list for entering the max length of string in each column.
+
+    # Iterating through the row values to find the max length of string in each column in the row and appending it to the col_widths list
+
+    for row_values in ws.iter_rows(values_only = True):
+        for j,value in enumerate(row_values):
+            if len(col_widths)>j:
+                if col_widths[j] < len(str(value)):
+                    col_widths[j] = len(str(value))
+            else:
+                col_widths.insert(j,len(str(value)))
+
+    # Standardising the length of each column in the sheet.
+
+    for i,column_width in enumerate(col_widths,1):
+        if column_width <= 47:
+            ws.column_dimensions[get_column_letter(i)].width = column_width+3
+        else:
+            ws.column_dimensions[get_column_letter(i)].width = 50
+
+
+    # Coloring the headers and alingning the headers text to center both horizontally and vertically.
+    for column in range(1,ws.max_column+1):   # ws.max_column returns the total number of columns present
+        col = get_column_letter(column)
+        color_fill = PatternFill(start_color = '0033CC',end_color = '0033CC',fill_type = 'solid')
+        ws[col+'1'].font = font_style
+        ws[col+'1'].fill = color_fill
+        ws[col+'1'].alignment = Alignment(horizontal = 'center',vertical = 'center')
+
+    # Styling all the occupied cells in the sheet, by adding border to the cells, aligning the text in the center
+    
+    for row in ws:
+        for cell in row:
+            cell.alignment = Alignment(horizontal = 'center',vertical = 'center',wrap_text=False)
+            cell.border = Border(top = Side(border_style = 'medium',color = '000000'),bottom = Side(border_style = 'medium',color = '000000'),left = Side(border_style = 'medium',color = '000000'),right = Side(border_style = 'medium',color = '000000'))
+
+    # Saving the workbook with worksheet with all the changes.
+    wb.save(workbook)
+    wb.close()
 
 # Method(Function) for Drafting Mail.
 def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_date,email_package_workbook,maintenance_window):
@@ -55,25 +104,36 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
 # Method(Function) for creating email package workbook and mail draft.
 def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
-    workbook = f"{folder}\\Email_Package.xlsx"
+    workbook = rf"{folder}\\Email_Package.xlsx"
     
     # Checking if the Email_Package workbook is created or not.
     if(Path(workbook).exists() == False):
         wb = Workbook()
         wb.create_sheet("Email-Package", index = 0)
         wb.save(workbook)
+        wb.close()
 
+        # Loading the workbook
         wb = load_workbook(workbook)
-        sheets = wb.sheetnames
 
-        # Removing Extra sheets which were created while creating the required sheet by default, to place the required sheet in the given index.
-        for sheet in sheets:
-            if (sheet != "Email-Package"):
-                wb.remove(wb[sheet])
+        # Getting the sheetnames
+        wb_sheets = wb.sheetnames
+
+        # Iterating through the loop to see whether there'sother sheet present in the workbook, if yes then removing then.
+        for sheet in wb_sheets:
+            if(sheet != "Email-Package"):
+                ws = wb[sheet]
+                wb.remove_sheet(ws)
+        wb.save(workbook)
+        wb.close()
 
     # Creating the Writer Variable to write into the new excel workbook
-    writer = pd.ExcelWriter(workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
+    new_workbook = pd.ExcelFile(workbook,)
+    writer = pd.ExcelWriter(new_workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
     worksheet.to_excel(writer,"Email-Package",index = False)
+    writer.close()
+
+    styling(workbook, "Email-Package")
 
     # Creating the Html Body for the Body
     html_body = "<html>\
@@ -116,6 +176,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     
     worksheet.reset_index(drop = True, inplace = True)
     worksheet.replace("NA"," ",inplace = True)
+
     # Calling the Mail Drafter Method for drafting the mail but not send it.
     mail_drafter(worksheet,evening_message_workbook_message,html_body,sender,execution_date,workbook,maintenance_window)
 
@@ -284,7 +345,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             file_path.remove(file_path[-1])
             file_path = '\\'.join(file_path)
             folder    = file_path
-            file_path = f'{file_path}\\evening message.txt'
+            file_path = rf'{file_path}\\evening message.txt'
             
             # Writing the text into the file defined by the file path.
             with open(file_path,'w') as f:
@@ -302,13 +363,13 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 pass
             
             # creating a new temp folder with temp excel file for the data to write into.
-            Path((f"{folder}\\temp")).mkdir(exist_ok=True)
+            Path(rf"{folder}\\temp").mkdir(exist_ok=True)
 
             # Setting the folder in the folder path for creation of the email package workbook.
-            temp_folder = f"{folder}\\temp"
+            temp_folder = rf"{folder}\\temp"
 
             # Writing into a temp xlsx file named temp.xlsx
-            temp_file_for_the_evening_message = f"{temp_folder}\\tmp.xlsx"
+            temp_file_for_the_evening_message = rf"{temp_folder}\\tmp.xlsx"
 
             # Checking if the temp_file_for_evening_message is existent or not
             if (Path(temp_file_for_the_evening_message).exists() == False):
