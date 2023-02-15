@@ -12,6 +12,7 @@ import Email_package_generator                  # Importing Email_package_genera
 import interdomain_KPIs_Data_Prep_Task          # Importing Interdomain KPIs Data Prep Task Module.
 import interdomain_KPIs_Mail_Comm_Task          # Importing the interdomain kpi mail communication Module.
 import evening_mail_task                        # Importing evening mail task module.
+import circle_reply_task                        # Importing circle reply task module.
 from datetime import datetime, timedelta        # Importing datetime and timedelta module to get today's maintenance date
 
 # Creating EmptyString Exception Class inheriting the Default Exception for raising and handling custom made empty string exception.
@@ -174,6 +175,10 @@ class App(tk.Tk):
             self.evening_task_btn = ttk.Button(
                 self.main_win, text=" Email Package & Evening Message ", command=lambda: self.evening_task_func(1))
 
+            # Creating button for the Executor Mail communication task
+            self.executor_mail_communication_btn = ttk.Button(
+                self.main_win, text="        Executor Mail Communication      ", command= self.executor_mail_communication)
+
             ##################################################### Status setter variables #####################################################################################################################
             self.planning_sheet_creater_task_status = StringVar(self.main_win_canvas)
             self.planning_sheet_creater_task_status.set("")
@@ -198,6 +203,10 @@ class App(tk.Tk):
             self.evening_task_status = StringVar(self.main_win_canvas)
             self.evening_task_status.set("")
 
+            self.executor_mail_communication_status = StringVar(
+                self.main_win_canvas)
+            self.executor_mail_communication_status.set("")
+
             # List of colors used in labels, #FF00000 stands for 'Red', #00FF00 stands for 'Green', #FFFFFF stands for 'Whites'
             self.color = ["#FF0000", "#00FF00", "#FFFFFF"]
             
@@ -219,6 +228,9 @@ class App(tk.Tk):
             self.evening_task_color_get = StringVar(self.main_win_canvas)
             self.evening_task_color_get.set("")
 
+            self.executor_mail_communication_color_get = StringVar(self.main_win_canvas)
+            self.executor_mail_communication_color_get.set("")
+
         ########################################################## Status checker flags #######################################################################################################################
             self.planning_sheet_creater_task_status_checker_flag            = 0
             self.circle_email_automation_status_checker_flag                = 0
@@ -226,6 +238,7 @@ class App(tk.Tk):
             self.interdomain_kpis_data_prep_status_checker_flag             = 0
             self.interdomain_kpis_mail_communication_status_checker_flag    = 0
             self.evening_task_status_checker_flag                           = 0
+            self.executor_mail_communication_status_checker_flag            = 0
             self.update(1)
         
         # List of all the users.
@@ -353,39 +366,45 @@ class App(tk.Tk):
 
         # Creating the Window for the Planning Sheet creater button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            90, 328, anchor="nw", window = self.planning_sheet_creater_task_btn)
-        self.main_win_canvas.create_text(145, 360, anchor="nw", text = self.planning_sheet_creater_task_status.get(
+            90, 298, anchor="nw", window = self.planning_sheet_creater_task_btn)
+        self.main_win_canvas.create_text(145, 330, anchor="nw", text = self.planning_sheet_creater_task_status.get(
         ), fill = self.planning_sheet_creater_task_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Circle Email Automation button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            385, 328, anchor="nw", window = self.circle_email_automation_task_btn)
-        self.main_win_canvas.create_text(450, 360, anchor="nw", text = self.circle_email_automation_task_status.get(
+            385, 298, anchor="nw", window = self.circle_email_automation_task_btn)
+        self.main_win_canvas.create_text(440, 330, anchor="nw", text = self.circle_email_automation_task_status.get(
         ), fill = self.circle_email_automation_task_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Email package prep button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            700, 328, anchor="nw", window = self.email_package_prep_btn)
-        self.main_win_canvas.create_text(730, 360, anchor="nw", text = self.email_package_prep_task_status.get(
+            700, 298, anchor="nw", window = self.email_package_prep_btn)
+        self.main_win_canvas.create_text(730, 330, anchor="nw", text = self.email_package_prep_task_status.get(
         ), fill = self.email_package_prep_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Interdomain Kpi Mail button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            90, 428, anchor="nw", window = self.interdomain_kpis_data_prep_btn)
-        self.main_win_canvas.create_text(145, 460, anchor="nw", text = self.interdomain_kpis_data_prep_task_status.get(
+            90, 378, anchor="nw", window = self.interdomain_kpis_data_prep_btn)
+        self.main_win_canvas.create_text(145, 410, anchor="nw", text = self.interdomain_kpis_data_prep_task_status.get(
         ), fill = self.interdomain_kpis_data_prep_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Evening message task button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            385, 428, anchor="nw", window=self.interdomain_kpis_mail_communication_btn)
-        self.main_win_canvas.create_text(450, 460, anchor="nw", text = self.interdomain_kpis_mail_communication_status.get(
+            385, 378, anchor="nw", window=self.interdomain_kpis_mail_communication_btn)
+        self.main_win_canvas.create_text(440, 410, anchor="nw", text = self.interdomain_kpis_mail_communication_status.get(
         ), fill = self.interdomain_kpis_mail_communication_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))  
 
         # Creating the Window for the Evening message task button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            700, 428, anchor="nw", window=self.evening_task_btn)
-        self.main_win_canvas.create_text(730, 460, anchor="nw", text = self.evening_task_status.get(
+            700, 378, anchor="nw", window=self.evening_task_btn)
+        self.main_win_canvas.create_text(730, 410, anchor="nw", text = self.evening_task_status.get(
         ), fill = self.evening_task_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))
+
+        # Creating the Window for the Executor Circle mail communication button to be shown over the Canvas.
+        self.main_win_canvas.create_window(
+            385, 458, anchor="nw", window=self.executor_mail_communication_btn)
+        self.main_win_canvas.create_text(440, 490, anchor="nw", text = self.executor_mail_communication_status.get(
+        ), fill = self.executor_mail_communication_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Solves the flickering problem when the frame gets updated by updating the idle tasks along with the GUI Components to behave in the intended way.
         self.main_win_canvas.update_idletasks()
@@ -722,9 +741,9 @@ class App(tk.Tk):
             if (self.interdomain_kpis_data_prep_task_completed == 1):
 
                 # Creating New Child GUI for taking MPBN Planning Spocs' names
-                self.region_handler_names_win.geometry("450x300")
-                self.region_handler_names_win.minsize(450, 300)
-                self.region_handler_names_win.maxsize(450, 300)
+                self.region_handler_names_win.geometry("440x300")
+                self.region_handler_names_win.minsize(440, 300)
+                self.region_handler_names_win.maxsize(440, 300)
                 self.region_handler_names_win.iconbitmap(
                     "./images/ericsson-blue-icon-logo.ico")
                 self.region_handler_names_win.title(
@@ -735,7 +754,7 @@ class App(tk.Tk):
                 self.region_handler_names_win_background = ImageTk.PhotoImage(
                     Image.open("./images/MPBN PLANNING TASK_3_3.png"))
                 self.region_handler_names_win_canvas = Canvas(
-                    self.region_handler_names_win, width=450, height=300, bd=0, highlightthickness=0, relief="ridge")
+                    self.region_handler_names_win, width=440, height=300, bd=0, highlightthickness=0, relief="ridge")
                 self.region_handler_names_win_canvas.grid(
                     row=0, column=0, sticky=NW)
                 self.region_handler_names_win_canvas.create_image(
@@ -1156,6 +1175,67 @@ class App(tk.Tk):
             self.evening_task_status_checker_flag = 0
             self.evening_task_status.set(' Unsuccessful ')
 
+    # Method(Function) for sending the execution mail communication
+    def executor_mail_communication(self):
+        # Checking the status of the circle email automation task whether it's done or not.
+        if (self.executor_mail_communication_status_checker_flag == 0):
+            try:
+                # Setting the task status label to 'In Progress' and setting it's color.
+                self.executor_mail_communication_color_get.set(self.color[2])
+                self.executor_mail_communication_status.set(" In Progress ")
+
+                # Checking if the workbook for the MPBN Planning Sheet is selected or not
+                if (len(self.file_browser_file) == 0):
+                    # Raising the Exception for file not being selected.
+                    raise FileNotSelected(
+                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
+
+                else:
+                    # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
+                    # status of the Task in status flag.
+                    self.executor_mail_communication_status_flag = circle_reply_task.circle_reply_task(
+                        self.sender, self.file_browser_file)
+
+                    # Checking if the status of the task is successful or not.
+                    if (self.executor_mail_communication_status_flag == "Successful"):
+                        # Setting the label for task to successful.
+                        self.execution_mail_communication_status.set(
+                            " Successful ")
+                        
+                        # Setting the color of the Successful label
+                        self.executor_mail_communication_color_get.set(
+                            self.color[1])
+
+                        # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                        # and need not to run this task again.
+                        self.executor_mail_communication_status_checker_flag = 1
+
+                    # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                    if (self.executor_mail_communication_status_flag == "Unsuccessful"):
+                        self.executor_mail_communication_status.set(
+                            " Unsuccessful ")
+                        self.executor_mail_communication_color_get.set(
+                            self.color[0])
+                        self.executor_mail_communication_status_checker_flag = 0
+
+            # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
+            except FileNotSelected:
+                self.executor_mail_communication_color_get.set(self.color[0])
+                self.executor_mail_communication_status_checker_flag = 0
+                self.executor_mail_communication_status.set(" Unsuccessful ")
+
+            # Handling any other Exception and setting the label to unsuccessful along with it's color.
+            except Exception as error:
+                messagebox.showerror(" Exception Occured", error)
+                self.executor_mail_communication_color_get.set(self.color[0])
+                self.executor_mail_communication_status_checker_flag = 0
+                self.executor_mail_communication_status.set(" Unsuccessful ")
+
+        else:
+            # Raising the Custom warning in case the task is already successfuly completed.
+            raise CustomWarning("  Executor Mail Communication Task Already Successfully Completed!", " Task Already Done")
+
+        pass
     # Method(Function) for submitting the User Name.
     def submit_sender_name(self, event):
         # Getting the User name from string variable

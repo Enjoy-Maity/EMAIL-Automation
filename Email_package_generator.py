@@ -943,4 +943,4 @@ def email_package_sheet_creater(workbook):
         messagebox.showerror("  Exception Occured!",error)
         return "Unsuccessful"
 
-email_package_sheet_creater(r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
+#email_package_sheet_creater(r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
