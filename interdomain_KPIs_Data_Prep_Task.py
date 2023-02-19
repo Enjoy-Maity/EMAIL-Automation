@@ -106,8 +106,8 @@ def p_one_p_three_appender(sender,workbook):
             p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
 
             #Converting the execution date column values in the email_package to datetime datatype to execute the further operations
-            p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format= "%M/%d/%Y")
-            p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+            p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format= "%m/%d/%Y")
+            p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
 
             # Getting the unique Execution Date from the Execution Date Column of the MPBN Planning Automation Tracker
             p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
@@ -129,10 +129,20 @@ def p_one_p_three_appender(sender,workbook):
                 
                 # message showing MPBN Planning Automation Tracker Status is successfully edited.
                 messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+                
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
         
             else:
                 # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
                 messagebox.showinfo("   Data already present","Data for today's maintenance date is already present in the MPBN Planning Automation Tracker")
+
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
         
             
                 
@@ -176,8 +186,8 @@ def p_one_p_three_appender(sender,workbook):
             p3_file_read = pd.read_excel(p3_file_read, p3_sheet_name)
 
             # Formatting the 'Execution Date' to pandas datetime datatype for further usage in the program.
-            p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format="%M/%d/%Y")
-            p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%M/%d/%Y")
+            p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format="%m/%d/%Y")
+            p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
 
             # Getting the unique 'Execution Date' from the Execution Date Column of the MPBN Planning Automation Tracker.
             p3_file_read_unique_execution_date = list(p3_file_read['Execution Date'].unique())
@@ -199,14 +209,30 @@ def p_one_p_three_appender(sender,workbook):
 
                 # message showing MPBN Planning Automation Tracker Status is successfully edited.
                 messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator '{sender}' has been updated in MPBN Planning Automation Tracker!")
+
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
             
             else:
                 # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
                 messagebox.showinfo("   Data already present","Data for today's mainteance date is already present in the MPBN Planning Automation Tracker")
 
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
+
     else:
         # Message showing that the user who is running the application is not a technical validator.
         messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
+
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
 
@@ -258,6 +284,12 @@ def styling(workbook,sheetname):
     # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
 
+    # Deleting all the variables before returning to main method.
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 # Method(Function) for quitting the application.
 def quit(event):
     sys.exit(0)
@@ -269,57 +301,56 @@ def quit(event):
 
 # Method(Function) for adding data validation like vlookup or index match
 def validation_adder(workbook,worksheet):
-    try:
-        # Loading the parent workbook and the worksheet in the memory of the computer.
-        wb = pd.read_excel(workbook,"Email-Package")
+    # Loading the parent workbook and the worksheet in the memory of the computer.
+    wb = pd.read_excel(workbook,"Email-Package")
 
-        blank_change_responsible_field = []
-        
-        wb['Change Responsible'].fillna("TempNA",inplace = True)
+    blank_change_responsible_field = []
+    
+    wb['Change Responsible'].fillna("TempNA",inplace = True)
 
-        # Checking the Change Responsible for each row to be non-blank.
-        for i in range(0,len(wb)):
-            if (wb.iloc[i]['Change Responsible'] == 'TempNA'):
-                blank_change_responsible_field.append(wb.iloc[i]['S.NO'])
-            
+    # Checking the Change Responsible for each row to be non-blank.
+    for i in range(0,len(wb)):
+        if (wb.iloc[i]['Change Responsible'] == 'TempNA'):
+            blank_change_responsible_field.append(wb.iloc[i]['S.NO'])
         
-        if(len(blank_change_responsible_field) > 0):
-            raise CustomException(" Blank Change Responsible Field!",f"Kindly Enter the Change Responsible detail for S.NO:\n{', '.join(blank_change_responsible_field)}")
-        
-        else:
-            dictionary_from_cr_to_change_responsible_email_package = dict(zip(wb['CR NO'],wb['Change Responsible']))
+    
+    if(len(blank_change_responsible_field) > 0):
+        raise CustomException(" Blank Change Responsible Field!",f"Kindly Enter the Change Responsible detail for S.NO:\n{', '.join(blank_change_responsible_field)}")
+    
+    else:
+        dictionary_from_cr_to_change_responsible_email_package = dict(zip(wb['CR NO'],wb['Change Responsible']))
 
-            daily_plan_sheet = pd.read_excel(workbook,worksheet)
-            
+        daily_plan_sheet = pd.read_excel(workbook,worksheet)
+        
+        try:
+            daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
+        
+        except:
             try:
-                daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
+                daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'], format = "%d-%b-%Y")
             
             except:
-                try:
-                    daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'], format = "%d-%b-%Y")
-                
-                except:
-                    daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'], format = "%m/%d/%Y")
-            
-            else:
-                daily_plan_sheet['Execution Date'] = daily_plan_sheet['Execution Date'].dt.strftime('%d-%b-%Y')
-                
-                daily_plan_sheet['Change Responsible'] = daily_plan_sheet['CR NO'].map(dictionary_from_cr_to_change_responsible_email_package)
+                daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'], format = "%m/%d/%Y")
+        
+        
+        daily_plan_sheet['Execution Date'] = daily_plan_sheet['Execution Date'].dt.strftime('%d-%b-%Y')
+        
+        daily_plan_sheet['Change Responsible'] = daily_plan_sheet['CR NO'].map(dictionary_from_cr_to_change_responsible_email_package)
 
-                daily_plan_sheet.reset_index(drop = True, inplace = True)
-                writer = pd.ExcelWriter(workbook, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
-                daily_plan_sheet.to_excel(writer,sheet_name = worksheet,index = False)
-                
-                writer.close()
+        daily_plan_sheet.reset_index(drop = True, inplace = True)
+        writer = pd.ExcelWriter(workbook, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
+        daily_plan_sheet.to_excel(writer,sheet_name = worksheet,index = False)
+        
+        writer.close()
 
-                styling(workbook,worksheet)
+        styling(workbook,worksheet)
 
-    except CustomException:
-        return "Unsuccessful"
+        # Deleting all the variables before returning to main method.
+        objects = dir()
+        for object in objects:
+            if not object.startswit("__"):
+                del object
 
-    except Exception as e:
-        messagebox.showerror("  Exception Occured!",e)
-        return "Unsuccessful"
 
     
 
@@ -691,6 +722,11 @@ def paco_cscore(sender,workbook):
                     # Calling the Method(Function) that can write into the Automation tracker sheet.
                     p_one_p_three_appender(sender,workbook)
 
+                    objects = dir()
+                    for object in objects:
+                        if not object.startswith("__"):
+                            del object
+                    
                     return 'Successful'
                 
                 else:
@@ -699,24 +735,56 @@ def paco_cscore(sender,workbook):
                     # 'Domain Kpi' column of the sheet)
                     messagebox.showerror("  No Interdomain Data Present!","Kindly Check the 'Domain kpi' column of the Planning Status Sheet for the required Domains, i.e, CS-Core(CS,Core), PS-Core(Paco), RAN, VAS! and then retry!")
 
+                    objects = dir()
+                    for object in objects:
+                        if not object.startswith("__"):
+                            del object
+
 
     # Exception for condition when Today's maintenance date is not present.
     except TomorrowDataNotFound as error:
         messagebox.showerror("  Data for today's maintenance not found",error)
+
+        # Deleting all the variables before returning to main method.
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
     
     # Handling Custom Exception
-    except CustomException as error:
+    except CustomException:
+        # Deleting all the variables before returning to main method.
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
     
     # Handling Key Error 
     except KeyError as e:
         messagebox.showerror("  Check for the below Header ",e)
+
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
     
     # Handling Attribute Error 
     except AttributeError as e:
         messagebox.showerror("  Exception Occured",e)
+
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+        
         return "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
@@ -725,11 +793,25 @@ def paco_cscore(sender,workbook):
         e.remove(e[0])
         e = ':'.join(e)
         messagebox.showerror("  Permission Error!",f"Kindly close {e} as it's open in Excel!")
+
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
     # Handling any other Exception that has not been handled.
     except Exception as e:
         messagebox.showerror("  Exception Occured",e)
+
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
 #paco_cscore("Karan Loomba",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
