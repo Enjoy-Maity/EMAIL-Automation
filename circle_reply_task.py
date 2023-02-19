@@ -14,74 +14,98 @@ class CustomException(Exception):
 
 # Mail checker and send
 def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to):
-    # Creating an COM object of Microsoft Office Client Suite (Outlook) through win32com.client module.
-    outlook     = win32.Dispatch("Outlook.Application")
-    mapi        = outlook.GetNamespace("MAPI")              # MAPI is an API for messaging to do functions like fetching, and manipulation of mails in outlook
+    try:
+        # Creating an COM object of Microsoft Office Client Suite (Outlook) through win32com.client module.
+        outlook     = win32.Dispatch("Outlook.Application")
+        mapi        = outlook.GetNamespace("MAPI")              # MAPI is an API for messaging to do functions like fetching, and manipulation of mails in outlook
 
-    # Getting the inbox folder from the outlook.
-    inbox       = mapi.GetDefaultFolder(6)
+        # Getting the inbox folder from the outlook.
+        inbox       = mapi.GetDefaultFolder(6)
 
-    # Getting all the mails present in the inbox folder.
-    messages    = inbox.Items
+        # Getting all the mails present in the inbox folder.
+        messages    = inbox.Items
 
-    # Getting today's date
-    today       = datetime.now()
+        # Getting today's date
+        today       = datetime.now()
 
-    # Formatting today's date so that we can compare it with the received date and time of the messages in the inbox
-    today       = today.replace(hour = 10, minute = 0, second = 0).strftime('%Y-%m-%d %H:%M %p')
-    
-    # Filtering messages from the messages.
-    messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-    messages.Sort("[ReceivedTime]",True)
+        # Formatting today's date so that we can compare it with the received date and time of the messages in the inbox
+        today       = today.replace(hour = 10, minute = 0, second = 0).strftime('%Y-%m-%d %H:%M %p')
+        
+        # Filtering messages from the messages.
+        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+        messages    = messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
+        messages.Sort("[ReceivedTime]",True)
 
-    # Creating a flag variable for searching the mail.
-    flag_variable = 0
+        # Creating a flag variable for searching the mail.
+        flag_variable = 0
 
-    # Changing the format of the dataframe containing relevant data to be presented in a more presentable manner through the usage of inline CSS.
-    dataframe=dataframe.style.set_table_styles([
-        {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},
-        {'selector':'tr','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
-        {'selector':'td','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
-        {'selector':'tr:nth-child(even)','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'}])
+        # Changing the format of the dataframe containing relevant data to be presented in a more presentable manner through the usage of inline CSS.
+        dataframe=dataframe.style.set_table_styles([
+            {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},
+            {'selector':'tr','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
+            {'selector':'td','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
+            {'selector':'tr:nth-child(even)','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'}])
 
-    dataframe=dataframe.hide(axis='index') # hiding the index coloumn
+        dataframe=dataframe.hide(axis='index') # hiding the index coloumn
 
-    if(flag_variable == 0):
-        for message in messages:
-            if(message.Subject == subject_we_are_looking_for):
+        if(flag_variable == 0):
+            if(len(messages) > 0):
                 flag_variable = 1
-                mail        = message.ReplyAll()
+                mail        = messages.GetFirst().ReplyAll()
                 Body        = body.format(dataframe.to_html(index = False), sender)
                 mail.HTMLBody   = Body + mail.HTMLBody
                 mail.To         = f"{to};{mail.To};"
                 mail.CC         = f"{mail.CC};"
                 mail.Save()
                 mail.Send()
-                break
 
-    if(flag_variable == 0):
-        
-        # Iterating through the messages for finding the mail with subject line.
-        for i in range(0,len(inbox.Folders)):
-            messages = inbox.Folders[i].Items
+        if(flag_variable == 0):
             
-            # Filtering messages from the messages.
-            messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-            messages.Sort("[ReceivedTime]",True)
-            for message in messages:
-                if(message.Subject == subject_we_are_looking_for):
+            # Iterating through the messages for finding the mail with subject line.
+            for i in range(0,len(inbox.Folders)):
+                del messages
+                messages = inbox.Folders[i].Items
+                # Filtering messages from the messages.
+                messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+                messages    = messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
+                messages.Sort("[ReceivedTime]",True)
+            
+                if(len(messages) > 0):
                     flag_variable = 1
-                    mail        = message.ReplyAll()
+                    mail        = messages.GetFirst().ReplyAll()
                     Body        = body.format(dataframe.to_html(index = False), sender)
                     mail.HTMLBody   = Body + mail.HTMLBody
                     mail.To         = f"{to};{mail.To};"
                     mail.CC         = f"{mail.CC};"
                     mail.Save()
                     mail.Send()
-                    break
-        
+            
         if (flag_variable == 0):
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
             raise CustomException(" Mail For Reply Not Found!","Kindly check the mail box for the reply messages, as no reply thread found")
+        
+        # Deleting all the remaining user-defined variables in the local scope
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+    
+    except CustomException:
+        objects = dir()
+        if not object.startswith("__"):
+            del object
+        
+        return "Unsuccessful"
+    
+    except Exception as error:
+        messagebox.showerror("  Exception Occured!",error)
+        objects = dir()
+        if not object.startswith("__"):
+            del object
+        return "Unsuccessful"
 
 # Main Driver Method(Function)
 def circle_reply_task(sender, workbook):
@@ -182,18 +206,52 @@ def circle_reply_task(sender, workbook):
                         
                     # Calling the Method (function) for replying the mail.
                     mail_checker_and_sender(subject_we_are_looking_for,mail_body,temp_df,sender,to)
+                
+                # Deleting all the variables before returning the value for "Successful"
+                # dir() gives the list of local variables.
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
 
                 return "Successful"
     
     except CustomException:
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
         return "Unsuccessful"
 
     except ValueError as error:
         messagebox.showerror("  Exception Occured!",error)
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+        return "Unsuccessful"
+    
+    except RuntimeError as error:
+        messagebox.showerror("  Exception Occured!",error)
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
         return "Unsuccessful"
     
     except Exception as error:
         messagebox.showerror("  Exception Occured!",error)
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
         return "Unsuccessful"
 
-# circle_reply_task("Arka Maiti",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet new copy.xlsx")
+# circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")
