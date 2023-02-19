@@ -58,12 +58,14 @@ def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to)
                 mail.CC         = f"{mail.CC};"
                 mail.Save()
                 mail.Send()
+                
 
         if(flag_variable == 0):
-            
+            # Deleting all the messages before going into other folders of inbox
+            del messages
+
             # Iterating through the messages for finding the mail with subject line.
             for i in range(0,len(inbox.Folders)):
-                del messages
                 messages = inbox.Folders[i].Items
                 # Filtering messages from the messages.
                 messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
@@ -79,12 +81,10 @@ def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to)
                     mail.CC         = f"{mail.CC};"
                     mail.Save()
                     mail.Send()
-            
+                    break
+
+
         if (flag_variable == 0):
-            objects = dir()
-            for object in objects:
-                if not object.startswith("__"):
-                    del object
             raise CustomException(" Mail For Reply Not Found!","Kindly check the mail box for the reply messages, as no reply thread found")
         
         # Deleting all the remaining user-defined variables in the local scope
@@ -105,6 +105,7 @@ def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to)
         objects = dir()
         if not object.startswith("__"):
             del object
+
         return "Unsuccessful"
 
 # Main Driver Method(Function)
@@ -222,6 +223,7 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
+
         return "Unsuccessful"
 
     except ValueError as error:
