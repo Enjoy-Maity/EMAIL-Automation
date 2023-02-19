@@ -42,6 +42,12 @@ def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_r
     # Sending the mail.
     msg.Send()
 
+    # Deleting objects and variables in local sccope
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 
 # Function/Method for quitting the program.
 def quit(event):
@@ -54,8 +60,30 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
 
         # Reading the Worksheet in pandas.
+        wb               = pd.ExcelFile(workbook)
+        wb_sheets        = wb.sheet_names
+
+        flag_for_planning_sheet = 0
+        flag_for_mail_id        = 0
+
+        for sheet in wb_sheets:
+            if(sheet == 'Planning Sheet'):
+                flag_for_planning_sheet = 1
+            
+            if(sheet == 'Mail Id'):
+                flag_for_mail_id        = 1
+                
+        if(flag_for_mail_id == 0):
+            raise TomorrowDataNotFound("Mail Id sheet not Found in the Workbook, Kindly Check!")
+        
+        if(flag_for_planning_sheet == 0):
+            raise TomorrowDataNotFound("Planning sheet not Found in the Workbook, Kindly Check!")
+        
         daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
         daily_plan_sheet.fillna("NA",inplace=True)
+
+        # Reading the Mail Id sheet to a dataframe so that we can access the mail IDs for sending mails for the respective domain kpis
+        Email_Id=pd.read_excel(workbook,'Mail Id')
         
         # Creating an empty list to grab all the S.NO of the rows where there's any input error made by the user.
         input_error = []
@@ -71,22 +99,17 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         daily_plan_sheet=daily_plan_sheet[daily_plan_sheet['Execution Date']==tomorrow.strftime('%Y-%m-%d')]
         
 
-        if len(daily_plan_sheet) == 0:
-
+        if (len(daily_plan_sheet) == 0):
                 # Raising Custom Exception defined through a class inheriting the base Exception class (defined in the default Python lib modules),
                 # for the case when there's no data pertaining today's maintenance date.
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
         
         elif (len(input_error) > 0):
-
                 # Raising Custom Exception defined through a class inheriting the base Exception class (defined in the default Python lib modules) for 
                 # illegal date, other than today's maintenance date present in our dataframe.
                 raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join(input_error)}")    
             
         else:
-            # Reading the Mail Id sheet to a dataframe so that we can access the mail IDs for sending mails for the respective domain kpis
-            Email_Id=pd.read_excel(workbook,'Mail Id')
-
             # Creating a list of available list of interdomains to send mails.
             list_of_interdomains=["CS-Core","PS-Core","RAN","VAS"]
 
@@ -189,12 +212,25 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         # Message showing that all the interdomain mails have been successfuly sent.
         messagebox.showinfo(" Mails Sent Successfully","Mails for all Interdomain Kpis have been sent!")
 
+        #Deleting all the user-defined variables before calling returning back to the main gui program
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
 
    
     # Exception Handling in case File not found, in our case the workbook path is illegal.
     except FileNotFoundError:
         working_directory = r"C:\Daily"
         messagebox.showerror(" File not Found","Check {} for MPBN Daily Planning Sheet.xlsx".format(working_directory))
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
     
     # Handling the Exception when the file that's required for the task is opened in background.
@@ -203,17 +239,38 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         e.remove(e[0])
         e = ':'.join(e)
         messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
     # Exception for handling Value error, in our case when the relevant Sheet is missing the workbook.
     except ValueError:
-         working_directory = r"C:\Daily"
-         messagebox.showwarning("    Value Error","Check {} for MPBN Daily Planning Sheet.xlsx for all the requirement sheet".format(working_directory))
-         return "Unsuccessful"
+        working_directory = r"C:\Daily"
+        messagebox.showwarning("    Value Error","Check {} for MPBN Daily Planning Sheet.xlsx for all the requirement sheet".format(working_directory))
+         
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
+        return "Unsuccessful"
 
     # Custom Exception for handling Date Error, in our case Wrong dates other than today's maintenance date present in our data.
     except TomorrowDataNotFound as error:
         messagebox.showerror(" Data for tomorrow's date not found",error)
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+                
         return "Unsuccessful"
     
 #paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx","","")
