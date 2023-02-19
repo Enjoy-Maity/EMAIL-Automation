@@ -285,11 +285,19 @@ def fetch_details(sender,workbook):
     
     # Handling Custom Exceptions which are raised in the above try section.
     except CustomException as error:
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del globals()[object]
         messagebox.showerror("  Data can't be found",error)
         return "Unsuccessful"
     
     # Handling the AttributeError Exception.
     except AttributeError as e:
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del globals()[object]
         messagebox.showerror("  Heading missing!",f"Kindly Check the below Heading in Planning Sheet\n{e}")
         return "Unsuccessful"
     
@@ -298,11 +306,19 @@ def fetch_details(sender,workbook):
         e = str(e).split(":")
         e.remove(e[0])
         e = ':'.join(e)
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del globals()[object]
         messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
         return "Unsuccessful"
 
     # Handling other exceptions that are not handled.
     except Exception as e:
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del globals()[object]
         messagebox.showerror("  Exception Occurred",e)
         return "Unsuccessful"
     
