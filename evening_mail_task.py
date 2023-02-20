@@ -67,6 +67,11 @@ def styling(workbook,sheetname):
     # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
     wb.close()
+    
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
 
 # Method(Function) for Drafting Mail.
 def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_date,email_package_workbook,maintenance_window):
@@ -101,6 +106,11 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
     # Displaying the mail draft
     mail_draft.Display()
 
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 # Method(Function) for creating email package workbook and mail draft.
 def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
@@ -128,7 +138,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
         wb.close()
 
     # Creating the Writer Variable to write into the new excel workbook
-    new_workbook = pd.ExcelFile(workbook,)
+    new_workbook = pd.ExcelFile(workbook)
     writer = pd.ExcelWriter(new_workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
     worksheet.to_excel(writer,"Email-Package",index = False)
     writer.close()
@@ -180,6 +190,12 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     # Calling the Mail Drafter Method for drafting the mail but not send it.
     mail_drafter(worksheet,evening_message_workbook_message,html_body,sender,execution_date,workbook,maintenance_window)
 
+    # Deleting the objects before the returning back to the main function.
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 
 # Method(Function) for creating the evening message text.
 def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
@@ -196,6 +212,13 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
         if (len(worksheet) == 0):
             messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            
+            # Deleting all the variables before returning the value "Unsuccessful"
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
+
             return 'Unsuccessful'
         
         else:
@@ -205,6 +228,13 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             # Checking Condition for the data pertaining to today's maintenance date being non-existent.
             if (len(worksheet) == 0):
                 messagebox.showwarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+
+                # Deleting all the variables before returning the value "Unsuccessful"
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
+
                 return 'Unsuccessful'
             
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
@@ -438,16 +468,32 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             # Calling the Email Package Workbook generator and mail drafter.
             email_package_workbook_generator(sender,worksheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
-            del evening_message_workbook_message
-            del evening_message_workbook
+
+            # Deleting all the local variables 
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
 
             return 'Successful'
 
     # Handling Exceptions 
     except CustomException as e:
+        # Delelting all the local variables before returning the value "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
     except Exception as error:
+        # Delelting all the local variables before returning the value "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         messagebox.showerror("  Exception Occured",error)
         return "Unsuccessful"
 
