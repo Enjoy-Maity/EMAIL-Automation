@@ -348,7 +348,7 @@ def validation_adder(workbook,worksheet):
         # Deleting all the variables before returning to main method.
         objects = dir()
         for object in objects:
-            if not object.startswit("__"):
+            if not object.startswith("__"):
                 del object
 
 
