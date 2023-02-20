@@ -40,6 +40,11 @@ def sendmail(dataframe,to,cc,body,subject,sender):
     msg.Save()                                                                                                  # Saving the mail in drafts before sending it, as a failsafe mechanism in case any failure arises.
     msg.Send()                                                                                                  # Sending the mail.
 
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 #####################################################################
 ############################# Fetch-details #########################
 #####################################################################
@@ -62,6 +67,24 @@ def fetch_details(sender,workbook):
         elif (len(workbook) > 0):
             # Reading the Excel Worksheet in the selected workbook in pandas.
             excel=pd.ExcelFile(workbook)
+            excel_sheets = excel.sheet_names
+
+            flag_for_daily_planning_sheet = 0
+            flag_for_mail_id              = 0
+            
+            for sheet in excel_sheets:
+                if (sheet == 'Planning Sheet'):
+                    flag_for_daily_planning_sheet = 1
+                
+                if (sheet == 'Mail Id'):
+                    flag_for_mail_id = 1
+
+            if (flag_for_daily_planning_sheet == 0):
+                raise CustomException("'Planning Sheet' worksheet is missing, Kindly Check!")
+            
+            if(flag_for_mail_id == 0):
+                raise CustomException("'Mail Id' worksheet is missing, Kindly Check!")
+            
             daily_plan_sheet=pd.read_excel(excel,'Planning Sheet')
 
             # Filling all the blank fields with NA, here inplace is used to reflect the changes made in the deep copy of dataframe.
@@ -81,6 +104,12 @@ def fetch_details(sender,workbook):
                     the date has been entered in the required sheet.
                 '''
                 messagebox.showerror(" Date Format Error!","Please check the Execution Date format in Planning Sheet!")
+                
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
+                
                 return "Unsuccessful"
 
             else:
@@ -176,6 +205,12 @@ def fetch_details(sender,workbook):
 
                     if len(input_error)>0:
                             messagebox.showwarning("  Input Error Detected",f"Input Error! Kindly Check CR NO, Activity title and Circle fields in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
+
+                            objects = dir()
+                            for object in objects:
+                                if not object.startswith("__"):
+                                    del object
+
                             return "Unsuccessful"
                     
                     daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
@@ -281,6 +316,12 @@ def fetch_details(sender,workbook):
 
                     # Message Showing that the all the mails to all the present circles have been successfully sent.
                     messagebox.showinfo("  Mail Sent Successfully!",f"All Mails for mentioned planned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
+
+                    objects = dir()
+                    for object in objects:
+                        if not object.startswith("__"):
+                            del object
+
                     return "Successful"
     
     # Handling Custom Exceptions which are raised in the above try section.
@@ -288,7 +329,7 @@ def fetch_details(sender,workbook):
         objects = dir()
         for object in objects:
             if not object.startswith("__"):
-                del globals()[object]
+                del object
         messagebox.showerror("  Data can't be found",error)
         return "Unsuccessful"
     
@@ -297,7 +338,7 @@ def fetch_details(sender,workbook):
         objects = dir()
         for object in objects:
             if not object.startswith("__"):
-                del globals()[object]
+                del object
         messagebox.showerror("  Heading missing!",f"Kindly Check the below Heading in Planning Sheet\n{e}")
         return "Unsuccessful"
     
@@ -309,7 +350,7 @@ def fetch_details(sender,workbook):
         objects = dir()
         for object in objects:
             if not object.startswith("__"):
-                del globals()[object]
+                del object
         messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
         return "Unsuccessful"
 
@@ -318,8 +359,8 @@ def fetch_details(sender,workbook):
         objects = dir()
         for object in objects:
             if not object.startswith("__"):
-                del globals()[object]
+                del object
         messagebox.showerror("  Exception Occurred",e)
         return "Unsuccessful"
     
-#fetch_details("Enjoy Maity",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
