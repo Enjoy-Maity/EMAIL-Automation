@@ -65,6 +65,11 @@ def styling(workbook,sheetname):
     # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
 
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 # Adding Data Validation
 def validation_adder(workbook,worksheet):
     wb                          = load_workbook(workbook)
@@ -109,6 +114,11 @@ def validation_adder(workbook,worksheet):
     # Saving the Workbook
     wb.save(workbook)
 
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
 # Creating the main driver Method(Function) 
 def email_package_sheet_creater(workbook):
     try:
@@ -118,6 +128,17 @@ def email_package_sheet_creater(workbook):
         
         # Reading the excel workbook for sheet in pandas.
         wb = pd.ExcelFile(workbook)
+        sheets = wb.sheet_names
+
+        flag   = 0
+        for sheet in sheets:
+            if(sheet == "Planning Sheet"):
+                flag = 1
+                break
+
+        if (flag == 0):
+            raise CustomException(" Planning Sheet Absent!","Kindly check the selected workbook for 'Planning Sheet' worksheet!")
+
         daily_plan_sheet  = pd.read_excel(wb,"Planning Sheet")
 
         # Filtering out the rows with planning status "Planned" and execution date for today's date
@@ -134,10 +155,10 @@ def email_package_sheet_creater(workbook):
             daily_plan_sheet['Execution Date'] = daily_plan_sheet['Execution Date'].dt.strftime("%m/%d/%Y")
             
 
-        #else:
         # Checking if there's any data present or not.
         if (len(daily_plan_sheet) == 0):
             raise CustomException(" Data Missing!","The Planning Sheet is empty!, Kindly Check!")
+        
         difference = []
         
         for i in range(0,len(daily_plan_sheet)):
@@ -156,33 +177,6 @@ def email_package_sheet_creater(workbook):
             # Filling the NA(Blank) cells with TempNA string.
             daily_plan_sheet.fillna("TempNA", inplace = True)
 
-            execution_date                                      = []
-            maintenance_window                                  = []
-            cr_no                                               = []
-            activity_title                                      = []
-            risk                                                = []
-            location                                            = []
-            circle                                              = []
-            no_of_node_involved                                 = []
-            cr_belongs_to_same_activity_of_previous_cr_yes_no   = []
-            activity_checker                                    = []
-            activity_initiator                                  = []
-            impact                                              = []
-            planning_status                                     = []
-            domain                                              = []
-            design_availability                                 = []
-            technical_validator                                 = []
-            complexity                                          = []
-            activity_type                                       = []
-            domain_kpi                                          = []
-            impacted_node                                       = []
-            kpi_details                                         = []
-            oss_name                                            = []
-            oss_IP                                              = []
-            total_time_spent_on_planned_crs_mins                = []
-            vendor                                              = []
-            protocol                                            = []
-            execution_projection                                = []
             # Getting the unique values of the planning status column of the excel sheet.
             planned_status_unique_values = list(daily_plan_sheet['Planning Status'].unique())
             
@@ -267,15 +261,59 @@ def email_package_sheet_creater(workbook):
             
             if (len(input_error) > 0):
                 messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
+                
+                # Deleting all the variables before returning the value for "Unsuccessful"
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
+                
                 return 'Unsuccessful'
+            
             if (len(circle_not_proper) > 0):
                 messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
+                
+                # Deleting all the variables before returning the value for "Unsuccessful"
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
+
                 return 'Unsuccessful'
             
             
             # Writing into the Email-Package Sheet
             daily_plan_sheet_unique_cr = daily_plan_sheet['CR NO'].value_counts().index.to_list()
             
+            # Creating empty lists for different columns.
+            execution_date                                      = []
+            maintenance_window                                  = []
+            cr_no                                               = []
+            activity_title                                      = []
+            risk                                                = []
+            location                                            = []
+            circle                                              = []
+            no_of_node_involved                                 = []
+            cr_belongs_to_same_activity_of_previous_cr_yes_no   = []
+            activity_checker                                    = []
+            activity_initiator                                  = []
+            impact                                              = []
+            planning_status                                     = []
+            domain                                              = []
+            design_availability                                 = []
+            technical_validator                                 = []
+            complexity                                          = []
+            activity_type                                       = []
+            domain_kpi                                          = []
+            impacted_node                                       = []
+            kpi_details                                         = []
+            oss_name                                            = []
+            oss_IP                                              = []
+            total_time_spent_on_planned_crs_mins                = []
+            vendor                                              = []
+            protocol                                            = []
+            execution_projection                                = []
+
             for idx,cr in enumerate(daily_plan_sheet_unique_cr):
                 # Creating the count variable to assign the number of occurences of the CR in the 
                 count = daily_plan_sheet['CR NO'].value_counts()[idx]
@@ -326,7 +364,7 @@ def email_package_sheet_creater(workbook):
                 for i in range(0,len(daily_plan_sheet)):
                     if (daily_plan_sheet.iloc[i]['CR NO'] == cr):
                         if (counter<count):
-                            if (count>1):
+                            if (count > 1):
                                 # Data for the RAN should be written first for the CR Data, if there's any row with RAN domain KPI for the CR number. 
                                 if (str(daily_plan_sheet.iloc[i]['Domain kpi']).upper().startswith('RAN')):
                                     if ((len(str(daily_plan_sheet.iloc[i]['IMPACTED NODE']).strip()) == 0) or (daily_plan_sheet.iloc[i]['IMPACTED NODE']) == "TempNA"):
@@ -797,9 +835,43 @@ def email_package_sheet_creater(workbook):
                                         else:
                                             execution_projection_temp  =  str(daily_plan_sheet.iloc[i]['Execution Projection'])
 
+
+                        del execution_date_temp
+                        del cr_no_temp
+                        del maintenance_window_temp
+                        del activity_title_temp
+                        del risk_temp
+                        del location_temp
+                        del circle_temp
+                        del no_of_node_involved_temp
+                        del cr_belongs_to_same_activity_of_previous_cr_yes_no_temp
+                        del activity_checker_temp
+                        del activity_initiator_temp
+                        del impact_temp
+                        del planning_status_temp
+                        del domain_temp
+                        del reason_for_rollback_cancel_temp
+                        del design_availability_temp
+                        del technical_validator_temp
+                        del complexity_temp
+                        del activity_type_temp
+                        del domain_kpi_temp
+                        del impacted_node_temp
+                        del kpi_details_temp
+                        del oss_name_temp
+                        del oss_IP_temp
+                        del total_time_spent_on_planned_crs_mins_temp
+                        del vendor_temp
+                        del protocol_temp
+                        del execution_projection_temp
+
                         # Incrementing the value of counter
                         counter +=  1
                 
+                
+                del count
+                del counter
+
                 # Creating the List for each column data by appending the temp variable data to respective column list of the particular selected CR Number.
                 execution_date.append(execution_date_temp)
                 maintenance_window.append(maintenance_window_temp)
@@ -901,35 +973,39 @@ def email_package_sheet_creater(workbook):
             df['Inter-domain KPI status']                               = ''
             df['MOP View Status']                                       = ''
             
-            try:
-                df.replace('TempNA'," ",inplace = True)
+            df.replace('TempNA'," ",inplace = True)
             
-            except:
-                pass
+            df['Execution Date'] = pd.to_datetime(df['Execution Date'])
+            df['Execution Date'] = df['Execution Date'].dt.strftime('%m/%d/%Y')
             
-            else:
-                df['Execution Date'] = pd.to_datetime(df['Execution Date'])
-                df['Execution Date'] = df['Execution Date'].dt.strftime('%m/%d/%Y')
-                
-                writer = pd.ExcelWriter(workbook,engine = 'openpyxl',mode = 'a',if_sheet_exists = 'replace')
-                new_sheetname = 'Email-Package'
-                df.index +=  1
-                df.to_excel(writer,sheet_name = new_sheetname,index_label = 'S.NO')
-                writer.close()
-                
-                # Calling the styling function to stylise the worksheet.
-                styling(workbook,new_sheetname)
-                validation_adder(workbook,new_sheetname)
-                messagebox.showinfo("   Email Package Data Preparation Status",'Email-Package Sheet prepared!')
+            writer = pd.ExcelWriter(workbook,engine = 'openpyxl',mode = 'a',if_sheet_exists = 'replace')
+            new_sheetname = 'Email-Package'
+            df.index +=  1
+            df.to_excel(writer,sheet_name = new_sheetname,index_label = 'S.NO')
+            writer.close()
+            
+            # Calling the styling function to stylise the worksheet.
+            styling(workbook,new_sheetname)
+            validation_adder(workbook,new_sheetname)
+            messagebox.showinfo("   Email Package Data Preparation Status",'Email-Package Sheet prepared!')
 
-                # Deleting the dataframe, once it's use is finished.
-                del df
-                
-                # Returning Successful status
-                return "Successful"
+            # Deleting the variables, once it's use is finished.
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
+            
+            # Returning Successful status
+            return "Successful"
     
     # Handling Exceptions
     except CustomException:
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
     except PermissionError as e:
@@ -937,10 +1013,24 @@ def email_package_sheet_creater(workbook):
         e.remove(e[0])
         e = ':'.join(e)
         messagebox.showerror("  Permission Error!",f"Kindly close {e} as it's open in Excel!")
+
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
     
     except Exception as error:
         messagebox.showerror("  Exception Occured!",error)
+
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
         return "Unsuccessful"
 
 #email_package_sheet_creater(r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
