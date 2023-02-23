@@ -49,7 +49,7 @@ def sheet_cleaner(workbook):
     # Iterating through each sheet to delete the sheets for interdomain.
     for sheet in sheets:
         if(sheet in sheets_to_be_removed):
-            wb.remove_sheet(wb[sheet])
+            del wb[sheet]
 
     wb.save(workbook)
     wb.close()
@@ -548,8 +548,8 @@ def paco_cscore(sender,workbook):
                 messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
                 return 'Unsuccessful'
             else:
-                thread_for_interdomain_sheet_removal = Thread(target = sheet_cleaner,args=(workbook,))
-                thread_for_interdomain_sheet_removal.start()
+                thread = Thread(target = sheet_cleaner,args = (workbook,))
+                thread.start()
 
                 sheetname = "PS Core-Inter Domain"
                 sheetname2 = "CS Core-Inter Domain"
@@ -746,7 +746,7 @@ def paco_cscore(sender,workbook):
                 df3.reset_index(drop = True,inplace = True)
                 df4.reset_index(drop = True,inplace = True)
 
-                thread_for_interdomain_sheet_removal.join()
+                thread.join()
 
                 # writer = pd.ExcelWriter(workbook,engine = 'xlsxwriter')
 
@@ -773,15 +773,19 @@ def paco_cscore(sender,workbook):
                         df4.to_excel(writer,sheet_name = sheetname4,index = False)
 
                     writer.close()
-
-                    thread = CustomThread(target = p_one_p_three_appender, args = (sender,workbook))
-                    thread.start()
                     
                     # Styling the worksheets.
-                    styling(workbook,sheetname)
-                    styling(workbook,sheetname2)
-                    styling(workbook,sheetname3)
-                    styling(workbook,sheetname4)
+                    if(len(df)):
+                        styling(workbook,sheetname)
+                    
+                    if(len(df2)):
+                        styling(workbook,sheetname2)
+                    
+                    if(len(df3)):
+                        styling(workbook,sheetname3)
+                    
+                    if(len(df4)):
+                        styling(workbook,sheetname4)
                     
                     # Message showing that all the Interdomain Sheets have been written.
                     messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
@@ -793,6 +797,9 @@ def paco_cscore(sender,workbook):
                             del object
                     
                     # Calling the Method(Function) that can write into the Automation tracker sheet.
+                    thread = CustomThread(target = p_one_p_three_appender, args = (sender,workbook))
+                    thread.daemon = True
+                    thread.start()
                     flag = thread.join()
 
 
@@ -834,29 +841,29 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
     
-    # Handling Key Error 
-    except KeyError as e:
-        messagebox.showerror("  Check for the below Header ",e)
+    # # Handling Key Error 
+    # except KeyError as e:
+    #     messagebox.showerror("  Check for the below Header ",e)
 
-        # Deleting all the variables before returning the value for "Unsuccessful"
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+    #     # Deleting all the variables before returning the value for "Unsuccessful"
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
 
-        return "Unsuccessful"
+    #     return "Unsuccessful"
     
-    # Handling Attribute Error 
-    except AttributeError as e:
-        messagebox.showerror("  Exception Occured",e)
+    # # Handling Attribute Error 
+    # except AttributeError as e:
+    #     messagebox.showerror("  Exception Occured",e)
 
-        # Deleting all the variables before returning the value for "Unsuccessful"
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+    #     # Deleting all the variables before returning the value for "Unsuccessful"
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
         
-        return "Unsuccessful"
+    #     return "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -874,15 +881,15 @@ def paco_cscore(sender,workbook):
         return "Unsuccessful"
 
     # Handling any other Exception that has not been handled.
-    except Exception as e:
-        messagebox.showerror("  Exception Occured",e)
+    # except Exception as e:
+    #     messagebox.showerror("  Exception Occured",e)
 
-        # Deleting all the variables before returning the value for "Unsuccessful"
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+    #     # Deleting all the variables before returning the value for "Unsuccessful"
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
 
-        return "Unsuccessful"
+    #     return "Unsuccessful"
 
-#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")
+paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")
