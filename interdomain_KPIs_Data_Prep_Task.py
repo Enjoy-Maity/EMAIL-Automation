@@ -892,4 +892,4 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
 
-paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")
+#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")
