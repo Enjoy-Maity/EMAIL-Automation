@@ -841,29 +841,29 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
     
-    # # Handling Key Error 
-    # except KeyError as e:
-    #     messagebox.showerror("  Check for the below Header ",e)
+    # Handling Key Error 
+    except KeyError as e:
+        messagebox.showerror("  Check for the below Header ",e)
 
-    #     # Deleting all the variables before returning the value for "Unsuccessful"
-    #     objects = dir()
-    #     for object in objects:
-    #         if not object.startswith("__"):
-    #             del object
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
 
-    #     return "Unsuccessful"
+        return "Unsuccessful"
     
-    # # Handling Attribute Error 
-    # except AttributeError as e:
-    #     messagebox.showerror("  Exception Occured",e)
+    # Handling Attribute Error 
+    except AttributeError as e:
+        messagebox.showerror("  Exception Occured",e)
 
-    #     # Deleting all the variables before returning the value for "Unsuccessful"
-    #     objects = dir()
-    #     for object in objects:
-    #         if not object.startswith("__"):
-    #             del object
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
         
-    #     return "Unsuccessful"
+        return "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -881,15 +881,15 @@ def paco_cscore(sender,workbook):
         return "Unsuccessful"
 
     # Handling any other Exception that has not been handled.
-    # except Exception as e:
-    #     messagebox.showerror("  Exception Occured",e)
+    except Exception as e:
+        messagebox.showerror("  Exception Occured",e)
 
-    #     # Deleting all the variables before returning the value for "Unsuccessful"
-    #     objects = dir()
-    #     for object in objects:
-    #         if not object.startswith("__"):
-    #             del object
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
 
-    #     return "Unsuccessful"
+        return "Unsuccessful"
 
 paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")
