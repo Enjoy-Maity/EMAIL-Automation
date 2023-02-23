@@ -39,8 +39,7 @@ def sendmail(dataframe,to,cc,body,subject,sender):
     msg.HTMLBody=html_body.format(dataframe.to_html(classes = 'table table-stripped',index=False),sender)       # Formatting the Mail Body by entering the important data in the mail body through the usage of .format
     msg.Save()                                                                                                  # Saving the mail in drafts before sending it, as a failsafe mechanism in case any failure arises.
     msg.Send()                                                                                                  # Sending the mail.
-    msg.Close()
-    
+
     objects = dir()
     for object in objects:
         if not object.startswith("__"):
@@ -365,4 +364,4 @@ def fetch_details(sender,workbook):
         messagebox.showerror("  Exception Occurred",e)
         return "Unsuccessful"
     
-#fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
+#fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")
