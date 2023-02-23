@@ -14,6 +14,9 @@ import interdomain_KPIs_Mail_Comm_Task          # Importing the interdomain kpi 
 import evening_mail_task                        # Importing evening mail task module.
 import circle_reply_task                        # Importing circle reply task module.
 from datetime import datetime, timedelta        # Importing datetime and timedelta module to get today's maintenance date
+from win32event import CreateMutex
+from win32api   import GetLastError
+from winerror   import ERROR_ALREADY_EXISTS
 
 # Creating EmptyString Exception Class inheriting the Default Exception for raising and handling custom made empty string exception.
 class EmptyString(Exception):
@@ -107,6 +110,8 @@ class App(tk.Tk):
 
             self.main_win.bind("<Return>", self.file_browser_func)      # Binding the Enter key to call the file browser function to browse the MPBN Planning Task workbook.
             self.main_win.bind("<Escape>", self.main_win_quit)          # Binding the Escape key to quit the application.
+            self.task_running = 0
+            self.task_module_running = ""
 
             # Fetching the Background Image of the Application to self.main_win_background_img variable.
             self.main_win_background_img = ImageTk.PhotoImage(
@@ -463,85 +468,116 @@ class App(tk.Tk):
     
     # Method(Function) for calling the module for Planning Sheet creation from the report csv.
     def planning_sheet_creater_task_func(self):
+        if(self.task_running == 0):
         # Checking the status of the planning sheet creation whether it's done or not.
-        if (self.planning_sheet_creater_task_status_checker_flag == 0):
-            try:
-                # Setting the task status label to 'In Progress' and setting it's color.
-                self.planning_sheet_creater_task_color_get.set(self.color[2])
-                self.planning_sheet_creater_task_status.set(" In Progress ")
+            if (self.planning_sheet_creater_task_status_checker_flag == 0):
+                try:
+                    self.task_running = 1
+                    self.task_module_running = "Planning Sheet Preparation"
 
-                # Checking if the workbook for the MPBN Planning Sheet is selected or not
-                if (len(self.file_browser_file) == 0):
-                    # Raising the Exception for file not being selected.
-                    raise FileNotSelected(
-                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
-                
-                # Checking if the ITSM Raw Report CSV file is selected or not.
-                if (len(self.itsm_file_browser_file) == 0):
-                    # Raising the Exception for file not being selected.
-                    raise FileNotSelected(
-                        " Please Select the ITSM Raw Report first!", "File Not Selected")
+                    # Setting the task status label to 'In Progress' and setting it's color.
+                    self.planning_sheet_creater_task_color_get.set(self.color[2])
+                    self.planning_sheet_creater_task_status.set(" In Progress ")
 
-                else:
-                    # Calling the method of the module for planning sheet creation from the Raw Report CSV and getting the return value of the 
-                    # status of the Task in status flag.
-                    self.planning_sheet_creater_task_status_flag = Planning_sheet_creater.planning_sheet_creater(
-                        self.itsm_file_browser_file, self.file_browser_file, self.sender)
+                    # Checking if the workbook for the MPBN Planning Sheet is selected or not
+                    if (len(self.file_browser_file) == 0):
+                        # Raising the Exception for file not being selected.
+                        raise FileNotSelected(
+                            " Please Select the MPBN Planning Workbook first!", "File Not Selected")
+                    
+                    # Checking if the ITSM Raw Report CSV file is selected or not.
+                    if (len(self.itsm_file_browser_file) == 0):
+                        # Raising the Exception for file not being selected.
+                        raise FileNotSelected(
+                            " Please Select the ITSM Raw Report first!", "File Not Selected")
 
-                    # Checking if the status of the task is successful or not.
-                    if (self.planning_sheet_creater_task_status_flag == "Successful"):
-                        # Setting the label for task to successful.
-                        self.planning_sheet_creater_task_status.set(
-                            " Successful ")
-                        
-                        # Setting the color of the Successful label
-                        self.planning_sheet_creater_task_color_get.set(
-                            self.color[1])
-                        
-                        # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
-                        # and need not to run this task again.
-                        self.planning_sheet_creater_task_status_checker_flag = 1
+                    else:
+                        # Calling the method of the module for planning sheet creation from the Raw Report CSV and getting the return value of the 
+                        # status of the Task in status flag.
+                        self.planning_sheet_creater_task_status_flag = Planning_sheet_creater.planning_sheet_creater(
+                            self.itsm_file_browser_file, self.file_browser_file, self.sender)
 
-                    # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
-                    if (self.planning_sheet_creater_task_status_flag == "Unsuccessful"):
-                        self.planning_sheet_creater_task_status.set(
-                            " Unsuccessful ")
-                        self.planning_sheet_creater_task_color_get.set(
-                            self.color[0])
-                        self.planning_sheet_creater_task_status_checker_flag = 0
+                        # Checking if the status of the task is successful or not.
+                        if (self.planning_sheet_creater_task_status_flag == "Successful"):
+                            # Setting the label for task to successful.
+                            self.planning_sheet_creater_task_status.set(
+                                " Successful ")
+                            
+                            # Setting the color of the Successful label
+                            self.planning_sheet_creater_task_color_get.set(
+                                self.color[1])
+                            
+                            # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                            # and need not to run this task again.
+                            self.planning_sheet_creater_task_status_checker_flag = 1
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
-            except FileNotSelected:
-                self.planning_sheet_creater_task_color_get.set(self.color[0])
-                self.planning_sheet_creater_task_status_checker_flag = 0
-                self.planning_sheet_creater_task_status.set(" Unsuccessful ")
+                        # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                        if (self.planning_sheet_creater_task_status_flag == "Unsuccessful"):
+                            self.planning_sheet_creater_task_status.set(
+                                " Unsuccessful ")
+                            self.planning_sheet_creater_task_color_get.set(
+                                self.color[0])
+                            self.planning_sheet_creater_task_status_checker_flag = 0
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # Handling any other Exception and setting the label to unsuccessful along with it's color.
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.planning_sheet_creater_task_color_get.set(self.color[0])
-                self.planning_sheet_creater_task_status_checker_flag = 0
-                self.planning_sheet_creater_task_status.set(" Unsuccessful ")
+                # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
+                except FileNotSelected:
+                    self.planning_sheet_creater_task_color_get.set(self.color[0])
+                    self.planning_sheet_creater_task_status_checker_flag = 0
+                    self.planning_sheet_creater_task_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
 
+                # Handling any other Exception and setting the label to unsuccessful along with it's color.
+                except Exception as error:
+                    messagebox.showerror(" Exception Occured", error)
+                    self.planning_sheet_creater_task_color_get.set(self.color[0])
+                    self.planning_sheet_creater_task_status_checker_flag = 0
+                    self.planning_sheet_creater_task_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+            else:
+                self.task_running = 0
+                self.task_module_running = ""
+                # Raising the Custom warning in case the task is already successfuly completed.
+                raise CustomWarning("  Planning Sheet Creation Task Already Successfully Completed!", " Task Already Done")
         else:
-            # Raising the Custom warning in case the task is already successfuly completed.
-            raise CustomWarning("  Planning Sheet Creation Task Already Successfully Completed!", " Task Already Done")
+            messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
         
     # Method(Function) for checking the surity from the user that if he wants to continue or not.
     def circle_email_automation_task_func_surity(self):
-        # Taking the response from the User.
-        self.circle_email_automation_task_surity_check = messagebox.askyesno(
-            "  Circle Mail Confirmation", "Do you want to proceed for Email Communication for Tonight Planned Circles ?")
+        # Checking if another module is not running
+        if(self.task_running == 0):
+            self.task_running = 1
+            self.task_module_running = "Circle Mail Communication"
+
+            # Taking the response from the User.
+            self.circle_email_automation_task_surity_check = messagebox.askyesno(
+                "  Circle Mail Confirmation", "Do you want to proceed for Email Communication for Tonight Planned Circles ?")
+            
+            # If the respose is positive the task is done, else the label for task status is set to Unsuccessful along with it's color.
+            if (self.circle_email_automation_task_surity_check):
+                self.circle_email_automation_task_func()
+                self.task_running = 0
+                self.task_module_running = ""
+            
+            else:
+                self.task_running = 0
+                self.task_module_running = ""
+                self.circle_email_automation_task_status.set(
+                                " Unsuccessful ")
+                self.circle_email_automation_task_color_get.set(
+                    self.color[0])
+                self.circle_email_automation_status_checker_flag = 0
+                self.task_running = 0
+                self.task_module_running = ""
         
-        # If the respose is positive the task is done, else the label for task status is set to Unsuccessful along with it's color.
-        if (self.circle_email_automation_task_surity_check):
-            self.circle_email_automation_task_func()
         else:
-            self.circle_email_automation_task_status.set(
-                            " Unsuccessful ")
-            self.circle_email_automation_task_color_get.set(
-                self.color[0])
-            self.circle_email_automation_status_checker_flag = 0
+            messagebox.showwarning("    Another Task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for Circle Email Automation Task.
     def circle_email_automation_task_func(self):
@@ -577,6 +613,8 @@ class App(tk.Tk):
                         # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
                         # and need not to run this task again.
                         self.circle_email_automation_status_checker_flag = 1
+                        self.task_running = 0
+                        self.task_module_running = ""
 
                     # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
                     if (self.circle_email_automation_status_flag == "Unsuccessful"):
@@ -585,12 +623,16 @@ class App(tk.Tk):
                         self.circle_email_automation_task_color_get.set(
                             self.color[0])
                         self.circle_email_automation_status_checker_flag = 0
+                        self.task_running = 0
+                        self.task_module_running = ""
 
             # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
             except FileNotSelected:
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
+                self.task_running = 0
+                self.task_module_running = ""
 
             # Handling any other Exception and setting the label to unsuccessful along with it's color.
             except Exception as error:
@@ -598,231 +640,286 @@ class App(tk.Tk):
                 self.circle_email_automation_task_color_get.set(self.color[0])
                 self.circle_email_automation_status_checker_flag = 0
                 self.circle_email_automation_task_status.set(" Unsuccessful ")
+                self.task_running = 0
+                self.task_module_running = ""
 
         else:
+            self.task_running = 0
+            self.task_module_running = ""
             # Raising the Custom warning in case the task is already successfuly completed.
             raise CustomWarning("  Circle Automation Task Already Successfully Completed!", " Task Already Done")
 
     # Method(Function) for Email-Package Preparation.
     def email_package_prep_func(self):
+        if(self.task_running == 0):
         # Checking the status of the email package prep task whether it's done or not.
-        if (self.email_package_prep_task_status_checker_flag == 0):
-            try:
-                # Setting the task status label to 'In Progress' and setting it's color.
-                self.email_package_prep_color_get.set(self.color[2])
-                self.email_package_prep_task_status.set(" In Progress ")
+            if (self.email_package_prep_task_status_checker_flag == 0):
+                try:
+                    self.task_running = 1
+                    self.task_module_running = "Email Package Preparation"
 
-                # Checking if the workbook for the MPBN Planning Sheet is selected or not
-                if (len(self.file_browser_file) == 0):
-                    # Raising the Exception for file not being selected.
-                    raise FileNotSelected(
-                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
+                    # Setting the task status label to 'In Progress' and setting it's color.
+                    self.email_package_prep_color_get.set(self.color[2])
+                    self.email_package_prep_task_status.set(" In Progress ")
 
-                else:
-                    # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
-                    # status of the Task in status flag.
-                    self.email_package_status_flag = Email_package_generator.email_package_sheet_creater(
-                        self.file_browser_file)
+                    # Checking if the workbook for the MPBN Planning Sheet is selected or not
+                    if (len(self.file_browser_file) == 0):
+                        # Raising the Exception for file not being selected.
+                        raise FileNotSelected(
+                            " Please Select the MPBN Planning Workbook first!", "File Not Selected")
 
-                    # Checking if the status of the task is successful or not.
-                    if (self.email_package_status_flag == "Successful"):
-                        # Setting the label for task to successful.
-                        self.email_package_prep_task_status.set(
-                            " Successful ")
-                        
-                        # Setting the color of the Successful label
-                        self.email_package_prep_color_get.set(
-                            self.color[1])
+                    else:
+                        # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
+                        # status of the Task in status flag.
+                        self.email_package_status_flag = Email_package_generator.email_package_sheet_creater(
+                            self.file_browser_file)
 
-                        # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
-                        # and need not to run this task again.
-                        self.email_package_prep_task_status_checker_flag = 1
+                        # Checking if the status of the task is successful or not.
+                        if (self.email_package_status_flag == "Successful"):
+                            # Setting the label for task to successful.
+                            self.email_package_prep_task_status.set(
+                                " Successful ")
+                            
+                            # Setting the color of the Successful label
+                            self.email_package_prep_color_get.set(
+                                self.color[1])
 
-                    # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
-                    if (self.email_package_status_flag == "Unsuccessful"):
-                        self.email_package_prep_task_status.set(
-                            " Unsuccessful ")
-                        self.email_package_prep_color_get.set(
-                            self.color[0])
-                        self.email_package_prep_task_status_checker_flag = 0
+                            # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                            # and need not to run this task again.
+                            self.email_package_prep_task_status_checker_flag = 1
+                            
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
-            except FileNotSelected:
-                self.email_package_prep_color_get.set(self.color[0])
-                self.email_package_prep_task_status_checker_flag = 0
-                self.email_package_prep_task_status.set(" Unsuccessful ")
+                        # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                        if (self.email_package_status_flag == "Unsuccessful"):
+                            self.email_package_prep_task_status.set(
+                                " Unsuccessful ")
+                            self.email_package_prep_color_get.set(
+                                self.color[0])
+                            self.email_package_prep_task_status_checker_flag = 0
+                            
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # Handling any other Exception and setting the label to unsuccessful along with it's color.
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.email_package_prep_color_get.set(self.color[0])
-                self.email_package_prep_task_status_checker_flag = 0
-                self.email_package_prep_task_status.set(" Unsuccessful ")
+                # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
+                except FileNotSelected:
+                    self.email_package_prep_color_get.set(self.color[0])
+                    self.email_package_prep_task_status_checker_flag = 0
+                    self.email_package_prep_task_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
 
+                # Handling any other Exception and setting the label to unsuccessful along with it's color.
+                except Exception as error:
+                    messagebox.showerror(" Exception Occured", error)
+                    self.email_package_prep_color_get.set(self.color[0])
+                    self.email_package_prep_task_status_checker_flag = 0
+                    self.email_package_prep_task_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+            else:
+                self.task_running = 0
+                self.task_module_running = ""
+                # Raising the Custom warning in case the task is already successfuly completed.
+                raise CustomWarning("  Email-Package Preparation Task Already Successfully Completed!", " Task Already Done")
+        
         else:
-            # Raising the Custom warning in case the task is already successfuly completed.
-            raise CustomWarning("  Email-Package Preparation Task Already Successfully Completed!", " Task Already Done")
+            messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for Preparing the Interdomain KPIs data
     def interdomain_kpis_data_prep_func(self):
-        # Checking the status of the Interdomain kpis data preparation whether it's done or not.
-        if (self.interdomain_kpis_data_prep_status_checker_flag == 0):
-            # Setting the task status label to 'In Progress' and setting it's color.
-            self.interdomain_kpis_data_prep_color_get.set(self.color[2])
-            self.interdomain_kpis_data_prep_task_status.set(" In Progress ")
+        # Checking If another task is running or not
+        if (self.task_running == 0):
+            # Checking the status of the Interdomain kpis data preparation whether it's done or not.
+            if (self.interdomain_kpis_data_prep_status_checker_flag == 0):
+                # Setting the task status label to 'In Progress' and setting it's color.
+                self.interdomain_kpis_data_prep_color_get.set(self.color[2])
+                self.interdomain_kpis_data_prep_task_status.set(" In Progress ")
+                self.task_running = 1
+                self.task_module_running = "Interdomain KPIs Data Preparation"
 
-            try:
-                # Checking if the workbook for the MPBN Planning Sheet is selected or not.
-                if (len(self.file_browser_file) == 0):
-                    # Raising the Exception for file not being selected
-                    raise FileNotSelected(
-                        " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
+                try:
+                    # Checking if the workbook for the MPBN Planning Sheet is selected or not.
+                    if (len(self.file_browser_file) == 0):
+                        # Raising the Exception for file not being selected
+                        raise FileNotSelected(
+                            " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
 
-                else:
-                    # Calling the method of the module for Interdomain Kpis data preparation from the MPBN Planning sheet workbook and getting the return value of the 
-                    # status of the Task in status flag.
-                    self.interdomain_kpis_data_prep_status_flag = interdomain_KPIs_Data_Prep_Task.paco_cscore(
-                        self.sender, self.file_browser_file)
+                    else:
+                        # Calling the method of the module for Interdomain Kpis data preparation from the MPBN Planning sheet workbook and getting the return value of the 
+                        # status of the Task in status flag.
+                        self.interdomain_kpis_data_prep_status_flag = interdomain_KPIs_Data_Prep_Task.paco_cscore(
+                            self.sender, self.file_browser_file)
 
-                    # Checking if the status of the task is successful or not.
-                    if (self.interdomain_kpis_data_prep_status_flag == 'Successful'):
-                        # Setting the color of the Successful label
-                        self.interdomain_kpis_data_prep_color_get.set(
-                            self.color[1])
-                        
-                        # Setting completion status of interdomain_kpis_data_prep_task to 1 for further usage  with other methods.
-                        self.interdomain_kpis_data_prep_task_completed = 1
-                        
-                        # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
-                        # and need not to run this task again.
-                        self.interdomain_kpis_data_prep_status_checker_flag = 1
-                        
-                        # Setting the label for task to successful.
-                        self.interdomain_kpis_data_prep_task_status.set(
-                            " Successful ")
+                        # Checking if the status of the task is successful or not.
+                        if (self.interdomain_kpis_data_prep_status_flag == 'Successful'):
+                            # Setting the color of the Successful label
+                            self.interdomain_kpis_data_prep_color_get.set(
+                                self.color[1])
+                            
+                            # Setting completion status of interdomain_kpis_data_prep_task to 1 for further usage  with other methods.
+                            self.interdomain_kpis_data_prep_task_completed = 1
+                            
+                            # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                            # and need not to run this task again.
+                            self.interdomain_kpis_data_prep_status_checker_flag = 1
+                            
+                            # Setting the label for task to successful.
+                            self.interdomain_kpis_data_prep_task_status.set(
+                                " Successful ")
+                            
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-                    # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
-                    elif (self.interdomain_kpis_data_prep_status_flag == 'Unsuccessful'):
-                        self.interdomain_kpis_data_prep_color_get.set(
-                            self.color[0])
-                        self.interdomain_kpis_data_prep_task_completed = 0
-                        self.interdomain_kpis_data_prep_status_checker_flag = 0
-                        self.interdomain_kpis_data_prep_task_status.set(
-                            " Unsuccessful ")
+                        # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                        elif (self.interdomain_kpis_data_prep_status_flag == 'Unsuccessful'):
+                            self.interdomain_kpis_data_prep_color_get.set(
+                                self.color[0])
+                            self.interdomain_kpis_data_prep_task_completed = 0
+                            self.interdomain_kpis_data_prep_status_checker_flag = 0
+                            self.interdomain_kpis_data_prep_task_status.set(
+                                " Unsuccessful ")
+                            
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
-            except FileNotSelected:
-                self.interdomain_kpis_data_prep_color_get.set(self.color[0])
-                self.interdomain_kpis_data_prep_status_checker_flag = 0
-                self.interdomain_kpis_data_prep_task_status.set(
-                    " Unsuccessful ")
-            
-            # Handling any other Exception and setting the label to unsuccessful along with it's color.
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.interdomain_kpis_data_prep_color_get.set(self.color[0])
-                self.interdomain_kpis_data_prep_status_checker_flag = 0
-                self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
+                # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                except FileNotSelected:
+                    self.interdomain_kpis_data_prep_color_get.set(self.color[0])
+                    self.interdomain_kpis_data_prep_status_checker_flag = 0
+                    self.interdomain_kpis_data_prep_task_status.set(
+                        " Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
+                
+                # Handling any other Exception and setting the label to unsuccessful along with it's color.
+                except Exception as error:
+                    messagebox.showerror(" Exception Occured", error)
+                    self.interdomain_kpis_data_prep_color_get.set(self.color[0])
+                    self.interdomain_kpis_data_prep_status_checker_flag = 0
+                    self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+            else:
+                self.task_running = 0
+                self.task_module_running = ""
+                # Raising the Custom warning in case the task is already successfuly completed.
+                raise CustomWarning(
+                    " Interdomain KPIs Data Prep Task Already Successfully Completed", " Task Already Done")
+
         else:
-            # Raising the Custom warning in case the task is already successfuly completed.
-            raise CustomWarning(
-                " Interdomain KPIs Data Prep Task Already Successfully Completed", " Task Already Done")
+            messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for Interdomain KPIs Mail communication
     def interdomain_kpis_mail_communication_func(self, event):
-        if (self.interdomain_kpis_mail_communication_status_checker_flag == 0):
-            self.region_handler_names_win = Toplevel(self.main_win)
+        if(self.task_running == 0):
+            if (self.interdomain_kpis_mail_communication_status_checker_flag == 0):
+                self.task_running = 1
+                self.task_module_running = "Interdomain KPIs Mail Communication"
 
-            # Hiding the main GUI window.
-            if self.main_win.state() == "normal":
-                self.main_win.withdraw()
+                self.region_handler_names_win = Toplevel(self.main_win)
 
-            # Checking the interdomain data prep task is cmpleted or not.
-            if (self.interdomain_kpis_data_prep_task_completed == 1):
+                # Hiding the main GUI window.
+                if self.main_win.state() == "normal":
+                    self.main_win.withdraw()
 
-                # Creating New Child GUI for taking MPBN Planning Spocs' names
-                self.region_handler_names_win.geometry("440x300")
-                self.region_handler_names_win.minsize(440, 300)
-                self.region_handler_names_win.maxsize(440, 300)
-                self.region_handler_names_win.iconbitmap(
-                    "./images/ericsson-blue-icon-logo.ico")
-                self.region_handler_names_win.title(
-                    "   Names for (PAN INDIA) MPBN Planning SPOC's ")
-                self.region_handler_names_win.bind(
-                    "<Escape>", self.region_handler_names_win_quit)
+                # Checking the interdomain data prep task is cmpleted or not.
+                if (self.interdomain_kpis_data_prep_task_completed == 1):
 
-                self.region_handler_names_win_background = ImageTk.PhotoImage(
-                    Image.open("./images/MPBN PLANNING TASK_3_3.png"))
-                self.region_handler_names_win_canvas = Canvas(
-                    self.region_handler_names_win, width=440, height=300, bd=0, highlightthickness=0, relief="ridge")
-                self.region_handler_names_win_canvas.grid(
-                    row=0, column=0, sticky=NW)
-                self.region_handler_names_win_canvas.create_image(
-                    0, 0, image=self.region_handler_names_win_background, anchor="nw")
+                    # Creating New Child GUI for taking MPBN Planning Spocs' names
+                    self.region_handler_names_win.geometry("440x300")
+                    self.region_handler_names_win.minsize(440, 300)
+                    self.region_handler_names_win.maxsize(440, 300)
+                    self.region_handler_names_win.iconbitmap(
+                        "./images/ericsson-blue-icon-logo.ico")
+                    self.region_handler_names_win.title(
+                        "   Names for (PAN INDIA) MPBN Planning SPOC's ")
+                    self.region_handler_names_win.bind(
+                        "<Escape>", self.region_handler_names_win_quit)
 
-                # Enteries for the MPBN Planning Spoc names
-                self.north_and_west_region_entry = ttk.Entry(
-                    self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
-                self.region_handler_names_win_canvas.create_text(
-                    10, 20, anchor="nw", text="Please Enter Name Of North and West Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
-                self.region_handler_names_win_canvas.create_window(
-                    10, 65, anchor="nw", window=self.north_and_west_region_entry)
-                self.north_and_west_region_entry.focus_force()
+                    self.region_handler_names_win_background = ImageTk.PhotoImage(
+                        Image.open("./images/MPBN PLANNING TASK_3_3.png"))
+                    self.region_handler_names_win_canvas = Canvas(
+                        self.region_handler_names_win, width=440, height=300, bd=0, highlightthickness=0, relief="ridge")
+                    self.region_handler_names_win_canvas.grid(
+                        row=0, column=0, sticky=NW)
+                    self.region_handler_names_win_canvas.create_image(
+                        0, 0, image=self.region_handler_names_win_background, anchor="nw")
 
-                self.region_handler_names_win_canvas.create_text(
-                    10, 120, anchor="nw", text="Please Enter Name Of South and East Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
-                self.east_region_and_south_region_entry = ttk.Entry(
-                    self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
-                self.region_handler_names_win_canvas.create_window(
-                    10, 165, anchor="nw", window=self.east_region_and_south_region_entry)
+                    # Enteries for the MPBN Planning Spoc names
+                    self.north_and_west_region_entry = ttk.Entry(
+                        self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
+                    self.region_handler_names_win_canvas.create_text(
+                        10, 20, anchor="nw", text="Please Enter Name Of North and West Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
+                    self.region_handler_names_win_canvas.create_window(
+                        10, 65, anchor="nw", window=self.north_and_west_region_entry)
+                    self.north_and_west_region_entry.focus_force()
 
-                # Getting the names of the MPBN Planning Spocs from user input in the above enteries.
-                self.north_and_west_region = self.north_and_west_region_entry.get()
-                self.east_region_and_south_region = self.east_region_and_south_region_entry.get()
+                    self.region_handler_names_win_canvas.create_text(
+                        10, 120, anchor="nw", text="Please Enter Name Of South and East Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
+                    self.east_region_and_south_region_entry = ttk.Entry(
+                        self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
+                    self.region_handler_names_win_canvas.create_window(
+                        10, 165, anchor="nw", window=self.east_region_and_south_region_entry)
 
-                # Creating the Submit button for the user to submit the names.
-                self.region_handler_names_win_canvas_submit = ttk.Button(
-                    self.region_handler_names_win, text="Submit", command=lambda: self.interdomain_kpis_mail_commmunication_starter_func(1))
-                self.region_handler_names_win_canvas.create_window(
-                    380, 270, anchor="se", window=self.region_handler_names_win_canvas_submit)
-                self.region_handler_names_win.bind(
-                    "<Return>", self.interdomain_kpis_mail_commmunication_starter_func)
+                    # Getting the names of the MPBN Planning Spocs from user input in the above enteries.
+                    self.north_and_west_region = self.north_and_west_region_entry.get()
+                    self.east_region_and_south_region = self.east_region_and_south_region_entry.get()
 
-                self.region_handler_names_win.protocol(
-                    "WM_DELETE_WINDOW", lambda: self.region_handler_names_win_quit(1))
+                    # Creating the Submit button for the user to submit the names.
+                    self.region_handler_names_win_canvas_submit = ttk.Button(
+                        self.region_handler_names_win, text="Submit", command=lambda: self.interdomain_kpis_mail_commmunication_starter_func(1))
+                    self.region_handler_names_win_canvas.create_window(
+                        380, 270, anchor="se", window=self.region_handler_names_win_canvas_submit)
+                    self.region_handler_names_win.bind(
+                        "<Return>", self.interdomain_kpis_mail_commmunication_starter_func)
 
-                # Checking if the main GUI Window is hidden or not, if hidden, making it reappear and destroying the Child GUI Window.
-                if self.region_handler_names_win.state() != "normal":
+                    self.region_handler_names_win.protocol(
+                        "WM_DELETE_WINDOW", lambda: self.region_handler_names_win_quit(1))
+
+                    # Checking if the main GUI Window is hidden or not, if hidden, making it reappear and destroying the Child GUI Window.
+                    if self.region_handler_names_win.state() != "normal":
+                        if self.main_win.state() != "normal":
+                            self.main_win_flag = 0
+                            self.main_win.deiconify()
+                        self.region_handler_names_win.destroy()
+
+                else:
+                    # Setting the label for task to be "Unsuccessful" and destroying the child GUI(although it will be so fast that user won't be able to see the child GUI window to ever appear.)
+                    self.interdomain_kpis_mail_communication_color_get.set(
+                        self.color[0])
+                    self.interdomain_kpis_mail_communication_status.set(
+                        ' Unsuccessful ')
+                    self.region_handler_names_win.destroy()
+
                     if self.main_win.state() != "normal":
                         self.main_win_flag = 0
                         self.main_win.deiconify()
-                    self.region_handler_names_win.destroy()
+                    self.interdomain_kpis_mail_communication_status_checker_flag = 0
+
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+                    # Raising the custom made exception for running the interdomain data prep task first.
+                    raise CustomException(
+                        "Please! Run Interdomain KPIs Data Prep task First!", "   Task Unsuccessful")
+
+                self.region_handler_names_win.mainloop()
 
             else:
-                # Setting the label for task to be "Unsuccessful" and destroying the child GUI(although it will be so fast that user won't be able to see the child GUI window to ever appear.)
-                self.interdomain_kpis_mail_communication_color_get.set(
-                    self.color[0])
-                self.interdomain_kpis_mail_communication_status.set(
-                    ' Unsuccessful ')
-                self.region_handler_names_win.destroy()
-
-                if self.main_win.state() != "normal":
-                    self.main_win_flag = 0
-                    self.main_win.deiconify()
+                # Raising Exception when the task is already done successfully.
+                self.task_running = 0
+                self.task_module_running = ""
                 self.interdomain_kpis_mail_communication_status_checker_flag = 0
-
-                # Raising the custom made exception for running the interdomain data prep task first.
-                raise CustomException(
-                    "Please! Run Interdomain KPIs Data Prep task First!", "   Task Unsuccessful")
-
-            self.region_handler_names_win.mainloop()
-
+                raise CustomWarning(
+                    " Interdomain KPIs mail Communication Task Already Successfully Completed!", " Task Already Done")
+        
         else:
-            # Raising Exception when the task is already done successfully.
-            self.interdomain_kpis_mail_communication_status_checker_flag = 0
-            raise CustomWarning(
-                " Interdomain KPIs mail Communication Task Already Successfully Completed!", " Task Already Done")
-
+            messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")    
+    
     # Method(Function) for interdomain mail communication starter function that takes all the required values and then calls the main method which does the job.
     def interdomain_kpis_mail_commmunication_starter_func(self, event):
         # Getting the entry values given by user input.
@@ -857,13 +954,26 @@ class App(tk.Tk):
                     self.region_handler_names_win.destroy()
                     
                     # Calling the Module method to complete the task and setting the task label along with suitable color indicating that the task is successfully completed.
-                    interdomain_KPIs_Mail_Comm_Task.paco_cscore(
+                    self.interdomain_starter_func_task_status_checker_flag = interdomain_KPIs_Mail_Comm_Task.paco_cscore(
                         self.sender, self.file_browser_file, self.north_and_west_region, self.east_region_and_south_region)
-                    self.interdomain_kpis_mail_communication_color_get.set(
-                        self.color[1])
-                    self.interdomain_kpis_mail_communication_status_checker_flag = 1
-                    self.interdomain_kpis_mail_communication_status.set(
-                        " Successful ")
+                    
+                    if(self.interdomain_starter_func_task_status_checker_flag == 'Successful'):
+                        self.interdomain_kpis_mail_communication_color_get.set(
+                            self.color[1])
+                        self.interdomain_kpis_mail_communication_status_checker_flag = 1
+                        self.interdomain_kpis_mail_communication_status.set(
+                            " Successful ")
+                        self.task_running = 0
+                        self.task_module_running = ""
+                    
+                    if (self.interdomain_starter_func_task_status_checker_flag == 'Unsuccessful'):
+                        self.interdomain_kpis_mail_communication_color_get.set(
+                            self.color[0])
+                        self.interdomain_kpis_mail_communication_status_checker_flag = 1
+                        self.interdomain_kpis_mail_communication_status.set(
+                            " Unsuccessful ")
+                        self.task_running = 0
+                        self.task_module_running = ""
 
             if (any(c.isdigit() for c in self.north_and_west_region)):
                 self.new_integer_string_list.append(
@@ -887,6 +997,7 @@ class App(tk.Tk):
                 self.interdomain_kpis_mail_communication_status_checker_flag = 0
                 self.interdomain_kpis_mail_communication_status.set(
                     " Unsucessful ")
+                
                 raise RegionHandlerException(
                     f"Please Enter Valid Name/s, Fields with Numbers are not allowed \nField/Fields with Number: {','.join(self.new_integer_string_list)}")
             
@@ -918,6 +1029,8 @@ class App(tk.Tk):
                 self.color[0])
             self.interdomain_kpis_mail_communication_status.set(
                 ' Unsuccessful ')
+            self.task_running = 0
+            self.task_module_running = ""
 
         except RegionHandlerException:
             self.new_empty_string_list = []
@@ -927,6 +1040,8 @@ class App(tk.Tk):
                 self.color[0])
             self.interdomain_kpis_mail_communication_status.set(
                 ' Unsuccessful ')
+            self.task_running = 0
+            self.task_module_running = ""
 
         except Exception as error:
             messagebox.showerror(" Exception Occured", error)
@@ -934,145 +1049,166 @@ class App(tk.Tk):
                 self.color[0])
             self.interdomain_kpis_mail_communication_status.set(
                 ' Unsuccessful ')
+            self.task_running = 0
+            self.task_module_running = ""
 
     # Method(Function) for Creating the evening task message.
     def evening_task_func(self, event):
-        try:
-            # Checking the status of the evening task whether it's done or not.
-            if (self.evening_task_status_checker_flag == 0):
-                if (len(self.file_browser_file) == 0):
-                    # Raising the Exception for file not being selected
-                    raise FileNotSelected(
-                        " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
+        if (self.task_running == 0):
+            try:
+                # Checking the status of the evening task whether it's done or not.
+                if (self.evening_task_status_checker_flag == 0):
+                    self.task_running = 1
+                    self.task_module_running = "Email Package & Evening Message"
 
-                else:
-                    # Creating a variable to check whether the email package is created or not.
-                    self.interdomain_kpis_data_prep_creation_status_flag = 0
-                    self.workbook = pd.ExcelFile(self.file_browser_file)
-                    self.worksheet_names = self.workbook.sheet_names
-
-                    # Finding the Email Package from the workbook and reading it in pandas.
-                    for sheet in self.worksheet_names:
-                        if (sheet == 'Email-Package'):
-                            self.worksheet = pd.read_excel(
-                                self.workbook, sheet)
-                            self.worksheet['Execution Date'] = pd.to_datetime(self.worksheet['Execution Date'], format = "%m/%d/%Y")
-                            self.worksheet['Execution Date'] =  self.worksheet['Execution Date'].dt.strftime("%m/%d/%Y")
-                            
-                            # Getting Today's maintenance date.
-                            tomorrow = datetime.now() + timedelta(1)
-                            tomorrow = tomorrow.strftime("%m/%d/%Y")
-                            self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
-                            
-                            # If there's data present in the worksheet then changing the value of the email package sheet creation status.
-                            if (len(self.worksheet) > 0):
-                                self.interdomain_kpis_data_prep_creation_status_flag = 1
-                                break
-
-                    if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
-                        # Raising the custom made exception for the case when the email package sheet is not created or empty.
-                        raise CustomException(
-                            'Kindly Click the Button for Interdomain Kpi Data Prep First!', 'Email-Package Worksheet Empty')
+                    if (len(self.file_browser_file) == 0):
+                        # Raising the Exception for file not being selected
+                        raise FileNotSelected(
+                            " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
 
                     else:
-                        '''
-                            Creating a child GUI Window to get the required inputs on Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
-                            Resource on Automation Name.
-                        '''
-                        self.evening_task_win = Toplevel(self.main_win)
-                        if self.main_win.state() == 'normal':
-                            self.main_win.withdraw()
-                        self.evening_task_win.iconbitmap(
-                            './images/ericsson-blue-icon-logo.ico')
-                        self.evening_task_win.title(
-                            "   Please Enter The Names to Proceed")
-                        self.evening_task_win.geometry("600x550")
-                        self.evening_task_win.minsize(600, 550)
-                        self.evening_task_win.maxsize(600, 550)
-                        self.evening_task_win.bind(
-                            "<Escape>", self.evening_task_func_quit)
+                        # Creating a variable to check whether the email package is created or not.
+                        self.interdomain_kpis_data_prep_creation_status_flag = 0
+                        self.workbook = pd.ExcelFile(self.file_browser_file)
+                        self.worksheet_names = self.workbook.sheet_names
 
-                        # Setting the background image of the child GUI window.
-                        self.evening_task_background = ImageTk.PhotoImage(
-                            Image.open("./images/MPBN PLANNING TASK_3_4.png"))
-                        self.evening_task_win_canvas = Canvas(
-                            self.evening_task_win, height=550, width=600, bd=0, highlightthickness=0, relief="ridge")
-                        self.evening_task_win_canvas.grid(
-                            row=0, column=0, sticky=NW)
-                        self.evening_task_win_canvas.create_image(
-                            0, 0, image=self.evening_task_background, anchor="nw")
+                        # Finding the Email Package from the workbook and reading it in pandas.
+                        for sheet in self.worksheet_names:
+                            if (sheet == 'Email-Package'):
+                                self.worksheet = pd.read_excel(
+                                    self.workbook, sheet)
+                                self.worksheet['Execution Date'] = pd.to_datetime(self.worksheet['Execution Date'], format = "%m/%d/%Y")
+                                self.worksheet['Execution Date'] =  self.worksheet['Execution Date'].dt.strftime("%m/%d/%Y")
+                                
+                                # Getting Today's maintenance date.
+                                tomorrow = datetime.now() + timedelta(1)
+                                tomorrow = tomorrow.strftime("%m/%d/%Y")
+                                self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
+                                
+                                # If there's data present in the worksheet then changing the value of the email package sheet creation status.
+                                if (len(self.worksheet) > 0):
+                                    self.interdomain_kpis_data_prep_creation_status_flag = 1
+                                    break
 
-                        '''
-                            Creating entry blocks for taking user input for Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
-                            Resource on Automation Name.
-                        '''
-                        self.evening_task_win_canvas.create_text(
-                            10, 20, anchor="nw", text="Please Enter Night Shift Lead Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
-                        self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(
-                            self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
-                        self.evening_task_win_canvas.create_window(
-                            10, 70, anchor="nw", window=self.evening_task_win_canvas_night_shift_lead_entry)
+                        if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-                        self.evening_task_win_canvas.create_text(
-                            10, 150, anchor="nw", text="Please Enter Buffer/Auditor/Trainer Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
-                        self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(
-                            self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
-                        self.evening_task_win_canvas.create_window(
-                            10, 200, anchor="nw", window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
+                            # Raising the custom made exception for the case when the email package sheet is not created or empty.
+                            raise CustomException(
+                                'Kindly Click the Button for Interdomain Kpi Data Prep First!', 'Email-Package Worksheet Empty')
 
-                        self.evening_task_win_canvas.create_text(
-                            10, 280, anchor="nw", text="Please Enter Resource on Automation Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
-                        self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(
-                            self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
-                        self.evening_task_win_canvas.create_window(
-                            10, 310, anchor="nw", window=self.evening_task_win_canvas_resource_on_automation_entry)
+                        else:
+                            '''
+                                Creating a child GUI Window to get the required inputs on Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
+                                Resource on Automation Name.
+                            '''
+                            self.evening_task_win = Toplevel(self.main_win)
+                            if self.main_win.state() == 'normal':
+                                self.main_win.withdraw()
+                            self.evening_task_win.iconbitmap(
+                                './images/ericsson-blue-icon-logo.ico')
+                            self.evening_task_win.title(
+                                "   Please Enter The Names to Proceed")
+                            self.evening_task_win.geometry("600x550")
+                            self.evening_task_win.minsize(600, 550)
+                            self.evening_task_win.maxsize(600, 550)
+                            self.evening_task_win.bind(
+                                "<Escape>", self.evening_task_func_quit)
 
-                        # Creating submit button calling the driver method after taking all the valid user inputs.
-                        self.evening_task_submit_btn = ttk.Button(
-                            self.evening_task_win, text="Submit", command=lambda: self.evening_task_func_starter(1))
-                        self.evening_task_win_canvas.create_window(
-                            580, 520, window=self.evening_task_submit_btn, anchor="se")
+                            # Setting the background image of the child GUI window.
+                            self.evening_task_background = ImageTk.PhotoImage(
+                                Image.open("./images/MPBN PLANNING TASK_3_4.png"))
+                            self.evening_task_win_canvas = Canvas(
+                                self.evening_task_win, height=550, width=600, bd=0, highlightthickness=0, relief="ridge")
+                            self.evening_task_win_canvas.grid(
+                                row=0, column=0, sticky=NW)
+                            self.evening_task_win_canvas.create_image(
+                                0, 0, image=self.evening_task_background, anchor="nw")
 
-                        # Focussing on the Night Shift Lead entry when the child GUI Window appears.
-                        self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+                            '''
+                                Creating entry blocks for taking user input for Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
+                                Resource on Automation Name.
+                            '''
+                            self.evening_task_win_canvas.create_text(
+                                10, 20, anchor="nw", text="Please Enter Night Shift Lead Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
+                            self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(
+                                self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
+                            self.evening_task_win_canvas.create_window(
+                                10, 70, anchor="nw", window=self.evening_task_win_canvas_night_shift_lead_entry)
 
-                        # Setting protocol for the window destruction.
-                        self.evening_task_win.protocol(
-                            "WM_DELETE_WINDOW", lambda: self.evening_task_func_quit(1))
-                        
-                        # Binding the enter key to the driver method.
-                        self.evening_task_win.bind(
-                            "<Return>", self.evening_task_func_starter)
+                            self.evening_task_win_canvas.create_text(
+                                10, 150, anchor="nw", text="Please Enter Buffer/Auditor/Trainer Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
+                            self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(
+                                self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
+                            self.evening_task_win_canvas.create_window(
+                                10, 200, anchor="nw", window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
 
-                        # Making the main GUI window to reappear, while destroying the child GUI.
-                        if self.evening_task_win.state() != "normal":
-                            if self.main_win.state() != "normal":
-                                self.main_win_flag = 0
-                                self.main_win.deiconify()
-                            self.evening_task_win.destroy()
+                            self.evening_task_win_canvas.create_text(
+                                10, 280, anchor="nw", text="Please Enter Resource on Automation Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
+                            self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(
+                                self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
+                            self.evening_task_win_canvas.create_window(
+                                10, 310, anchor="nw", window=self.evening_task_win_canvas_resource_on_automation_entry)
 
-                        # Creating an endless loop until the user presses the submit button or the Enter key or any external interruption occurs.
-                        self.evening_task_win.mainloop()
+                            # Creating submit button calling the driver method after taking all the valid user inputs.
+                            self.evening_task_submit_btn = ttk.Button(
+                                self.evening_task_win, text="Submit", command=lambda: self.evening_task_func_starter(1))
+                            self.evening_task_win_canvas.create_window(
+                                580, 520, window=self.evening_task_submit_btn, anchor="se")
 
-            else:
-                # Raising custom made exception for the condition when the task has already been done.
-                raise CustomWarning(
-                    "Evening Task Already Successfully Completed!", " Task Already Done")
-        
-        #  Handling Exceptions for the task.
-        except FileNotSelected:
-            self.evening_task_color_get.set(self.color[0])
-            self.evening_task_status_checker_flag = 0
-            self.evening_task_status.set(' Unsuccessful ')
-        
-        except Exception as error:
-            messagebox.showerror(" Exception Occured", error)
-            self.evening_task_color_get.set(self.color[0])
-            self.evening_task_status_checker_flag = 0
-            self.evening_task_status.set(' Unsuccessful ')
+                            # Focussing on the Night Shift Lead entry when the child GUI Window appears.
+                            self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+
+                            # Setting protocol for the window destruction.
+                            self.evening_task_win.protocol(
+                                "WM_DELETE_WINDOW", lambda: self.evening_task_func_quit(1))
+                            
+                            # Binding the enter key to the driver method.
+                            self.evening_task_win.bind(
+                                "<Return>", self.evening_task_func_starter)
+
+                            # Making the main GUI window to reappear, while destroying the child GUI.
+                            if self.evening_task_win.state() != "normal":
+                                if self.main_win.state() != "normal":
+                                    self.main_win_flag = 0
+                                    self.main_win.deiconify()
+                                self.evening_task_win.destroy()
+
+                            # Creating an endless loop until the user presses the submit button or the Enter key or any external interruption occurs.
+                            self.evening_task_win.mainloop()
+
+                else:
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+                    # Raising custom made exception for the condition when the task has already been done.
+                    raise CustomWarning(
+                        "Evening Task Already Successfully Completed!", " Task Already Done")
+            
+            #  Handling Exceptions for the task.
+            except FileNotSelected:
+                self.evening_task_color_get.set(self.color[0])
+                self.evening_task_status_checker_flag = 0
+                self.evening_task_status.set(' Unsuccessful ')
+                self.task_running = 0
+                self.task_module_running = ""
+            
+            except Exception as error:
+                messagebox.showerror(" Exception Occured", error)
+                self.evening_task_color_get.set(self.color[0])
+                self.evening_task_status_checker_flag = 0
+                self.evening_task_status.set(' Unsuccessful ')
+                self.task_running = 0
+                self.task_module_running = ""
+
+        else:
+            messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for quitting the evening message task while destroying the child GUI Window.
     def evening_task_func_quit(self, event):
+        self.task_running = 0
+        self.task_module_running = ""
         self.evening_task_win.withdraw()
         self.evening_task_color_get.set(self.color[0])
         self.evening_task_status.set(' Unsuccessful ')
@@ -1115,11 +1251,15 @@ class App(tk.Tk):
                         self.evening_task_color_get.set(self.color[1])
                         self.evening_task_status_checker_flag = 1
                         self.evening_task_status.set(' Successful ')
+                        self.task_running = 0
+                        self.task_module_running = ""
 
                     if (self.evening_mail_task_status_flag == 'Unsuccessful'):
                         self.evening_task_color_get.set(self.color[0])
                         self.evening_task_status_checker_flag = 0
                         self.evening_task_status.set(' Unsuccessful ')
+                        self.task_running = 0
+                        self.task_module_running = ""
 
             # Checking whether the name enteries contain empty strings(no input), or integers and raising custom made exceptions accordingly.
             if (len(self.night_shift_lead) == 0):
@@ -1167,6 +1307,8 @@ class App(tk.Tk):
             self.evening_task_status_checker_flag = 0
             self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
             self.evening_task_status.set(' Unsuccessful ')
+            self.task_running = 0
+            self.task_module_running = ""
 
         # Handling any other Exception and setting the label to unsuccessful along with it's color.
         except Exception as error:
@@ -1174,68 +1316,103 @@ class App(tk.Tk):
             self.evening_task_color_get.set(self.color[0])
             self.evening_task_status_checker_flag = 0
             self.evening_task_status.set(' Unsuccessful ')
+            self.task_running = 0
+            self.task_module_running = ""
 
     # Method(Function) for sending the execution mail communication
     def executor_mail_communication(self):
-        # Checking the status of the circle email automation task whether it's done or not.
-        if (self.executor_mail_communication_status_checker_flag == 0):
-            try:
-                # Setting the task status label to 'In Progress' and setting it's color.
-                self.executor_mail_communication_color_get.set(self.color[2])
-                self.executor_mail_communication_status.set(" In Progress ")
+        if(self.task_running == 0):
+            # Checking the status of the circle email automation task whether it's done or not.
+            if (self.executor_mail_communication_status_checker_flag == 0):
+                try:
+                    self.task_running = 1
+                    self.task_module_running = "Executor Mail Communication"
 
-                # Checking if the workbook for the MPBN Planning Sheet is selected or not
-                if (len(self.file_browser_file) == 0):
-                    # Raising the Exception for file not being selected.
-                    raise FileNotSelected(
-                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
+                    # Setting the task status label to 'In Progress' and setting it's color.
+                    self.executor_mail_communication_color_get.set(self.color[2])
+                    self.executor_mail_communication_status.set(" In Progress ")
 
-                else:
-                    # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
-                    # status of the Task in status flag.
-                    self.executor_mail_communication_status_flag = circle_reply_task.circle_reply_task(
-                        self.sender, self.file_browser_file)
+                    # Checking if the workbook for the MPBN Planning Sheet is selected or not
+                    if (len(self.file_browser_file) == 0):
+                        # Raising the Exception for file not being selected.
+                        raise FileNotSelected(
+                            " Please Select the MPBN Planning Workbook first!", "File Not Selected")
 
-                    # Checking if the status of the task is successful or not.
-                    if (self.executor_mail_communication_status_flag == "Successful"):
-                        # Setting the label for task to successful.
-                        self.execution_mail_communication_status.set(
-                            " Successful ")
-                        
-                        # Setting the color of the Successful label
-                        self.executor_mail_communication_color_get.set(
-                            self.color[1])
+                    else:
+                        # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
+                        # status of the Task in status flag.
+                        self.executor_mail_communication_status_flag = circle_reply_task.circle_reply_task(
+                            self.sender, self.file_browser_file)
 
-                        # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
-                        # and need not to run this task again.
-                        self.executor_mail_communication_status_checker_flag = 1
+                        # Checking if the status of the task is successful or not.
+                        if (self.executor_mail_communication_status_flag == "Successful"):
+                            # Setting the label for task to successful.
+                            print("successful\n\n")
+                            self.executor_mail_communication_status.set(
+                                " Successful ")
+                            
+                            # Setting the color of the Successful label
+                            self.executor_mail_communication_color_get.set(
+                                self.color[1])
 
-                    # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
-                    if (self.executor_mail_communication_status_flag == "Unsuccessful"):
-                        self.executor_mail_communication_status.set(
-                            " Unsuccessful ")
-                        self.executor_mail_communication_color_get.set(
-                            self.color[0])
-                        self.executor_mail_communication_status_checker_flag = 0
+                            # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                            # and need not to run this task again.
+                            self.executor_mail_communication_status_checker_flag = 1
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
-            except FileNotSelected:
-                self.executor_mail_communication_color_get.set(self.color[0])
-                self.executor_mail_communication_status_checker_flag = 0
-                self.executor_mail_communication_status.set(" Unsuccessful ")
+                        # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                        if (self.executor_mail_communication_status_flag == "Unsuccessful"):
+                            self.executor_mail_communication_status.set(
+                                " Unsuccessful ")
+                            self.executor_mail_communication_color_get.set(
+                                self.color[0])
+                            self.executor_mail_communication_status_checker_flag = 0
+                            self.task_running = 0
+                            self.task_module_running = ""
 
-            # Handling any other Exception and setting the label to unsuccessful along with it's color.
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.executor_mail_communication_color_get.set(self.color[0])
-                self.executor_mail_communication_status_checker_flag = 0
-                self.executor_mail_communication_status.set(" Unsuccessful ")
+                # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
+                except FileNotSelected:
+                    self.executor_mail_communication_color_get.set(self.color[0])
+                    self.executor_mail_communication_status_checker_flag = 0
+                    self.executor_mail_communication_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+                except RecursionError:
+                    # Setting the label for task to successful.
+                    self.self.executor_mail_communication_status.set(
+                        " Successful ")
+                    
+                    # Setting the color of the Successful label
+                    self.executor_mail_communication_color_get.set(
+                        self.color[1])
+
+                    # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                    # and need not to run this task again.
+                    self.executor_mail_communication_status_checker_flag = 1
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+                # Handling any other Exception and setting the label to unsuccessful along with it's color.
+                except Exception as error:
+                    messagebox.showerror(" Exception Occured", error)
+                    self.executor_mail_communication_color_get.set(self.color[0])
+                    self.executor_mail_communication_status_checker_flag = 0
+                    self.executor_mail_communication_status.set(" Unsuccessful ")
+                    self.task_running = 0
+                    self.task_module_running = ""
+
+
+            else:
+                self.task_running = 0
+                self.task_module_running = ""
+                # Raising the Custom warning in case the task is already successfuly completed.
+                raise CustomWarning("  Executor Mail Communication Task Already Successfully Completed!", " Task Already Done")
 
         else:
-            # Raising the Custom warning in case the task is already successfuly completed.
-            raise CustomWarning("  Executor Mail Communication Task Already Successfully Completed!", " Task Already Done")
+            messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
-        pass
     # Method(Function) for submitting the User Name.
     def submit_sender_name(self, event):
         # Getting the User name from string variable
@@ -1271,32 +1448,40 @@ class App(tk.Tk):
         self.main_win_flag = 0
         self.main_win.deiconify()
         self.region_handler_names_win.destroy()
+        self.task_running = 0
+        self.task_module_running = ""
 
 # Main Method(Function)
 def main():
-    # Creating an object of Tkinter
-    root = Tk()
-    try:
-        # Creating an object of our application class and passing the Tkinter object to it.
-        app = App(root)
+    handle = CreateMutex(None,False,"MPBN Planning Task")
+    if (GetLastError() == ERROR_ALREADY_EXISTS):
+        messagebox.showerror("Application Already Running!","Another Instance of the application is already running, Kindly Wait!")
+        sys.exit(1)
+        
+    else:
+        # Creating an object of Tkinter
+        root = Tk()
+        try:
+            # Creating an object of our application class and passing the Tkinter object to it.
+            app = App(root)
 
-    # Handling exceptions for empty string entry.
-    except EmptyString:
-        current_file = __file__  # gets the value of current running file
-        subprocess.run(["python", current_file])
-        sys.exit(0)
+        # Handling exceptions for empty string entry.
+        except EmptyString:
+            current_file = __file__  # gets the value of current running file
+            subprocess.run(["python", current_file])
+            sys.exit(0)
 
-    # Handling exceptions for Inputs containing Integer value
-    except ContainsInteger:
-        current_file = __file__  # gets the value of current running file
-        subprocess.run(["python", current_file])
-        sys.exit(0)
+        # Handling exceptions for Inputs containing Integer value
+        except ContainsInteger:
+            current_file = __file__  # gets the value of current running file
+            subprocess.run(["python", current_file])
+            sys.exit(0)
 
-    # Handling any other Exception.
-    except Exception as e:
-        messagebox.showerror("  Exception Occured", e)
+        # Handling any other Exception.
+        except Exception as e:
+            messagebox.showerror("  Exception Occured", e)
 
-    root.mainloop()
+        root.mainloop()
 
 
 if __name__ == "__main__":

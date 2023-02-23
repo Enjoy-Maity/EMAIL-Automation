@@ -39,7 +39,8 @@ def sendmail(dataframe,to,cc,body,subject,sender):
     msg.HTMLBody=html_body.format(dataframe.to_html(classes = 'table table-stripped',index=False),sender)       # Formatting the Mail Body by entering the important data in the mail body through the usage of .format
     msg.Save()                                                                                                  # Saving the mail in drafts before sending it, as a failsafe mechanism in case any failure arises.
     msg.Send()                                                                                                  # Sending the mail.
-
+    msg.Close()
+    
     objects = dir()
     for object in objects:
         if not object.startswith("__"):
@@ -296,7 +297,8 @@ def fetch_details(sender,workbook):
                                                 <p>Please confirm below points so that we will approve CR’s.<br></p>\
                                                 <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>\
                                                 <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>\
-                                                <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA).Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.<br><br></p>\
+                                                <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA). Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.</p>\
+                                                <p>4)  Is redundancy working or all parameters ensured in shared plan for SAPC integration/reachability related activity on MPBN nodes (Yes/No, Applicable only in case of SAPC integration).<br><br></p>\
                                             </div>\
                                             <div>\
                                                 <p>{}</p>\

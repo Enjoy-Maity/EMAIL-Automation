@@ -8,6 +8,22 @@ from datetime import datetime,timedelta                             # Importing 
 from tkinter import *                                               # Importing all the classes from tkinter GUI Module of python.
 from tkinter import messagebox                                      # Importing Messagebox to invoke messages where required.
 from pathlib import Path                                            # Importing Path from pathlib to check the existence of a file.
+from threading import Thread                                        # Importing Thread for creation of threads
+import numpy as np                                                  # Importing numpy for operations on numpy arrays obtained from pandas.
+
+# Creating class for Threads with returning value.
+class CustomThread(Thread):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
+        Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        if(self._target is not None):
+            self._return = self.target(*self._args, **self._kwargs)
+    
+    def join(self):
+        Thread.join(self)
+        return self._return
 
 # Creating Custom classes to handle custom defined Exceptions (Interuptions) to handle the flow of program.
 class TomorrowDataNotFound(Exception):
@@ -20,6 +36,27 @@ class CustomException(Exception):
         self.msg = msg
         messagebox.showerror(self.title,self.msg)
 
+def sheet_cleaner(workbook):
+    # Loading the Workbook
+    wb = load_workbook(workbook)
+
+    # Creating a list of sheets to be removed
+    sheets_to_be_removed = ["VAS-Inter Domain","RAN-Inter Domain","CS Core-Inter Domain","PS Core-Inter Domain"]
+
+    # Getting the Sheet names
+    sheets = wb.sheetnames
+
+    # Iterating through each sheet to delete the sheets for interdomain.
+    for sheet in sheets:
+        if(sheet in sheets_to_be_removed):
+            wb.remove_sheet(wb[sheet])
+
+    wb.save(workbook)
+    wb.close()
+
+    objects = dir()
+    for object in objects:
+        del object
 
 #####################################################################
 #########################  P1 P3 appender  ##########################
@@ -38,7 +75,7 @@ def p_one_p_three_appender(sender,workbook):
     email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
     # Getting the unique technical validator.
-    unique_technical_validator_set = set(email_package['Technical Validator'].unique())
+    unique_technical_validator_set = email_package['Technical Validator'].unique()
     p1 = ''
     p3 = ''
     
@@ -52,14 +89,14 @@ def p_one_p_three_appender(sender,workbook):
     
     if ('Arka Maiti' in unique_technical_validator_set):
         p3 = 'Arka Maiti'
-        unique_technical_validator_set.remove(p3)
+        np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p3))
 
     if ('Manoj Kumar' in unique_technical_validator_set):
         p1 = 'Manoj Kumar'
-        unique_technical_validator_set.remove(p1)
+        np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p1))
 
     if ((len(p1) > 0) and (len(p3) == 0)):
-        p3 = list(unique_technical_validator_set - set(p1))[0]
+        p3 = str(np.setdiff1d(unique_technical_validator_set,np.array([p1],dtype = str))[0])
     
     if ((len(p3) > 0) and (len(p1) == 0)):
         p1 = list(unique_technical_validator_set - set(p3))[0]
@@ -134,6 +171,7 @@ def p_one_p_three_appender(sender,workbook):
                 for object in objects:
                     if not object.startswith("__"):
                         del object
+            
         
             else:
                 # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
@@ -143,6 +181,8 @@ def p_one_p_three_appender(sender,workbook):
                 for object in objects:
                     if not object.startswith("__"):
                         del object
+            
+            return 'Successful'
         
             
                 
@@ -223,6 +263,8 @@ def p_one_p_three_appender(sender,workbook):
                 for object in objects:
                     if not object.startswith("__"):
                         del object
+            
+            return 'Successful'
 
     else:
         # Message showing that the user who is running the application is not a technical validator.
@@ -315,7 +357,7 @@ def validation_adder(workbook,worksheet):
         
     
     if(len(blank_change_responsible_field) > 0):
-        raise CustomException(" Blank Change Responsible Field!",f"Kindly Enter the Change Responsible detail for S.NO:\n{', '.join(blank_change_responsible_field)}")
+        raise CustomException(" Blank Change Responsible Field!",f"Kindly Enter the Change Responsible detail for S.NO:\n{', '.join(str(num) for num in blank_change_responsible_field)}")
     
     else:
         dictionary_from_cr_to_change_responsible_email_package = dict(zip(wb['CR NO'],wb['Change Responsible']))
@@ -364,13 +406,31 @@ def paco_cscore(sender,workbook):
         #user = subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
 
         #workbook = r"C:/Daily/MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
-        
-        # Calling the method to add vlookup to the column of Change Responsible in Planning Sheet
-        validation_adder(workbook,"Planning Sheet")
 
+        flag_for_planning_sheet = 0
+        flag_for_mail_id        = 0
+
+        wb = load_workbook(workbook)
+        sheets = wb.sheetnames
+        for sheet in sheets:
+            if (sheet == 'Planning Sheet'):
+                flag_for_planning_sheet = 1
+            
+            if (sheet == 'Mail Id'):
+                flag_for_mail_id = 1
+
+        wb.close()
+        
+        if(flag_for_planning_sheet == 0):
+            raise TomorrowDataNotFound("The Planning Sheet is not present! Kindly Check!")
+        
+        if(flag_for_mail_id == 0):
+            raise TomorrowDataNotFound("The Mail Id  is empty! Kindly Check!")
+        
         daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
         tomorrow = datetime.today()+timedelta(1) # getting tomorrow date for data execution
         difference = []
+        
         daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
         
         if (len(daily_plan_sheet) == 0):
@@ -390,7 +450,8 @@ def paco_cscore(sender,workbook):
             raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join([str(num) for num in difference])}")
         
         else:
-            
+            # Calling the method to add vlookup to the column of Change Responsible in Planning Sheet
+            validation_adder(workbook,"Planning Sheet")
             daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
             Email_ID = pd.read_excel(workbook,"Mail Id")
             
@@ -487,6 +548,9 @@ def paco_cscore(sender,workbook):
                 messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
                 return 'Unsuccessful'
             else:
+                thread_for_interdomain_sheet_removal = Thread(target = sheet_cleaner,args=(workbook,))
+                thread_for_interdomain_sheet_removal.start()
+
                 sheetname = "PS Core-Inter Domain"
                 sheetname2 = "CS Core-Inter Domain"
                 sheetname3 = "RAN-Inter Domain"
@@ -682,7 +746,8 @@ def paco_cscore(sender,workbook):
                 df3.reset_index(drop = True,inplace = True)
                 df4.reset_index(drop = True,inplace = True)
 
-               
+                thread_for_interdomain_sheet_removal.join()
+
                 # writer = pd.ExcelWriter(workbook,engine = 'xlsxwriter')
 
                 # daily_plan_sheet.to_excel(writer,sheet_name = 'Planning Sheet',index = False)
@@ -709,6 +774,8 @@ def paco_cscore(sender,workbook):
 
                     writer.close()
 
+                    thread = CustomThread(target = p_one_p_three_appender, args = (sender,workbook))
+                    thread.start()
                     
                     # Styling the worksheets.
                     styling(workbook,sheetname)
@@ -719,15 +786,17 @@ def paco_cscore(sender,workbook):
                     # Message showing that all the Interdomain Sheets have been written.
                     messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
                     
-                    # Calling the Method(Function) that can write into the Automation tracker sheet.
-                    p_one_p_three_appender(sender,workbook)
 
                     objects = dir()
                     for object in objects:
                         if not object.startswith("__"):
                             del object
                     
-                    return 'Successful'
+                    # Calling the Method(Function) that can write into the Automation tracker sheet.
+                    flag = thread.join()
+
+
+                    return flag
                 
                 else:
 
@@ -739,6 +808,8 @@ def paco_cscore(sender,workbook):
                     for object in objects:
                         if not object.startswith("__"):
                             del object
+                    
+                    return "Unsuccessful"
 
 
     # Exception for condition when Today's maintenance date is not present.
@@ -814,4 +885,4 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
 
-#paco_cscore("Karan Loomba",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")

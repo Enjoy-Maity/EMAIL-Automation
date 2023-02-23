@@ -77,8 +77,8 @@ def styling(workbook,sheetname):
 def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_date,email_package_workbook,maintenance_window):
     mail_draft          = win32.Dispatch('Outlook.Application')
     mail_draft          = mail_draft.CreateItem(0)
-    mail_draft.To       = 'enjoy.maity@ericsson.com'
-    mail_draft.CC       = 'karan.k.loomba@ericsson.com'
+    mail_draft.To       = 'PDLMPBNSRF@pdl.internal.ericsson.com;'
+    mail_draft.CC       = 'rohit.mahajan@ericsson.com;karan.k.loomba@ericsson.com;PDLPBNSRFP@pdl.internal.ericsson.com'
     mail_draft.Subject  = f"MPBN CRs For Tonight Maintenance Window - {execution_date} {maintenance_window}"
 
     dataframe = dataframe.style.set_table_styles([

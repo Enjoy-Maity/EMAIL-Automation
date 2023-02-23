@@ -260,7 +260,7 @@ def email_package_sheet_creater(workbook):
                     continue
             
             if (len(input_error) > 0):
-                messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
+                messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet!\nCheck 'Location', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
                 
                 # Deleting all the variables before returning the value for "Unsuccessful"
                 objects = dir()
@@ -836,41 +836,9 @@ def email_package_sheet_creater(workbook):
                                             execution_projection_temp  =  str(daily_plan_sheet.iloc[i]['Execution Projection'])
 
 
-                        del execution_date_temp
-                        del cr_no_temp
-                        del maintenance_window_temp
-                        del activity_title_temp
-                        del risk_temp
-                        del location_temp
-                        del circle_temp
-                        del no_of_node_involved_temp
-                        del cr_belongs_to_same_activity_of_previous_cr_yes_no_temp
-                        del activity_checker_temp
-                        del activity_initiator_temp
-                        del impact_temp
-                        del planning_status_temp
-                        del domain_temp
-                        del reason_for_rollback_cancel_temp
-                        del design_availability_temp
-                        del technical_validator_temp
-                        del complexity_temp
-                        del activity_type_temp
-                        del domain_kpi_temp
-                        del impacted_node_temp
-                        del kpi_details_temp
-                        del oss_name_temp
-                        del oss_IP_temp
-                        del total_time_spent_on_planned_crs_mins_temp
-                        del vendor_temp
-                        del protocol_temp
-                        del execution_projection_temp
-
                         # Incrementing the value of counter
                         counter +=  1
                 
-                
-                del count
-                del counter
 
                 # Creating the List for each column data by appending the temp variable data to respective column list of the particular selected CR Number.
                 execution_date.append(execution_date_temp)
@@ -1033,4 +1001,4 @@ def email_package_sheet_creater(workbook):
 
         return "Unsuccessful"
 
-#email_package_sheet_creater(r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
+#email_package_sheet_creater(r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")

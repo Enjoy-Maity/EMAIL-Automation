@@ -2,6 +2,8 @@ import pandas as pd                         # Importing Pandas for manipulation 
 import win32com.client as win32             # Importing win32com for opening and creation of outlook mail
 from tkinter import messagebox              # Importing messagebox for rasing dialogues
 from datetime import datetime, timedelta    # Importing datetime to manipulate time related variables and getting today's maintenance date
+import numpy as np
+import sys
 
 
 # Creating Custom Exception inheriting base default Exception class for raising, handling and custom exceptions.
@@ -11,6 +13,42 @@ class CustomException(Exception):
         self.message = message
         super().__init__(title,message)
         messagebox.showerror(self.title, self.message)
+
+def email_parser(body):
+    new_body_list = body.splitlines()
+
+    result = [[]]
+    to     = []
+    cc     = []
+    
+    for i in range(0,len(new_body_list)):
+        new_body_list[i] = new_body_list[i].strip()
+
+        if (new_body_list[i].startswith("To")):
+            to = new_body_list[i].split(":")[1].split(">;")
+
+        if (new_body_list[i].startswith("Cc")):
+            cc = new_body_list[i].split(":")[1].split(">;")
+        
+        if(new_body_list[i].startswith("Subject")):
+            break
+
+    for i in range(0,len(to)):
+        to[i] = to[i].split("<")[1]
+
+    for i in range(0,len(cc)):
+        cc[i] = cc[i].split("<")[1]
+
+    result = [to,cc]
+    
+    
+    del to
+    del cc
+    del i 
+    del new_body_list
+
+    return result
+    
 
 # Mail checker and send
 def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to):
@@ -52,37 +90,42 @@ def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to)
             if(len(messages) > 0):
                 flag_variable = 1
                 mail        = messages.GetFirst().ReplyAll()
-                Body        = body.format(dataframe.to_html(index = False), sender)
+                # result          = CustomThread(target = mailparser,args=(mail.Body,))
+                # result.start()
+                result          = email_parser(mail.Body)
+                Body            = body.format(dataframe.to_html(index = False), sender)
                 mail.HTMLBody   = Body + mail.HTMLBody
-                mail.To         = f"{to};{mail.To};"
-                mail.CC         = f"{mail.CC};"
+                mail.To         = f"{to};{';'.join(result[0])};"
+                mail.CC         = f"{';'.join(result[1])};"
                 mail.Save()
                 mail.Send()
-                
 
         if(flag_variable == 0):
-            # Deleting all the messages before going into other folders of inbox
+            folders = inbox.Folders
             del messages
 
-            # Iterating through the messages for finding the mail with subject line.
-            for i in range(0,len(inbox.Folders)):
-                messages = inbox.Folders[i].Items
-                # Filtering messages from the messages.
-                messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                messages    = messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
-                messages.Sort("[ReceivedTime]",True)
-            
-                if(len(messages) > 0):
-                    flag_variable = 1
-                    mail        = messages.GetFirst().ReplyAll()
-                    Body        = body.format(dataframe.to_html(index = False), sender)
-                    mail.HTMLBody   = Body + mail.HTMLBody
-                    mail.To         = f"{to};{mail.To};"
-                    mail.CC         = f"{mail.CC};"
-                    mail.Save()
-                    mail.Send()
-                    break
-
+            # Checking if the there are subfolders in the inbox.
+            if(len(folders) > 0):
+                for i in range(0,len(folders)):
+                    messages = inbox.Folders[i].Items
+                    
+                    # Filtering messages from the messages.
+                    messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+                    messages    = messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
+                    messages.Sort("[ReceivedTime]",True)
+                    
+                    if(messages):
+                        flag_variable = 1
+                        mail        = messages.GetFirst().ReplyAll()
+                        # result          = CustomThread(target = mailparser,args=(mail.Body,))
+                        # result.start()
+                        Body            = body.format(dataframe.to_html(index = False), sender)
+                        mail.HTMLBody   = Body + mail.HTMLBody
+                        mail.To         = f"{to};{mail.To};"
+                        mail.CC         = f"{mail.CC};"
+                        mail.Save()
+                        mail.Send()
+    
 
         if (flag_variable == 0):
             raise CustomException(" Mail For Reply Not Found!","Kindly check the mail box for the reply messages, as no reply thread found")
@@ -95,16 +138,31 @@ def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to)
     
     except CustomException:
         objects = dir()
-        if not object.startswith("__"):
-            del object
+        for object in objects:
+            if not object.startswith("__"):
+                del object
         
         return "Unsuccessful"
+    
+    # except RecursionError:
+    #     #messagebox.showinfo("   Execution Mail Displayed!","All the reply mails for executor communication successfully generated!,Kindly Check all the displayed mail!")
+        
+    #     # Deleting all the variables before returning the value for "Successful"
+    #     # dir() gives the list of local variables.
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
+
+    #     return "Successful"
     
     except Exception as error:
         messagebox.showerror("  Exception Occured!",error)
         objects = dir()
-        if not object.startswith("__"):
-            del object
+
+        for object in objects:
+            if not object.startswith("__"):
+                del object
 
         return "Unsuccessful"
 
@@ -139,6 +197,7 @@ def circle_reply_task(sender, workbook):
             if (required_worksheet.iloc[i]['Execution Date'] != today_maintenance_date):
                 sr_for_row_with_wrong_maintenance_date.append(required_worksheet.iloc[i]['S.NO'])
 
+        
         # Checking whether there are rows with different maintenance date if there're such rows then raising exception.
         if(len(sr_for_row_with_wrong_maintenance_date) > 0):
             raise CustomException(" Data with Wrong Maintenance Date",f"Data with other Execution Date detected for the below S.NO, kindly check!:\n{', '.join(str(num) for num in sr_for_row_with_wrong_maintenance_date)}")
@@ -160,7 +219,7 @@ def circle_reply_task(sender, workbook):
             
             else:
                 # Getting Unique Circles from the required sheet in a list.
-                unique_circles = list(required_worksheet['Circle'].unique())
+                unique_circles = required_worksheet['Circle'].unique()
 
                 # Creating dictionary for change_responsible to mail ID
                 dictionary_for_change_responsible_to_mail_id = dict(zip(mail_id_sheet['Change Responsible'],mail_id_sheet['Mail ID']))
@@ -172,7 +231,7 @@ def circle_reply_task(sender, workbook):
                     temp_df = required_worksheet[required_worksheet["Circle"] == cir]
 
                     # Filtering out data for just required columns 
-                    temp_df = temp_df[["Execution Date","Maintenance Window","CR NO","Activity Title","Risk","Location","Circle","No. of Node Involved","CR Belongs to Same Activity of Previous CR- Yes/NO","Change Responsible"]]
+                    temp_df = temp_df[["Execution Date","Maintenance Window","CR NO","Activity Title","Risk","Location","Circle","No. of Node Involved","Change Responsible"]]
 
                     # Creating a variable to get today's maintenance date
                     today_maintenance_date = datetime.now() + timedelta(1)
@@ -193,7 +252,11 @@ def circle_reply_task(sender, workbook):
                     mail_body = "<html>\
                                     <body>\
                                         <div>\
-                                            <p>Hi Team,<br><br>Kindly find executor detail for below mention CR.</p>\
+                                            <p>Hi Team,<br><br>Please find the executor details for below mention CRs.</p>\
+                                            <p>Please share below mention details with an executor for smooth execution.</p>\
+                                            <p>1) Circle SPOC details for end to end coordination and confirmation.<br>\
+                                            2) Tester details for impacted node service testing pre & post activity.<br>\
+                                            3) 3PP resource detail (If required).<br></p>\
                                         </div>\
                                         <div>\
                                             {}\
@@ -208,6 +271,7 @@ def circle_reply_task(sender, workbook):
                     # Calling the Method (function) for replying the mail.
                     mail_checker_and_sender(subject_we_are_looking_for,mail_body,temp_df,sender,to)
                 
+                messagebox.showinfo("   Execution Mail Displayed!","All the reply mails for executor communication successfully Sent!")
                 # Deleting all the variables before returning the value for "Successful"
                 # dir() gives the list of local variables.
                 objects = dir()
@@ -236,6 +300,18 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
     
+    except RecursionError:
+        messagebox.showinfo("   Recursion Error","The Program is stuck inside an Infinite loop!")
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        # dir() gives the list of local variables.
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
+        return "Unsuccessful"
+    
     except RuntimeError as error:
         messagebox.showerror("  Exception Occured!",error)
         
@@ -256,4 +332,4 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
 
-# circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")
+#circle_reply_task("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")

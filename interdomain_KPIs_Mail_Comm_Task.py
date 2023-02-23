@@ -42,6 +42,9 @@ def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_r
     # Sending the mail.
     msg.Send()
 
+    # Closing the mail object.
+    msg.Close()
+
     # Deleting objects and variables in local sccope
     objects = dir()
     for object in objects:
@@ -217,7 +220,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         for object in objects:
             if not object.startswith("__"):
                 del object
-
+        
+        return "Successful"
 
    
     # Exception Handling in case File not found, in our case the workbook path is illegal.
