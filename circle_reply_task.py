@@ -51,7 +51,7 @@ def email_parser(body):
     
 
 # Mail checker and send
-def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to):
+def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to,circle_mail_not_found,cir):
     try:
         # Creating an COM object of Microsoft Office Client Suite (Outlook) through win32com.client module.
         outlook     = win32.Dispatch("Outlook.Application")
@@ -128,33 +128,10 @@ def mail_checker_and_sender(subject_we_are_looking_for,body,dataframe,sender,to)
     
 
         if (flag_variable == 0):
-            raise CustomException(" Mail For Reply Not Found!","Kindly check the mail box for the reply messages, as no reply thread found")
-        
-        # Deleting all the remaining user-defined variables in the local scope
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
-    
-    except CustomException:
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
-        
-        return "Unsuccessful"
-    
-    # except RecursionError:
-    #     #messagebox.showinfo("   Execution Mail Displayed!","All the reply mails for executor communication successfully generated!,Kindly Check all the displayed mail!")
-        
-    #     # Deleting all the variables before returning the value for "Successful"
-    #     # dir() gives the list of local variables.
-    #     objects = dir()
-    #     for object in objects:
-    #         if not object.startswith("__"):
-    #             del object
+            circle_mail_not_found.append(cir)
+            return circle_mail_not_found
 
-    #     return "Successful"
+        return circle_mail_not_found
     
     except Exception as error:
         messagebox.showerror("  Exception Occured!",error)
@@ -224,6 +201,8 @@ def circle_reply_task(sender, workbook):
                 # Creating dictionary for change_responsible to mail ID
                 dictionary_for_change_responsible_to_mail_id = dict(zip(mail_id_sheet['Change Responsible'],mail_id_sheet['Mail ID']))
                 
+                circle_mail_not_found = []
+
                 # Iterating through the unique circles for replying to circles.
                 for cir in unique_circles:
 
@@ -269,9 +248,14 @@ def circle_reply_task(sender, workbook):
                                 </html>"
                         
                     # Calling the Method (function) for replying the mail.
-                    mail_checker_and_sender(subject_we_are_looking_for,mail_body,temp_df,sender,to)
+                    circle_mail_not_found=mail_checker_and_sender(subject_we_are_looking_for,mail_body,temp_df,sender,to,circle_mail_not_found,cir)
                 
-                messagebox.showinfo("   Execution Mail Displayed!","All the reply mails for executor communication successfully Sent!")
+                if(len(circle_mail_not_found)):
+                    messagebox.showinfo("   Execution Mail Displayed!","All the reply mails for executor communication successfully Sent!")
+                
+                else:
+                    raise CustomException(" Mail Replies Not Sent!",f"Mail Reply Thread for the circles {','.join(circle_mail_not_found)} not found! Kindly check!")
+                
                 # Deleting all the variables before returning the value for "Successful"
                 # dir() gives the list of local variables.
                 objects = dir()
