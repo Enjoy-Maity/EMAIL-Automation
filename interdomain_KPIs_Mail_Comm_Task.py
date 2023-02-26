@@ -42,9 +42,6 @@ def sendmail(dataframe,to,cc,body,subject,north_and_west_region,east_and_south_r
     # Sending the mail.
     msg.Send()
 
-    # Closing the mail object.
-    msg.Close()
-
     # Deleting objects and variables in local sccope
     objects = dir()
     for object in objects:

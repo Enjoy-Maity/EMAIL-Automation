@@ -9,6 +9,7 @@ from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing 
 from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
 from datetime import datetime, timedelta                            # Importing the datetime and timedelta from datetime module, to filter out the excel sheet basd on today's maintenance date.
 from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in email-package
+import numpy as np
 
 # Creating classes for custom made exceptions inheriting the default Exception class for raising and handling custom raised exceptions.
 class CustomException(Exception):
@@ -289,7 +290,11 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             execution_date= f'{day} {month_dictionary[exec_date[0]]} {exec_date[2]}'
 
             
-            resources_occupied_in_night_activities = len(worksheet['Change Responsible'].unique())
+            resources_occupied_in_night_activities = worksheet['Change Responsible'].unique()
+            resources_occupied_in_night_activities = resources_occupied_in_night_activities.astype(str)
+
+            resources_occupied_in_night_activities = np.delete(resources_occupied_in_night_activities,np.where((resources_occupied_in_night_activities == 'nan')|(resources_occupied_in_night_activities == 'Nan')))
+            print(resources_occupied_in_night_activities)
 
             # Filling the blank fields in the dataframe with 'NA'.
             worksheet.fillna("NA", inplace = True)
@@ -329,7 +334,12 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                         partially_automation+=1
 
             # Finding the Number of resources that are on leave.
-            resource_on_leave = total_no_of_resource - (2 + resources_occupied_in_night_activities + 1)
+            if(night_shift_lead in resources_occupied_in_night_activities):
+                resource_on_leave = total_no_of_resource - (3 + len(resources_occupied_in_night_activities))
+            
+            else:
+                resource_on_leave = total_no_of_resource - (3 + len(resources_occupied_in_night_activities) + 1)
+
             if ((resource_on_leave) < 0):
                 resource_on_leave = 0       # If the value of Number of resources falls below zero and becomes negative, which isn't possible, setting it to zero.
             
@@ -347,7 +357,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     Critical {:02d} ({:02d} Delhi)
     Major    {:02d} ({:02d} Delhi)
     Resource's occupied in night activities : {:02d}
-    Resource in Day/Planning :: 2
+    Resource in Day/Planning :: 3
     Resource on Comp off/Leave :- {}
     Night Shift Lead :: {}
     Resource engaged in CLI Preparation :: N/A
@@ -368,7 +378,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     {}
             """
             # Adding all the other relevant data to the message text by formatting it.
-            message = message.format(execution_date,maintenance_window,total_no_of_crs,critical,major,critical,delhi_critical,major,delhi_major,resources_occupied_in_night_activities,resource_on_leave,night_shift_lead,buffer_auditor_trainer,resource_on_automation,total_no_of_crs,manual,enable,create,partially_automation,sender)
+            message = message.format(execution_date,maintenance_window,total_no_of_crs,critical,major,critical,delhi_critical,major,delhi_major,len(resources_occupied_in_night_activities),resource_on_leave,night_shift_lead,buffer_auditor_trainer,resource_on_automation,total_no_of_crs,manual,enable,create,partially_automation,sender)
             
             # Creating the file path where the text file for the message is being saved.
             file_path = workbook.split("/")
@@ -424,7 +434,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 ws['A8'].value = "Total CR’s"
 
                 ws['B1'].value = 11
-                ws['B2'].value = 2
+                ws['B2'].value = 3
                 ws['B3'].value = 0
                 ws['B4'].value = resource_on_leave
                 ws['B5'].value = 1
@@ -446,7 +456,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 ws = wb["evening_message"]
                 
                 ws['B1'].value = 11
-                ws['B2'].value = 2
+                ws['B2'].value = 3
                 ws['B3'].value = 0
                 ws['B4'].value = resource_on_leave
                 ws['B5'].value = 1
@@ -487,14 +497,14 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
         return "Unsuccessful"
 
-    except Exception as error:
-        # Delelting all the local variables before returning the value "Unsuccessful"
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+    # except Exception as error:
+    #     # Delelting all the local variables before returning the value "Unsuccessful"
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
 
-        messagebox.showerror("  Exception Occured",error)
-        return "Unsuccessful"
+    #     messagebox.showerror("  Exception Occured",error)
+    #     return "Unsuccessful"
 
-#evening_task('Enjoy Maity','Sachin Sharma','NA','NA',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+#evening_task('Arka Maiti','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/New Microsoft Excel Worksheet.xlsx")

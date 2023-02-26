@@ -11,19 +11,19 @@ from pathlib import Path                                            # Importing 
 from threading import Thread                                        # Importing Thread for creation of threads
 import numpy as np                                                  # Importing numpy for operations on numpy arrays obtained from pandas.
 
-# Creating class for Threads with returning value.
-class CustomThread(Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
-        Thread.__init__(self, group, target, name, args, kwargs)
-        self._return = None
+# # Creating class for Threads with returning value.
+# class CustomThread(Thread):
+#     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
+#         Thread.__init__(self, group, target, name, args, kwargs)
+#         self._return = None
 
-    def run(self):
-        if(self._target is not None):
-            self._return = self._target(*self._args, **self._kwargs)
+#     def run(self):
+#         if(self._target is not None):
+#             self._return = self._target(*self._args, **self._kwargs)
     
-    def join(self):
-        Thread.join(self)
-        return self._return
+#     def join(self):
+#         Thread.join(self)
+#         return self._return
 
 # Creating Custom classes to handle custom defined Exceptions (Interuptions) to handle the flow of program.
 class TomorrowDataNotFound(Exception):
@@ -34,7 +34,7 @@ class CustomException(Exception):
     def __init__(self,title,msg):
         self.title = title
         self.msg = msg
-        messagebox.showerror(self.title,self.msg)
+        # messagebox.showerror(self.title,self.msg)
 
 def sheet_cleaner(workbook):
     # Loading the Workbook
@@ -76,6 +76,9 @@ def p_one_p_three_appender(sender,workbook):
     
     # Getting the unique technical validator.
     unique_technical_validator_set = email_package['Technical Validator'].unique()
+    unique_technical_validator_set = unique_technical_validator_set.astype(str)
+    unique_technical_validator_set = np.delete(unique_technical_validator_set,np.where((unique_technical_validator_set == 'nan')|(unique_technical_validator_set == 'Nan')))
+    
     p1 = ''
     p3 = ''
     
@@ -89,17 +92,17 @@ def p_one_p_three_appender(sender,workbook):
     
     if ('Arka Maiti' in unique_technical_validator_set):
         p3 = 'Arka Maiti'
-        np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p3))
+        #np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p3))
 
     if ('Manoj Kumar' in unique_technical_validator_set):
         p1 = 'Manoj Kumar'
-        np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p1))
+        #np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p1))
 
     if ((len(p1) > 0) and (len(p3) == 0)):
         p3 = str(np.setdiff1d(unique_technical_validator_set,np.array([p1],dtype = str))[0])
     
     if ((len(p3) > 0) and (len(p1) == 0)):
-        p1 = list(unique_technical_validator_set - set(p3))[0]
+        p1 = str(np.setdiff1d(unique_technical_validator_set,np.array([p3],dtype = str))[0])
     
     if (len(p1)>0 and len(p3)>0):
         if (sender == p1):
@@ -113,8 +116,6 @@ def p_one_p_three_appender(sender,workbook):
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
             p1_dataframe = email_package[email_package['Technical Validator'] == p1]
             p1_dataframe.drop("S.NO",axis = "columns",inplace = True)
-
-            p1_dataframe.replace('NA'," ",inplace = True)
             p1_columns = p1_dataframe.columns.to_list()
             
             # Finding out whether the file for MPBN Planning Automation Tracker P1.xlsx exists or not
@@ -129,6 +130,16 @@ def p_one_p_three_appender(sender,workbook):
                     col = get_column_letter(i+2)
                     ws[col+'1'] = p1_columns[i]
                 wb.save(p1_workbook_file)
+
+                wb = load_workbook(p1_workbook_file)
+                sheets = wb.sheetnames
+
+                for sheet in sheets:
+                    if sheet != p1_sheet_name:
+                        del wb[sheet]
+                    
+                wb.save(p1_workbook_file)
+                wb.close()
 
             # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
             p1_workbook = load_workbook(p1_workbook_file)
@@ -213,6 +224,16 @@ def p_one_p_three_appender(sender,workbook):
                     col = get_column_letter(i+2)
                     ws[col+'1'] = p3_columns[i]
                 wb.save(p3_workbook_file)
+
+                wb = load_workbook(p3_workbook_file)
+                sheets = wb.sheetnames
+
+                for sheet in sheets:
+                    if sheet != p3_sheet_name:
+                        del wb[sheet]
+
+                wb.save(p3_workbook_file)
+                wb.close()
             
             # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
             p3_workbook = load_workbook(p3_workbook_file)
@@ -385,6 +406,7 @@ def validation_adder(workbook,worksheet):
         
         writer.close()
 
+        print("Inside Validation adder\n\n")
         styling(workbook,worksheet)
 
         # Deleting all the variables before returning to main method.
@@ -427,6 +449,12 @@ def paco_cscore(sender,workbook):
         if(flag_for_mail_id == 0):
             raise TomorrowDataNotFound("The Mail Id  is empty! Kindly Check!")
         
+        # Calling the method to add vlookup to the column of Change Responsible in Planning Sheet
+        thread = Thread(target=validation_adder,args=(workbook,"Planning Sheet"))
+        thread.daemon = True
+        thread.start()
+        thread.join()
+
         daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
         tomorrow = datetime.today()+timedelta(1) # getting tomorrow date for data execution
         difference = []
@@ -450,21 +478,17 @@ def paco_cscore(sender,workbook):
             raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join([str(num) for num in difference])}")
         
         else:
-            # Calling the method to add vlookup to the column of Change Responsible in Planning Sheet
-            validation_adder(workbook,"Planning Sheet")
             daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
             Email_ID = pd.read_excel(workbook,"Mail Id")
             
             # Finding the Circles and Change Responsible available in the Mail ID worksheet of the MPBN Daily Planning workbook.
             circle = Email_ID['Circle'].tolist()
-            original_change_responsible = list(Email_ID['Change Responsible'].unique())
-
-            # Changing the case of each original change responsible to upper.
-            for i in range(0,len(original_change_responsible)):
-                original_change_responsible[i] = str(original_change_responsible[i]).strip().upper()
+            original_change_responsible = Email_ID['Change Responsible'].unique()
+            original_change_responsible = original_change_responsible.astype(str)
                 
             # Removing the NAN value from the list.
-            original_change_responsible.remove('NAN')
+            orignal_change_responsible = np.delete(original_change_responsible,np.where((original_change_responsible == 'nan')|(original_change_responsible == 'Nan')))
+
 
             # Creating an empty list and empty dataframe to append the S.NO. of rows with input errors and creating a new dataframe from the daily_plan_sheet dataframe with only required data(rows).
             input_error = []
@@ -472,6 +496,7 @@ def paco_cscore(sender,workbook):
             
             # Replacing all the blank fields(excel cells) in the dataframe with 'NA'
             daily_plan_sheet.fillna("TempNA",inplace = True)
+            print(daily_plan_sheet)
 
             
             # Creating empty list to find out the serial numbers of the rows where the Circle input and the Change responsible is not properly entered by the user.
@@ -485,10 +510,11 @@ def paco_cscore(sender,workbook):
                 if (daily_plan_sheet.iloc[i]['CR NO'] == "TempNA") or (daily_plan_sheet.iloc[i]['CR NO'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Circle'] not in circle):
+                if (not daily_plan_sheet.iloc[i]['Circle'] in circle):
                     circle_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
-                if (daily_plan_sheet.iloc[i]['Change Responsible'].strip().upper() not in original_change_responsible):
+                if (not daily_plan_sheet.iloc[i]['Change Responsible'] in original_change_responsible):
+                    print(daily_plan_sheet.iloc[i]['Change Responsible'])
                     change_responsible_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
                 if (daily_plan_sheet.iloc[i]['Activity Title'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Activity Title'] == None):
@@ -797,12 +823,7 @@ def paco_cscore(sender,workbook):
                             del object
                     
                     # Calling the Method(Function) that can write into the Automation tracker sheet.
-                    thread = CustomThread(target = p_one_p_three_appender, args = (sender,workbook))
-                    thread.daemon = True
-                    thread.start()
-                    flag = thread.join()
-
-
+                    flag = p_one_p_three_appender(sender,workbook)
                     return flag
                 
                 else:
@@ -841,9 +862,9 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
     
-    # Handling Key Error 
+    #Handling Key Error 
     except KeyError as e:
-        messagebox.showerror("  Check for the below Header ",e)
+        messagebox.showerror("  Check for the below Header(KeyError) ",e)
 
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()
@@ -853,9 +874,9 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
     
-    # Handling Attribute Error 
+    #Handling Attribute Error 
     except AttributeError as e:
-        messagebox.showerror("  Exception Occured",e)
+        messagebox.showerror("  AttributeError Exception Occured",e)
 
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()
@@ -892,4 +913,4 @@ def paco_cscore(sender,workbook):
 
         return "Unsuccessful"
 
-#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet - Copy.xlsx")
+#paco_cscore("Arka Maiti",r"C:/Users/emaienj/Downloads/New Microsoft Excel Worksheet.xlsx")
