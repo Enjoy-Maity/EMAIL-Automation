@@ -352,14 +352,14 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
     
-    # except Exception as error:
-    #     messagebox.showerror("  Exception Occured!",error)
+    except Exception as error:
+        messagebox.showerror("  Exception Occured!",error)
         
-    #     # Deleting all the variables before returning the value for "Unsuccessful"
-    #     objects = dir()
-    #     for object in objects:
-    #         if not object.startswith("__"):
-    #             del object
-    #     return "Unsuccessful"
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+        return "Unsuccessful"
 
-circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")
+#circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")
