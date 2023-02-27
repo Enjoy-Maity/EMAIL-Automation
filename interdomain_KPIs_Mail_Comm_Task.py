@@ -111,18 +111,29 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             
         else:
             # Creating a list of available list of interdomains to send mails.
-            list_of_interdomains=["CS-Core","PS-Core","RAN","VAS"]
+            list_of_interdomains=[]
 
             # Reading each Interdomain sheet and replacing the blank fields that have been replaced by the default value of the pandas that is "Nan"
             # Note---> Pandas replaces all the blank fields with Nan which stands for 'Not A Number' to denote blank fields and these are reflected in the dataframe wherever the dataframe is used.
-            df2=pd.read_excel(workbook,sheet_name="CS Core-Inter Domain")
-            df2.fillna(" ",inplace=True)
-            df=pd.read_excel(workbook,sheet_name="PS Core-Inter Domain")
-            df.fillna(" ",inplace=True)
-            df3=pd.read_excel(workbook,sheet_name="RAN-Inter Domain")
-            df3.fillna(" ",inplace=True)
-            df4=pd.read_excel(workbook,sheet_name="VAS-Inter Domain")
-            df4.fillna(" ",inplace=True)
+            if("CS Core-Inter Domain" in wb_sheets):
+                list_of_interdomains.append("CS-Core")
+                df2=pd.read_excel(workbook,sheet_name="CS Core-Inter Domain")
+                df2.fillna(" ",inplace=True)
+            
+            if("PS Core-Inter Domain" in wb_sheets):
+                list_of_interdomains.append("PS-Core")
+                df=pd.read_excel(workbook,sheet_name="PS Core-Inter Domain")
+                df.fillna(" ",inplace=True)
+            
+            if("RAN-Inter Domain" in wb_sheets):
+                list_of_interdomains.append("RAN")
+                df3=pd.read_excel(workbook,sheet_name="RAN-Inter Domain")
+                df3.fillna(" ",inplace=True)
+            
+            if("VAS-Inter Domain" in wb_sheets):
+                list_of_interdomains.append("VAS")
+                df4=pd.read_excel(workbook,sheet_name="VAS-Inter Domain")
+                df4.fillna(" ",inplace=True)
 
             # Formatting the date for the Subject line like dates ending with 1 to have 'st' suffix, ending with 2 to have 'nd' suffix and so on.
             suffix=["st","nd","rd","th"]

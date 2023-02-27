@@ -138,6 +138,9 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
         wb.save(workbook)
         wb.close()
 
+    # Changing the NA to blank space.
+    worksheet.replace("TempNA"," ",inplace = True)
+
     # Creating the Writer Variable to write into the new excel workbook
     new_workbook = pd.ExcelFile(workbook)
     writer = pd.ExcelWriter(new_workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
@@ -186,7 +189,6 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
                            'Activity Checker']]
     
     worksheet.reset_index(drop = True, inplace = True)
-    worksheet.replace("NA"," ",inplace = True)
 
     # Calling the Mail Drafter Method for drafting the mail but not send it.
     mail_drafter(worksheet,evening_message_workbook_message,html_body,sender,execution_date,workbook,maintenance_window)
@@ -297,7 +299,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             print(resources_occupied_in_night_activities)
 
             # Filling the blank fields in the dataframe with 'NA'.
-            worksheet.fillna("NA", inplace = True)
+            worksheet.fillna("TempNA", inplace = True)
 
             '''
                 Iterating (Looping) over the dataframe for finding the number of critical and major risk level along with the number of CR's done with 
@@ -488,7 +490,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             return 'Successful'
 
     # Handling Exceptions 
-    except CustomException as e:
+    except CustomException:
         # Delelting all the local variables before returning the value "Unsuccessful"
         objects = dir()
         for object in objects:
@@ -497,14 +499,6 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
         return "Unsuccessful"
 
-    # except Exception as error:
-    #     # Delelting all the local variables before returning the value "Unsuccessful"
-    #     objects = dir()
-    #     for object in objects:
-    #         if not object.startswith("__"):
-    #             del object
-
-    #     messagebox.showerror("  Exception Occured",error)
-    #     return "Unsuccessful"
+    
 
 #evening_task('Arka Maiti','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/New Microsoft Excel Worksheet.xlsx")

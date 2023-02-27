@@ -405,8 +405,7 @@ def validation_adder(workbook,worksheet):
         daily_plan_sheet.to_excel(writer,sheet_name = worksheet,index = False)
         
         writer.close()
-
-        print("Inside Validation adder\n\n")
+        
         styling(workbook,worksheet)
 
         # Deleting all the variables before returning to main method.
@@ -496,8 +495,6 @@ def paco_cscore(sender,workbook):
             
             # Replacing all the blank fields(excel cells) in the dataframe with 'NA'
             daily_plan_sheet.fillna("TempNA",inplace = True)
-            print(daily_plan_sheet)
-
             
             # Creating empty list to find out the serial numbers of the rows where the Circle input and the Change responsible is not properly entered by the user.
             circle_not_proper = []
@@ -514,7 +511,6 @@ def paco_cscore(sender,workbook):
                     circle_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
                 if (not daily_plan_sheet.iloc[i]['Change Responsible'] in original_change_responsible):
-                    print(daily_plan_sheet.iloc[i]['Change Responsible'])
                     change_responsible_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
                     continue
                 if (daily_plan_sheet.iloc[i]['Activity Title'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Activity Title'] == None):

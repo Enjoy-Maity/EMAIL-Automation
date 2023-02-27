@@ -1055,128 +1055,146 @@ class App(tk.Tk):
     # Method(Function) for Creating the evening task message.
     def evening_task_func(self, event):
         if (self.task_running == 0):
-            try:
                 # Checking the status of the evening task whether it's done or not.
                 if (self.evening_task_status_checker_flag == 0):
-                    self.task_running = 1
-                    self.task_module_running = "Email Package & Evening Message"
+                    try:
+                        self.task_running = 1
+                        self.task_module_running = "Email Package & Evening Message"
 
-                    if (len(self.file_browser_file) == 0):
-                        # Raising the Exception for file not being selected
-                        raise FileNotSelected(
-                            " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
-
-                    else:
-                        # Creating a variable to check whether the email package is created or not.
-                        self.interdomain_kpis_data_prep_creation_status_flag = 0
-                        self.workbook = pd.ExcelFile(self.file_browser_file)
-                        self.worksheet_names = self.workbook.sheet_names
-
-                        # Finding the Email Package from the workbook and reading it in pandas.
-                        for sheet in self.worksheet_names:
-                            if (sheet == 'Email-Package'):
-                                self.worksheet = pd.read_excel(
-                                    self.workbook, sheet)
-                                self.worksheet['Execution Date'] = pd.to_datetime(self.worksheet['Execution Date'], format = "%m/%d/%Y")
-                                self.worksheet['Execution Date'] =  self.worksheet['Execution Date'].dt.strftime("%m/%d/%Y")
-                                
-                                # Getting Today's maintenance date.
-                                tomorrow = datetime.now() + timedelta(1)
-                                tomorrow = tomorrow.strftime("%m/%d/%Y")
-                                self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
-                                
-                                # If there's data present in the worksheet then changing the value of the email package sheet creation status.
-                                if (len(self.worksheet) > 0):
-                                    self.interdomain_kpis_data_prep_creation_status_flag = 1
-                                    break
-
-                        if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
-                            self.task_running = 0
-                            self.task_module_running = ""
-
-                            # Raising the custom made exception for the case when the email package sheet is not created or empty.
-                            raise CustomException(
-                                'Kindly Click the Button for Interdomain Kpi Data Prep First!', 'Email-Package Worksheet Empty')
+                        if (len(self.file_browser_file) == 0):
+                            # Raising the Exception for file not being selected
+                            raise FileNotSelected(
+                                " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
 
                         else:
-                            '''
-                                Creating a child GUI Window to get the required inputs on Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
-                                Resource on Automation Name.
-                            '''
-                            self.evening_task_win = Toplevel(self.main_win)
-                            if self.main_win.state() == 'normal':
-                                self.main_win.withdraw()
-                            self.evening_task_win.iconbitmap(
-                                './images/ericsson-blue-icon-logo.ico')
-                            self.evening_task_win.title(
-                                "   Please Enter The Names to Proceed")
-                            self.evening_task_win.geometry("600x550")
-                            self.evening_task_win.minsize(600, 550)
-                            self.evening_task_win.maxsize(600, 550)
-                            self.evening_task_win.bind(
-                                "<Escape>", self.evening_task_func_quit)
+                            # Creating a variable to check whether the email package is created or not.
+                            self.interdomain_kpis_data_prep_creation_status_flag = 0
+                            self.workbook = pd.ExcelFile(self.file_browser_file)
+                            self.worksheet_names = self.workbook.sheet_names
 
-                            # Setting the background image of the child GUI window.
-                            self.evening_task_background = ImageTk.PhotoImage(
-                                Image.open("./images/MPBN PLANNING TASK_3_4.png"))
-                            self.evening_task_win_canvas = Canvas(
-                                self.evening_task_win, height=550, width=600, bd=0, highlightthickness=0, relief="ridge")
-                            self.evening_task_win_canvas.grid(
-                                row=0, column=0, sticky=NW)
-                            self.evening_task_win_canvas.create_image(
-                                0, 0, image=self.evening_task_background, anchor="nw")
+                            # Finding the Email Package from the workbook and reading it in pandas.
+                            for sheet in self.worksheet_names:
+                                if (sheet == 'Email-Package'):
+                                    self.worksheet = pd.read_excel(
+                                        self.workbook, sheet)
+                                    self.worksheet['Execution Date'] = pd.to_datetime(self.worksheet['Execution Date'], format = "%m/%d/%Y")
+                                    self.worksheet['Execution Date'] =  self.worksheet['Execution Date'].dt.strftime("%m/%d/%Y")
+                                    
+                                    # Getting Today's maintenance date.
+                                    tomorrow = datetime.now() + timedelta(1)
+                                    tomorrow = tomorrow.strftime("%m/%d/%Y")
+                                    self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
+                                    
+                                    # If there's data present in the worksheet then changing the value of the email package sheet creation status.
+                                    if (len(self.worksheet) > 0):
+                                        self.interdomain_kpis_data_prep_creation_status_flag = 1
+                                        break
 
-                            '''
-                                Creating entry blocks for taking user input for Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
-                                Resource on Automation Name.
-                            '''
-                            self.evening_task_win_canvas.create_text(
-                                10, 20, anchor="nw", text="Please Enter Night Shift Lead Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
-                            self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(
-                                self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
-                            self.evening_task_win_canvas.create_window(
-                                10, 70, anchor="nw", window=self.evening_task_win_canvas_night_shift_lead_entry)
+                            if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
+                                self.task_running = 0
+                                self.task_module_running = ""
 
-                            self.evening_task_win_canvas.create_text(
-                                10, 150, anchor="nw", text="Please Enter Buffer/Auditor/Trainer Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
-                            self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(
-                                self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
-                            self.evening_task_win_canvas.create_window(
-                                10, 200, anchor="nw", window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
+                                # Raising the custom made exception for the case when the email package sheet is not created or empty.
+                                raise CustomException(
+                                    'Kindly Click the Button for Interdomain Kpi Data Prep First!', 'Email-Package Worksheet Empty')
 
-                            self.evening_task_win_canvas.create_text(
-                                10, 280, anchor="nw", text="Please Enter Resource on Automation Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
-                            self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(
-                                self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
-                            self.evening_task_win_canvas.create_window(
-                                10, 310, anchor="nw", window=self.evening_task_win_canvas_resource_on_automation_entry)
+                            else:
+                                '''
+                                    Creating a child GUI Window to get the required inputs on Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
+                                    Resource on Automation Name.
+                                '''
+                                self.evening_task_win = Toplevel(self.main_win)
+                                if self.main_win.state() == 'normal':
+                                    self.main_win.withdraw()
+                                self.evening_task_win.iconbitmap(
+                                    './images/ericsson-blue-icon-logo.ico')
+                                self.evening_task_win.title(
+                                    "   Please Enter The Names to Proceed")
+                                self.evening_task_win.geometry("600x550")
+                                self.evening_task_win.minsize(600, 550)
+                                self.evening_task_win.maxsize(600, 550)
+                                self.evening_task_win.bind(
+                                    "<Escape>", self.evening_task_func_quit)
 
-                            # Creating submit button calling the driver method after taking all the valid user inputs.
-                            self.evening_task_submit_btn = ttk.Button(
-                                self.evening_task_win, text="Submit", command=lambda: self.evening_task_func_starter(1))
-                            self.evening_task_win_canvas.create_window(
-                                580, 520, window=self.evening_task_submit_btn, anchor="se")
+                                # Setting the background image of the child GUI window.
+                                self.evening_task_background = ImageTk.PhotoImage(
+                                    Image.open("./images/MPBN PLANNING TASK_3_4.png"))
+                                self.evening_task_win_canvas = Canvas(
+                                    self.evening_task_win, height=550, width=600, bd=0, highlightthickness=0, relief="ridge")
+                                self.evening_task_win_canvas.grid(
+                                    row=0, column=0, sticky=NW)
+                                self.evening_task_win_canvas.create_image(
+                                    0, 0, image=self.evening_task_background, anchor="nw")
 
-                            # Focussing on the Night Shift Lead entry when the child GUI Window appears.
-                            self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+                                '''
+                                    Creating entry blocks for taking user input for Night Shift Lead Name, Buffer/Auditor/Trainer Name, and 
+                                    Resource on Automation Name.
+                                '''
+                                self.evening_task_win_canvas.create_text(
+                                    10, 20, anchor="nw", text="Please Enter Night Shift Lead Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
+                                self.evening_task_win_canvas_night_shift_lead_entry = ttk.Entry(
+                                    self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
+                                self.evening_task_win_canvas.create_window(
+                                    10, 70, anchor="nw", window=self.evening_task_win_canvas_night_shift_lead_entry)
 
-                            # Setting protocol for the window destruction.
-                            self.evening_task_win.protocol(
-                                "WM_DELETE_WINDOW", lambda: self.evening_task_func_quit(1))
-                            
-                            # Binding the enter key to the driver method.
-                            self.evening_task_win.bind(
-                                "<Return>", self.evening_task_func_starter)
+                                self.evening_task_win_canvas.create_text(
+                                    10, 150, anchor="nw", text="Please Enter Buffer/Auditor/Trainer Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
+                                self.evening_task_win_canvas_buffer_auditor_trainer_entry = ttk.Entry(
+                                    self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
+                                self.evening_task_win_canvas.create_window(
+                                    10, 200, anchor="nw", window=self.evening_task_win_canvas_buffer_auditor_trainer_entry)
 
-                            # Making the main GUI window to reappear, while destroying the child GUI.
-                            if self.evening_task_win.state() != "normal":
-                                if self.main_win.state() != "normal":
-                                    self.main_win_flag = 0
-                                    self.main_win.deiconify()
-                                self.evening_task_win.destroy()
+                                self.evening_task_win_canvas.create_text(
+                                    10, 280, anchor="nw", text="Please Enter Resource on Automation Name", fill="#FFFFFF", font=("Ericsson Hilda", 18, "bold"))
+                                self.evening_task_win_canvas_resource_on_automation_entry = ttk.Entry(
+                                    self.evening_task_win_canvas, width=40, font=("Ericsson Hilda", 15))
+                                self.evening_task_win_canvas.create_window(
+                                    10, 310, anchor="nw", window=self.evening_task_win_canvas_resource_on_automation_entry)
 
-                            # Creating an endless loop until the user presses the submit button or the Enter key or any external interruption occurs.
-                            self.evening_task_win.mainloop()
+                                # Creating submit button calling the driver method after taking all the valid user inputs.
+                                self.evening_task_submit_btn = ttk.Button(
+                                    self.evening_task_win, text="Submit", command=lambda: self.evening_task_func_starter(1))
+                                self.evening_task_win_canvas.create_window(
+                                    580, 520, window=self.evening_task_submit_btn, anchor="se")
+
+                                # Focussing on the Night Shift Lead entry when the child GUI Window appears.
+                                self.evening_task_win_canvas_night_shift_lead_entry.focus_force()
+
+                                # Setting protocol for the window destruction.
+                                self.evening_task_win.protocol(
+                                    "WM_DELETE_WINDOW", lambda: self.evening_task_func_quit(1))
+                                
+                                # Binding the enter key to the driver method.
+                                self.evening_task_win.bind(
+                                    "<Return>", self.evening_task_func_starter)
+
+                                # Making the main GUI window to reappear, while destroying the child GUI.
+                                if self.evening_task_win.state() != "normal":
+                                    if self.main_win.state() != "normal":
+                                        self.main_win_flag = 0
+                                        self.main_win.deiconify()
+                                    self.evening_task_win.destroy()
+
+                                # Creating an endless loop until the user presses the submit button or the Enter key or any external interruption occurs.
+                                self.evening_task_win.mainloop()
+
+                    
+                
+                    #  Handling Exceptions for the task.
+                    except FileNotSelected:
+                        self.evening_task_color_get.set(self.color[0])
+                        self.evening_task_status_checker_flag = 0
+                        self.evening_task_status.set(' Unsuccessful ')
+                        self.task_running = 0
+                        self.task_module_running = ""
+                    
+                    except Exception as error:
+                        messagebox.showerror(" Exception Occured", error)
+                        self.evening_task_color_get.set(self.color[0])
+                        self.evening_task_status_checker_flag = 0
+                        self.evening_task_status.set(' Unsuccessful ')
+                        self.task_running = 0
+                        self.task_module_running = ""
 
                 else:
                     self.task_running = 0
@@ -1185,23 +1203,6 @@ class App(tk.Tk):
                     # Raising custom made exception for the condition when the task has already been done.
                     raise CustomWarning(
                         "Evening Task Already Successfully Completed!", " Task Already Done")
-            
-            #  Handling Exceptions for the task.
-            except FileNotSelected:
-                self.evening_task_color_get.set(self.color[0])
-                self.evening_task_status_checker_flag = 0
-                self.evening_task_status.set(' Unsuccessful ')
-                self.task_running = 0
-                self.task_module_running = ""
-            
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.evening_task_color_get.set(self.color[0])
-                self.evening_task_status_checker_flag = 0
-                self.evening_task_status.set(' Unsuccessful ')
-                self.task_running = 0
-                self.task_module_running = ""
-
         else:
             messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 

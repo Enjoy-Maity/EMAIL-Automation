@@ -99,31 +99,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             # Making the subject for finding in the inbox
             subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
 
-            messages    = inbox_messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
-
             # Creating a flag variable for searching the mail.
             flag_variable = 0
-
-            if(flag_variable == 0):
-                if(messages):
-                    flag_variable = 1
-                
-            if(flag_variable == 0):
-                folders = inbox.Folders
-                del messages
-
-                # Checking if the there are subfolders in the inbox.
-                if(len(folders) > 0):
-                    for i in range(0,len(folders)):
-                        messages = inbox.Folders[i].Items
-                        
-                        # Filtering messages from the messages.
-                        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                        messages    = messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
-
-                        if(messages):
-                            flag_variable = 1
-                            break
                 
             if(flag_variable == 0):
                 messages = inbox_messages.Restrict(f"[ReceivedTime] >='{today}'")
@@ -144,7 +121,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         
                         # Filtering messages from the messages.
                         messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                        messages.Sort(f"[ReceivedTime] >='{today}'")
+                        messages.Sort("[ReceivedTime]",True)
                         
                         for message in messages:
                             if(message.Subject == subject_we_are_looking_for):
@@ -161,10 +138,6 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             # Making the subject for finding in the inbox
             subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
 
-            messages    = inbox_messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
-
-            messages.Sort("[ReceivedTime]",True)
-
             # Creating a flag variable for searching the mail.
             flag_variable = 0
 
@@ -180,13 +153,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             temp_df['Execution Date'] = temp_df['Execution Date'].dt.strftime("%d-%b-%Y")
 
             # Changing the format of the dataframe containing relevant data to be presented in a more presentable manner through the usage of inline CSS.
-            temp_df = temp_df.style.set_table_styles([
+            dataframe = temp_df.style.set_table_styles([
                 {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},
                 {'selector':'tr','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
                 {'selector':'td','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'},
                 {'selector':'tr:nth-child(even)','props':'border:1px solid black; border-collapse : collapse;padding: 10px;text-align:center;'}])
 
-            temp_df = temp_df.hide(axis='index') # hiding the index coloumn
+            dataframe = dataframe.hide(axis='index') # hiding the index coloumn
 
 
             # Creating a to variable for sending mails to
@@ -195,46 +168,6 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             # Iterating through the temp_df to attach to the to variable.
             for i in range(0,len(temp_df)):
                 to = f"{dictionary_for_change_responsible_to_mail_id[temp_df.iloc[i]['Change Responsible']]};{to}"
-            
-            if(flag_variable == 0):
-                if(messages):
-                    flag_variable = 1
-                    mail        = messages.GetFirst().ReplyAll()
-                    result          = email_parser(mail.Body)
-                    Body            = mail_body.format(temp_df.to_html(index = False), sender)
-                    mail.HTMLBody   = Body + mail.HTMLBody
-                    mail.To         = f"{to};{';'.join(result[0])};"
-                    mail.CC         = f"{';'.join(result[1])};"
-                    mail.Save()
-                    mail.Display()
-                    #mail.Send()
-
-            if(flag_variable == 0):
-                folders = inbox.Folders
-                del messages
-
-                # Checking if the there are subfolders in the inbox.
-                if(len(folders) > 0):
-                    for i in range(0,len(folders)):
-                        messages = inbox.Folders[i].Items
-                        
-                        # Filtering messages from the messages.
-                        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                        messages    = messages.Restrict(f"@SQL=urn:schemas:httpmail:subject like '%{subject_we_are_looking_for}%'")
-                        messages.Sort("[ReceivedTime]",True)
-
-                        if(messages):
-                            flag_variable = 1
-                            mail        = messages.GetFirst().ReplyAll()
-                            result          = email_parser(mail.Body)
-                            Body            = mail_body.format(temp_df.to_html(index = False), sender)
-                            mail.HTMLBody   = Body + mail.HTMLBody
-                            mail.To         = f"{to};{';'.join(result[0])};"
-                            mail.CC         = f"{';'.join(result[1])};"
-                            mail.Save()
-                            mail.Display()
-                            #mail.Send()
-                            break
             
             if(flag_variable == 0):
                 if(flag_variable == 0):
@@ -246,7 +179,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             flag_variable = 1
                             mail        = message.ReplyAll()
                             result          = email_parser(mail.Body)
-                            Body            = mail_body.format(temp_df.to_html(index = False), sender)
+                            Body            = mail_body.format(dataframe.to_html(index = False), sender)
                             mail.HTMLBody   = Body + mail.HTMLBody
                             mail.To         = f"{to};{';'.join(result[0])};"
                             mail.CC         = f"{';'.join(result[1])};"
@@ -273,7 +206,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     flag_variable = 1
                                     mail        = message.ReplyAll()
                                     result          = email_parser(mail.Body)
-                                    Body            = mail_body.format(temp_df.to_html(index = False), sender)
+                                    Body            = mail_body.format(dataframe.to_html(index = False), sender)
                                     mail.HTMLBody   = Body + mail.HTMLBody
                                     mail.To         = f"{to};{';'.join(result[0])};"
                                     mail.CC         = f"{';'.join(result[1])};"
@@ -283,7 +216,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     break
         
         if(len(circle_mail_not_found) == 0):
-            messagebox.showinfo("   Mails Displayed","Mails for all the circles displayed!")
+            messagebox.showinfo("   Mails Drafted",f"Mails for all the mentioned {len(new_unique_circles)} circles drafted!")
             
             # Removing all local variables in the current scope
             objects = dir()
@@ -294,7 +227,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             return "Successful"
         
         if(len(circle_mail_not_found)):
-            messagebox.showwarning("    Mails Displayed",f"Mails for circles other than the given below circles displayed:\n{', '.join(circle_mail_not_found)}")
+            messagebox.showwarning("    Mails Drafted",f"Mails for circles other than the given below circles drafted:\n{', '.join(circle_mail_not_found)}")
 
             # Removing all local variables in the current scope
             objects = dir()
@@ -377,7 +310,7 @@ def circle_reply_task(sender, workbook):
                 today_maintenance_date = datetime.now() + timedelta(1)
 
                 # Calling the Method (function) for replying the mail.
-                flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles)
+                flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
                 
                 # Deleting all the variables before returning the value for "Successful"
                 # dir() gives the list of local variables.
@@ -439,4 +372,4 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
 
-#circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")
+#circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\New Microsoft Excel Worksheet.xlsx")
