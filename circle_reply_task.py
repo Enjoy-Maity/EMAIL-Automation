@@ -93,7 +93,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         inbox_messages    = inbox_messages.Restrict("[ReceivedTime] >='"+today+"'")
 
         circle_mail_not_found = []
-        
+        new_unique_circles = unique_circles
         # Iterating through the unique circles for checking if the mails for the circle are found or not.
         for cir in unique_circles:
             # Making the subject for finding in the inbox
@@ -124,14 +124,40 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         if(messages):
                             flag_variable = 1
                             break
+                
+            if(flag_variable == 0):
+                messages = inbox_messages.Restrict(f"[ReceivedTime] >='{today}'")
+                messages.Sort("[ReceivedTime]",True)
+
+                for message in messages:
+                    if(message.Subject == subject_we_are_looking_for):
+                        flag_variable = 1
+                        break
+                del messages
+
+            if(flag_variable == 0):
+                folders = inbox.Folders
+
+                if(folders):
+                    for i in range(0,len(folders)):
+                        messages = inbox.Folders[i].Items
+                        
+                        # Filtering messages from the messages.
+                        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+                        messages.Sort(f"[ReceivedTime] >='{today}'")
+                        
+                        for message in messages:
+                            if(message.Subject == subject_we_are_looking_for):
+                                flag_variable = 1
+                                break
             
             if (flag_variable == 0):
-                unique_circles = np.delete(unique_circles,np.where(unique_circles == cir))
+                new_unique_circles = np.delete(new_unique_circles,np.where(new_unique_circles == cir))
                 circle_mail_not_found.append(cir)
 
         
         # Iterating through the unique circles for replying to circles.
-        for cir in unique_circles:
+        for cir in new_unique_circles:
             # Making the subject for finding in the inbox
             subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
 
@@ -209,20 +235,80 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             mail.Display()
                             #mail.Send()
                             break
+            
+            if(flag_variable == 0):
+                if(flag_variable == 0):
+                    messages = inbox_messages.Restrict(f"[ReceivedTime] >='{today}'")
+                    messages.Sort("[ReceivedTime]",True)
+
+                    for message in messages:
+                        if(message.Subject == subject_we_are_looking_for):
+                            flag_variable = 1
+                            mail        = message.ReplyAll()
+                            result          = email_parser(mail.Body)
+                            Body            = mail_body.format(temp_df.to_html(index = False), sender)
+                            mail.HTMLBody   = Body + mail.HTMLBody
+                            mail.To         = f"{to};{';'.join(result[0])};"
+                            mail.CC         = f"{';'.join(result[1])};"
+                            mail.Save()
+                            mail.Display()
+                            #mail.Send()
+                            break
+
+                    del messages
+
+                if(flag_variable == 0):
+                    folders = inbox.Folders
+
+                    if(folders):
+                        for i in range(0,len(folders)):
+                            messages = inbox.Folders[i].Items
+                            
+                            # Filtering messages from the messages.
+                            messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+                            messages.Sort("[ReceivedTime]",True)
+                            
+                            for message in messages:
+                                if(message.Subject == subject_we_are_looking_for):
+                                    flag_variable = 1
+                                    mail        = message.ReplyAll()
+                                    result          = email_parser(mail.Body)
+                                    Body            = mail_body.format(temp_df.to_html(index = False), sender)
+                                    mail.HTMLBody   = Body + mail.HTMLBody
+                                    mail.To         = f"{to};{';'.join(result[0])};"
+                                    mail.CC         = f"{';'.join(result[1])};"
+                                    mail.Save()
+                                    mail.Display()
+                                    #mail.Send()
+                                    break
         
         if(len(circle_mail_not_found) == 0):
             messagebox.showinfo("   Mails Displayed","Mails for all the circles displayed!")
+            
+            # Removing all local variables in the current scope
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
+
             return "Successful"
         
         if(len(circle_mail_not_found)):
             messagebox.showwarning("    Mails Displayed",f"Mails for circles other than the given below circles displayed:\n{', '.join(circle_mail_not_found)}")
+
+            # Removing all local variables in the current scope
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
             return "Unsuccessful"
 
         
     except Exception as error:
         messagebox.showerror("  Exception Occured!",error)
+        
+        # Removing all local variables in the current scope
         objects = dir()
-
         for object in objects:
             if not object.startswith("__"):
                 del object
@@ -290,17 +376,8 @@ def circle_reply_task(sender, workbook):
                 # Creating a variable to get today's maintenance date
                 today_maintenance_date = datetime.now() + timedelta(1)
 
-                
-
-                    
                 # Calling the Method (function) for replying the mail.
-                mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles)
-                
-                # if(len(circle_mail_not_found)):
-                #     messagebox.showinfo("   Execution Mail Displayed!","All the reply mails for executor communication successfully Sent!")
-                
-                # else:
-                #     raise CustomException(" Mail Replies Not Sent!",f"Mail Reply Thread for the circles {','.join(circle_mail_not_found)} not found! Kindly check!")
+                flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles)
                 
                 # Deleting all the variables before returning the value for "Successful"
                 # dir() gives the list of local variables.
@@ -309,7 +386,7 @@ def circle_reply_task(sender, workbook):
                     if not object.startswith("__"):
                         del object
 
-                return "Successful"
+                return flag
     
     except CustomException:
         # Deleting all the variables before returning the value for "Unsuccessful"
