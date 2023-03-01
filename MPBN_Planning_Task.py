@@ -14,9 +14,6 @@ import interdomain_KPIs_Mail_Comm_Task          # Importing the interdomain kpi 
 import evening_mail_task                        # Importing evening mail task module.
 import circle_reply_task                        # Importing circle reply task module.
 from datetime import datetime, timedelta        # Importing datetime and timedelta module to get today's maintenance date
-from win32event import CreateMutex
-from win32api   import GetLastError
-from winerror   import ERROR_ALREADY_EXISTS
 
 # Creating EmptyString Exception Class inheriting the Default Exception for raising and handling custom made empty string exception.
 class EmptyString(Exception):
@@ -552,103 +549,103 @@ class App(tk.Tk):
     def circle_email_automation_task_func_surity(self):
         # Checking if another module is not running
         if(self.task_running == 0):
-            self.task_running = 1
-            self.task_module_running = "Circle Mail Communication"
+            if (self.circle_email_automation_status_checker_flag == 0):
+                self.task_running = 1
+                self.task_module_running = "Circle Mail Communication"
 
-            # Taking the response from the User.
-            self.circle_email_automation_task_surity_check = messagebox.askyesno(
-                "  Circle Mail Confirmation", "Do you want to proceed for Email Communication for Tonight Planned Circles ?")
-            
-            # If the respose is positive the task is done, else the label for task status is set to Unsuccessful along with it's color.
-            if (self.circle_email_automation_task_surity_check):
-                self.circle_email_automation_task_func()
-                self.task_running = 0
-                self.task_module_running = ""
-            
+                # Taking the response from the User.
+                self.circle_email_automation_task_surity_check = messagebox.askyesno(
+                    "  Circle Mail Confirmation", "Do you want to proceed for Email Communication for Tonight Planned Circles ?")
+                
+                # If the respose is positive the task is done, else the label for task status is set to Unsuccessful along with it's color.
+                if (self.circle_email_automation_task_surity_check):
+                    self.circle_email_automation_task_func()
+                    self.task_running = 0
+                    self.task_module_running = ""
+                
+                else:
+                    self.task_running = 0
+                    self.task_module_running = ""
+                    self.circle_email_automation_task_status.set(
+                                    " Unsuccessful ")
+                    self.circle_email_automation_task_color_get.set(
+                        self.color[0])
+                    self.circle_email_automation_status_checker_flag = 0
+                    self.task_running = 0
+                    self.task_module_running = ""
+        
             else:
                 self.task_running = 0
                 self.task_module_running = ""
-                self.circle_email_automation_task_status.set(
-                                " Unsuccessful ")
-                self.circle_email_automation_task_color_get.set(
-                    self.color[0])
-                self.circle_email_automation_status_checker_flag = 0
-                self.task_running = 0
-                self.task_module_running = ""
-        
+                # Raising the Custom warning in case the task is already successfuly completed.
+                raise CustomWarning("  Circle Automation Task Already Successfully Completed!", " Task Already Done")
+
         else:
             messagebox.showwarning("    Another Task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for Circle Email Automation Task.
     def circle_email_automation_task_func(self):
-        # Checking the status of the circle email automation task whether it's done or not.
-        if (self.circle_email_automation_status_checker_flag == 0):
-            try:
-                # Setting the task status label to 'In Progress' and setting it's color.
-                self.circle_email_automation_task_color_get.set(self.color[2])
-                self.circle_email_automation_task_status.set(" In Progress ")
+        try:
+            # Setting the task status label to 'In Progress' and setting it's color.
+            self.circle_email_automation_task_color_get.set(self.color[2])
+            self.circle_email_automation_task_status.set(" In Progress ")
 
-                # Checking if the workbook for the MPBN Planning Sheet is selected or not
-                if (len(self.file_browser_file) == 0):
-                    # Raising the Exception for file not being selected.
-                    raise FileNotSelected(
-                        " Please Select the MPBN Planning Workbook first!", "File Not Selected")
+            # Checking if the workbook for the MPBN Planning Sheet is selected or not
+            if (len(self.file_browser_file) == 0):
+                # Raising the Exception for file not being selected.
+                raise FileNotSelected(
+                    " Please Select the MPBN Planning Workbook first!", "File Not Selected")
 
-                else:
-                    # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
-                    # status of the Task in status flag.
-                    self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(
-                        self.sender, self.file_browser_file)
+            else:
+                # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
+                # status of the Task in status flag.
+                self.circle_email_automation_status_flag = circle_Email_Automation_Task.fetch_details(
+                    self.sender, self.file_browser_file)
 
-                    # Checking if the status of the task is successful or not.
-                    if (self.circle_email_automation_status_flag == "Successful"):
-                        # Setting the label for task to successful.
-                        self.circle_email_automation_task_status.set(
-                            " Successful ")
-                        
-                        # Setting the color of the Successful label
-                        self.circle_email_automation_task_color_get.set(
-                            self.color[1])
+                # Checking if the status of the task is successful or not.
+                if (self.circle_email_automation_status_flag == "Successful"):
+                    # Setting the label for task to successful.
+                    self.circle_email_automation_task_status.set(
+                        " Successful ")
+                    
+                    # Setting the color of the Successful label
+                    self.circle_email_automation_task_color_get.set(
+                        self.color[1])
 
-                        # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
-                        # and need not to run this task again.
-                        self.circle_email_automation_status_checker_flag = 1
-                        self.task_running = 0
-                        self.task_module_running = ""
+                    # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
+                    # and need not to run this task again.
+                    self.circle_email_automation_status_checker_flag = 1
+                    self.task_running = 0
+                    self.task_module_running = ""
 
-                    # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
-                    if (self.circle_email_automation_status_flag == "Unsuccessful"):
-                        self.circle_email_automation_task_status.set(
-                            " Unsuccessful ")
-                        self.circle_email_automation_task_color_get.set(
-                            self.color[0])
-                        self.circle_email_automation_status_checker_flag = 0
-                        self.task_running = 0
-                        self.task_module_running = ""
+                # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
+                if (self.circle_email_automation_status_flag == "Unsuccessful"):
+                    self.circle_email_automation_task_status.set(
+                        " Unsuccessful ")
+                    self.circle_email_automation_task_color_get.set(
+                        self.color[0])
+                    self.circle_email_automation_status_checker_flag = 0
+                    self.task_running = 0
+                    self.task_module_running = ""
 
-            # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
-            except FileNotSelected:
-                self.circle_email_automation_task_color_get.set(self.color[0])
-                self.circle_email_automation_status_checker_flag = 0
-                self.circle_email_automation_task_status.set(" Unsuccessful ")
-                self.task_running = 0
-                self.task_module_running = ""
-
-            # Handling any other Exception and setting the label to unsuccessful along with it's color.
-            except Exception as error:
-                messagebox.showerror(" Exception Occured", error)
-                self.circle_email_automation_task_color_get.set(self.color[0])
-                self.circle_email_automation_status_checker_flag = 0
-                self.circle_email_automation_task_status.set(" Unsuccessful ")
-                self.task_running = 0
-                self.task_module_running = ""
-
-        else:
+        # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
+        except FileNotSelected:
+            self.circle_email_automation_task_color_get.set(self.color[0])
+            self.circle_email_automation_status_checker_flag = 0
+            self.circle_email_automation_task_status.set(" Unsuccessful ")
             self.task_running = 0
             self.task_module_running = ""
-            # Raising the Custom warning in case the task is already successfuly completed.
-            raise CustomWarning("  Circle Automation Task Already Successfully Completed!", " Task Already Done")
 
+        # Handling any other Exception and setting the label to unsuccessful along with it's color.
+        except Exception as error:
+            messagebox.showerror(" Exception Occured", error)
+            self.circle_email_automation_task_color_get.set(self.color[0])
+            self.circle_email_automation_status_checker_flag = 0
+            self.circle_email_automation_task_status.set(" Unsuccessful ")
+            self.task_running = 0
+            self.task_module_running = ""
+
+        
     # Method(Function) for Email-Package Preparation.
     def email_package_prep_func(self):
         if(self.task_running == 0):
@@ -1454,35 +1451,29 @@ class App(tk.Tk):
 
 # Main Method(Function)
 def main():
-    handle = CreateMutex(None,False,"MPBN Planning Task")
-    if (GetLastError() == ERROR_ALREADY_EXISTS):
-        messagebox.showerror("Application Already Running!","Another Instance of the application is already running, Kindly Wait!")
-        sys.exit(1)
-        
-    else:
-        # Creating an object of Tkinter
-        root = Tk()
-        try:
-            # Creating an object of our application class and passing the Tkinter object to it.
-            app = App(root)
+    # Creating an object of Tkinter
+    root = Tk()
+    try:
+        # Creating an object of our application class and passing the Tkinter object to it.
+        app = App(root)
 
-        # Handling exceptions for empty string entry.
-        except EmptyString:
-            current_file = __file__  # gets the value of current running file
-            subprocess.run(["python", current_file])
-            sys.exit(0)
+    # Handling exceptions for empty string entry.
+    except EmptyString:
+        current_file = __file__  # gets the value of current running file
+        subprocess.run(["python", current_file])
+        sys.exit(0)
 
-        # Handling exceptions for Inputs containing Integer value
-        except ContainsInteger:
-            current_file = __file__  # gets the value of current running file
-            subprocess.run(["python", current_file])
-            sys.exit(0)
+    # Handling exceptions for Inputs containing Integer value
+    except ContainsInteger:
+        current_file = __file__  # gets the value of current running file
+        subprocess.run(["python", current_file])
+        sys.exit(0)
 
-        # Handling any other Exception.
-        except Exception as e:
-            messagebox.showerror("  Exception Occured", e)
+    # Handling any other Exception.
+    except Exception as e:
+        messagebox.showerror("  Exception Occured", e)
 
-        root.mainloop()
+    root.mainloop()
 
 
 if __name__ == "__main__":
