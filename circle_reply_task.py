@@ -17,12 +17,15 @@ class CustomException(Exception):
 def email_parser(body):
     new_body_list = body.splitlines()
 
-    result = [[]]
-    to     = []
-    cc     = []
-    
+    result      = [[]]
+    to          = []
+    cc          = []
+    from_mail   = ""
     for i in range(0,len(new_body_list)):
         new_body_list[i] = new_body_list[i].strip()
+
+        if (new_body_list[i].startswith("From:")):
+            from_mail = new_body_list[i].split(":")[1].split("<")[1].strip(">")
 
         if (new_body_list[i].startswith("To")):
             to = new_body_list[i].split(":")[1].split(">;")
@@ -39,6 +42,7 @@ def email_parser(body):
     for i in range(0,len(cc)):
         cc[i] = cc[i].split("<")[1]
 
+    to.append(from_mail)
     result = [to,cc]
     
     
