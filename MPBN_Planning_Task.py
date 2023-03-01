@@ -814,98 +814,109 @@ class App(tk.Tk):
     def interdomain_kpis_mail_communication_func(self, event):
         if(self.task_running == 0):
             if (self.interdomain_kpis_mail_communication_status_checker_flag == 0):
-                self.task_running = 1
-                self.task_module_running = "Interdomain KPIs Mail Communication"
+                self.interdomain_kpis_mail_communication_surity_check = messagebox.askyesno("   Interdomain Mail Communication Confirmation","Do you to proceed with Interdomain Mail Communication for tonight planned CRs?")
 
-                self.region_handler_names_win = Toplevel(self.main_win)
+                if(self.interdomain_kpis_mail_communication_surity_check):
+                    self.task_running = 1
+                    self.task_module_running = "Interdomain KPIs Mail Communication"
 
-                # Hiding the main GUI window.
-                if self.main_win.state() == "normal":
-                    self.main_win.withdraw()
+                    self.region_handler_names_win = Toplevel(self.main_win)
 
-                # Checking the interdomain data prep task is cmpleted or not.
-                if (self.interdomain_kpis_data_prep_task_completed == 1):
+                    # Hiding the main GUI window.
+                    if self.main_win.state() == "normal":
+                        self.main_win.withdraw()
 
-                    # Creating New Child GUI for taking MPBN Planning Spocs' names
-                    self.region_handler_names_win.geometry("440x300")
-                    self.region_handler_names_win.minsize(440, 300)
-                    self.region_handler_names_win.maxsize(440, 300)
-                    self.region_handler_names_win.iconbitmap(
-                        "./images/ericsson-blue-icon-logo.ico")
-                    self.region_handler_names_win.title(
-                        "   Names for (PAN INDIA) MPBN Planning SPOC's ")
-                    self.region_handler_names_win.bind(
-                        "<Escape>", self.region_handler_names_win_quit)
+                    # Checking the interdomain data prep task is cmpleted or not.
+                    if (self.interdomain_kpis_data_prep_task_completed == 1):
 
-                    self.region_handler_names_win_background = ImageTk.PhotoImage(
-                        Image.open("./images/MPBN PLANNING TASK_3_3.png"))
-                    self.region_handler_names_win_canvas = Canvas(
-                        self.region_handler_names_win, width=440, height=300, bd=0, highlightthickness=0, relief="ridge")
-                    self.region_handler_names_win_canvas.grid(
-                        row=0, column=0, sticky=NW)
-                    self.region_handler_names_win_canvas.create_image(
-                        0, 0, image=self.region_handler_names_win_background, anchor="nw")
+                        # Creating New Child GUI for taking MPBN Planning Spocs' names
+                        self.region_handler_names_win.geometry("440x300")
+                        self.region_handler_names_win.minsize(440, 300)
+                        self.region_handler_names_win.maxsize(440, 300)
+                        self.region_handler_names_win.iconbitmap(
+                            "./images/ericsson-blue-icon-logo.ico")
+                        self.region_handler_names_win.title(
+                            "   Names for (PAN INDIA) MPBN Planning SPOC's ")
+                        self.region_handler_names_win.bind(
+                            "<Escape>", self.region_handler_names_win_quit)
 
-                    # Enteries for the MPBN Planning Spoc names
-                    self.north_and_west_region_entry = ttk.Entry(
-                        self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
-                    self.region_handler_names_win_canvas.create_text(
-                        10, 20, anchor="nw", text="Please Enter Name Of North and West Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
-                    self.region_handler_names_win_canvas.create_window(
-                        10, 65, anchor="nw", window=self.north_and_west_region_entry)
-                    self.north_and_west_region_entry.focus_force()
+                        self.region_handler_names_win_background = ImageTk.PhotoImage(
+                            Image.open("./images/MPBN PLANNING TASK_3_3.png"))
+                        self.region_handler_names_win_canvas = Canvas(
+                            self.region_handler_names_win, width=440, height=300, bd=0, highlightthickness=0, relief="ridge")
+                        self.region_handler_names_win_canvas.grid(
+                            row=0, column=0, sticky=NW)
+                        self.region_handler_names_win_canvas.create_image(
+                            0, 0, image=self.region_handler_names_win_background, anchor="nw")
 
-                    self.region_handler_names_win_canvas.create_text(
-                        10, 120, anchor="nw", text="Please Enter Name Of South and East Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
-                    self.east_region_and_south_region_entry = ttk.Entry(
-                        self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
-                    self.region_handler_names_win_canvas.create_window(
-                        10, 165, anchor="nw", window=self.east_region_and_south_region_entry)
+                        # Enteries for the MPBN Planning Spoc names
+                        self.north_and_west_region_entry = ttk.Entry(
+                            self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
+                        self.region_handler_names_win_canvas.create_text(
+                            10, 20, anchor="nw", text="Please Enter Name Of North and West Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
+                        self.region_handler_names_win_canvas.create_window(
+                            10, 65, anchor="nw", window=self.north_and_west_region_entry)
+                        self.north_and_west_region_entry.focus_force()
 
-                    # Getting the names of the MPBN Planning Spocs from user input in the above enteries.
-                    self.north_and_west_region = self.north_and_west_region_entry.get()
-                    self.east_region_and_south_region = self.east_region_and_south_region_entry.get()
+                        self.region_handler_names_win_canvas.create_text(
+                            10, 120, anchor="nw", text="Please Enter Name Of South and East Region Planner", fill="#FFFFFF", font=("Ericsson Hilda", 13, "bold"))
+                        self.east_region_and_south_region_entry = ttk.Entry(
+                            self.region_handler_names_win_canvas, width=40, font=("Ericsson Hilda", 13))
+                        self.region_handler_names_win_canvas.create_window(
+                            10, 165, anchor="nw", window=self.east_region_and_south_region_entry)
 
-                    # Creating the Submit button for the user to submit the names.
-                    self.region_handler_names_win_canvas_submit = ttk.Button(
-                        self.region_handler_names_win, text="Submit", command=lambda: self.interdomain_kpis_mail_commmunication_starter_func(1))
-                    self.region_handler_names_win_canvas.create_window(
-                        380, 270, anchor="se", window=self.region_handler_names_win_canvas_submit)
-                    self.region_handler_names_win.bind(
-                        "<Return>", self.interdomain_kpis_mail_commmunication_starter_func)
+                        # Getting the names of the MPBN Planning Spocs from user input in the above enteries.
+                        self.north_and_west_region = self.north_and_west_region_entry.get()
+                        self.east_region_and_south_region = self.east_region_and_south_region_entry.get()
 
-                    self.region_handler_names_win.protocol(
-                        "WM_DELETE_WINDOW", lambda: self.region_handler_names_win_quit(1))
+                        # Creating the Submit button for the user to submit the names.
+                        self.region_handler_names_win_canvas_submit = ttk.Button(
+                            self.region_handler_names_win, text="Submit", command=lambda: self.interdomain_kpis_mail_commmunication_starter_func(1))
+                        self.region_handler_names_win_canvas.create_window(
+                            380, 270, anchor="se", window=self.region_handler_names_win_canvas_submit)
+                        self.region_handler_names_win.bind(
+                            "<Return>", self.interdomain_kpis_mail_commmunication_starter_func)
 
-                    # Checking if the main GUI Window is hidden or not, if hidden, making it reappear and destroying the Child GUI Window.
-                    if self.region_handler_names_win.state() != "normal":
+                        self.region_handler_names_win.protocol(
+                            "WM_DELETE_WINDOW", lambda: self.region_handler_names_win_quit(1))
+
+                        # Checking if the main GUI Window is hidden or not, if hidden, making it reappear and destroying the Child GUI Window.
+                        if self.region_handler_names_win.state() != "normal":
+                            if self.main_win.state() != "normal":
+                                self.main_win_flag = 0
+                                self.main_win.deiconify()
+                            self.region_handler_names_win.destroy()
+
+                    else:
+                        # Setting the label for task to be "Unsuccessful" and destroying the child GUI(although it will be so fast that user won't be able to see the child GUI window to ever appear.)
+                        self.interdomain_kpis_mail_communication_color_get.set(
+                            self.color[0])
+                        self.interdomain_kpis_mail_communication_status.set(
+                            ' Unsuccessful ')
+                        self.region_handler_names_win.destroy()
+
                         if self.main_win.state() != "normal":
                             self.main_win_flag = 0
                             self.main_win.deiconify()
-                        self.region_handler_names_win.destroy()
+                        self.interdomain_kpis_mail_communication_status_checker_flag = 0
+
+                        self.task_running = 0
+                        self.task_module_running = ""
+
+                        # Raising the custom made exception for running the interdomain data prep task first.
+                        raise CustomException(
+                            "Please! Run Interdomain KPIs Data Prep task First!", "   Task Unsuccessful")
+
+                    self.region_handler_names_win.mainloop()
 
                 else:
-                    # Setting the label for task to be "Unsuccessful" and destroying the child GUI(although it will be so fast that user won't be able to see the child GUI window to ever appear.)
+                    self.task_running = 0
+                    self.task_module_running = ""
+                    self.interdomain_kpis_mail_communication_status_checker_flag = 0
                     self.interdomain_kpis_mail_communication_color_get.set(
                         self.color[0])
                     self.interdomain_kpis_mail_communication_status.set(
                         ' Unsuccessful ')
-                    self.region_handler_names_win.destroy()
-
-                    if self.main_win.state() != "normal":
-                        self.main_win_flag = 0
-                        self.main_win.deiconify()
-                    self.interdomain_kpis_mail_communication_status_checker_flag = 0
-
-                    self.task_running = 0
-                    self.task_module_running = ""
-
-                    # Raising the custom made exception for running the interdomain data prep task first.
-                    raise CustomException(
-                        "Please! Run Interdomain KPIs Data Prep task First!", "   Task Unsuccessful")
-
-                self.region_handler_names_win.mainloop()
-
             else:
                 # Raising Exception when the task is already done successfully.
                 self.task_running = 0
