@@ -285,4 +285,15 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 
         return "Unsuccessful"
     
+    except Exception as error:
+        messagebox.showerror(" Exception Occurred!",error)
+        
+        # Deleting all the variables before returning the value for "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+                
+        return "Unsuccessful"
+    
 #paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx","","")
