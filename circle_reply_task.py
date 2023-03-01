@@ -163,11 +163,18 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
 
             # Creating a to variable for sending mails to
-            to = ''
+            to = []
 
             # Iterating through the temp_df to attach to the to variable.
             for i in range(0,len(temp_df)):
-                to = f"{dictionary_for_change_responsible_to_mail_id[temp_df.iloc[i]['Change Responsible']]};{to}"
+                to.append(temp_df.iloc[i]['Change Responsible'])
+            
+            for i in to:
+                if(i.upper() == 'NAN'):
+                    to.remove(i)
+
+            # Converting the list to set to have only unique values.
+            to = set(to)
             
             if(flag_variable == 0):
                 if(flag_variable == 0):
@@ -181,7 +188,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             result          = email_parser(mail.Body)
                             Body            = mail_body.format(dataframe.to_html(index = False), sender)
                             mail.HTMLBody   = Body + mail.HTMLBody
-                            mail.To         = f"{to};{';'.join(result[0])};"
+                            mail.To         = f"{';'.join(to)};{';'.join(result[0])};"
                             mail.CC         = f"{';'.join(result[1])};"
                             mail.Save()
                             mail.Display()
@@ -208,7 +215,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     result          = email_parser(mail.Body)
                                     Body            = mail_body.format(dataframe.to_html(index = False), sender)
                                     mail.HTMLBody   = Body + mail.HTMLBody
-                                    mail.To         = f"{to};{';'.join(result[0])};"
+                                    mail.To         = f"{';'.join(to)};{';'.join(result[0])};"
                                     mail.CC         = f"{';'.join(result[1])};"
                                     mail.Save()
                                     mail.Display()
