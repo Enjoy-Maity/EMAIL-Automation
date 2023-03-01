@@ -223,7 +223,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     break
         
         if(len(circle_mail_not_found) == 0):
-            messagebox.showinfo("   Mails Drafted",f"Mails for all the mentioned {len(new_unique_circles)} circles drafted!")
+            messagebox.showinfo("   Mails Drafted",f"Change Responsible Mails for all mentioned {len(new_unique_circles)} circles have been drafted!")
             
             # Removing all local variables in the current scope
             objects = dir()
@@ -234,7 +234,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             return "Successful"
         
         if(len(circle_mail_not_found)):
-            messagebox.showwarning("    Mails Drafted",f"Mails for circles other than the given below circles drafted:\n{', '.join(circle_mail_not_found)}")
+            messagebox.showwarning("    Mails Drafted",f"Change Responsible Mails have been drafted except for below circles:\n{', '.join(circle_mail_not_found)}")
 
             # Removing all local variables in the current scope
             objects = dir()
