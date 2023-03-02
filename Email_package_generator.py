@@ -260,7 +260,7 @@ def email_package_sheet_creater(workbook):
                     continue
             
             if (len(input_error) > 0):
-                messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet!\nCheck 'Location', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
+                messagebox.showerror("  Input Errors",f"Input Details are missing for mandatory parameters for S.NO.: {','.join([str(num) for num in input_error])} in uploaded Planning sheet!")
                 
                 # Deleting all the variables before returning the value for "Unsuccessful"
                 objects = dir()
