@@ -98,6 +98,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
         circle_mail_not_found = []
         new_unique_circles = unique_circles
+        
         # Iterating through the unique circles for checking if the mails for the circle are found or not.
         for cir in unique_circles:
             # Making the subject for finding in the inbox
@@ -111,7 +112,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 messages.Sort("[ReceivedTime]",True)
 
                 for message in messages:
-                    if(message.Subject == subject_we_are_looking_for):
+                    if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                         flag_variable = 1
                         break
                 del messages
@@ -128,7 +129,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         messages.Sort("[ReceivedTime]",True)
                         
                         for message in messages:
-                            if(message.Subject == subject_we_are_looking_for):
+                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                                 flag_variable = 1
                                 break
             
@@ -186,7 +187,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     messages.Sort("[ReceivedTime]",True)
 
                     for message in messages:
-                        if(message.Subject == subject_we_are_looking_for):
+                        if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                             flag_variable = 1
                             mail        = message.ReplyAll()
                             result          = email_parser(mail.Body)
@@ -213,7 +214,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             messages.Sort("[ReceivedTime]",True)
                             
                             for message in messages:
-                                if(message.Subject == subject_we_are_looking_for):
+                                if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                                     flag_variable = 1
                                     mail        = message.ReplyAll()
                                     result          = email_parser(mail.Body)
