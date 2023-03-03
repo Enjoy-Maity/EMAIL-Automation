@@ -133,8 +133,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
         # Iterating through the loop to see whether there'sother sheet present in the workbook, if yes then removing then.
         for sheet in wb_sheets:
             if(sheet != "Email-Package"):
-                ws = wb[sheet]
-                wb.remove_sheet(ws)
+                del wb[sheet]
         wb.save(workbook)
         wb.close()
 
@@ -296,7 +295,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             resources_occupied_in_night_activities = resources_occupied_in_night_activities.astype(str)
 
             resources_occupied_in_night_activities = np.delete(resources_occupied_in_night_activities,np.where((resources_occupied_in_night_activities == 'nan')|(resources_occupied_in_night_activities == 'Nan')))
-            print(resources_occupied_in_night_activities)
+            
 
             # Filling the blank fields in the dataframe with 'NA'.
             worksheet.fillna("TempNA", inplace = True)
