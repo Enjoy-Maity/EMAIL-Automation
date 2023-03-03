@@ -168,15 +168,19 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
 
             # Creating a to variable for sending mails to
-            to = []
-
+            to_list = []
+            to      = []
+            
             # Iterating through the temp_df to attach to the to variable.
             for i in range(0,len(temp_df)):
-                to.append(temp_df.iloc[i]['Change Responsible'])
+                to_list.append(temp_df.iloc[i]['Change Responsible'])
             
             for i in to:
                 if(i.upper() == 'NAN'):
                     to.remove(i)
+                
+            for receipient in to_list:
+                to.append(dictionary_for_change_responsible_to_mail_id[receipient])
 
             # Converting the list to set to have only unique values.
             to = set(to)
