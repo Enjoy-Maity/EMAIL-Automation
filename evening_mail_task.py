@@ -115,7 +115,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
 # Method(Function) for creating email package workbook and mail draft.
 def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
-    workbook = rf"{folder}\\Email_Package.xlsx"
+    workbook = rf"{folder}\\MPBN_Email_Package.xlsx"
     
     # Checking if the Email_Package workbook is created or not.
     if(Path(workbook).exists() == False):

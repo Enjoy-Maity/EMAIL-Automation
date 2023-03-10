@@ -2,7 +2,7 @@ import pandas as pd                         # Importing Pandas for manipulation 
 import win32com.client as win32             # Importing win32com for opening and creation of outlook mail
 from tkinter import messagebox              # Importing messagebox for rasing dialogues
 from datetime import datetime, timedelta    # Importing datetime to manipulate time related variables and getting today's maintenance date
-import numpy as np
+import numpy as np                          # Importing Numpy for numpy array operations.
 import sys
 
 
@@ -388,4 +388,4 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
 
-#circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\New Microsoft Excel Worksheet.xlsx")
+#circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
