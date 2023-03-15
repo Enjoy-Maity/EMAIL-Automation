@@ -107,6 +107,7 @@ class App(tk.Tk):
 
             self.main_win.bind("<Return>", self.file_browser_func)      # Binding the Enter key to call the file browser function to browse the MPBN Planning Task workbook.
             self.main_win.bind("<Escape>", self.main_win_quit)          # Binding the Escape key to quit the application.
+            self.main_win.bind("<Alt-F4>",self.main_win_quit)           # Binding the Alt+F4 key to quit the application.
             self.task_running = 0
             self.task_module_running = ""
 
@@ -1443,7 +1444,11 @@ class App(tk.Tk):
     
     # Method(Function) to quit the Main GUI Window.
     def main_win_quit(self, event):
-        sys.exit(0)
+        if(self.main_win.state() == "normal"):
+            self.main_win.destroy()
+            self.exit(0)
+        else:
+            sys.exit(0)
 
     # Method(Function) to quit the sender GUI.
     def sender_win_quit(self, event):
