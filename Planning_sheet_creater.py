@@ -181,7 +181,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             daily_planning_sheet = pd.DataFrame(columns= columns_for_planning_sheet)
             
             # Filtering out the rows from the report excluding rows where report[Status*] = Draft
-            report = report[report["Status*"] != "Draft"]
+            report = report[(report["Status*"] != "Draft") & (report["Status*"] != "Rejected")]
 
             # Resetting the index values of report
             report.reset_index(drop = True,inplace = True)
