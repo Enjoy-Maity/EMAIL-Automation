@@ -10,6 +10,7 @@ from openpyxl.utils import get_column_letter                        # Importing 
 from datetime import datetime, timedelta                            # Importing the datetime and timedelta from datetime module, to filter out the excel sheet basd on today's maintenance date.
 from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in email-package
 import numpy as np
+import shutil
 
 # Creating classes for custom made exceptions inheriting the default Exception class for raising and handling custom raised exceptions.
 class CustomException(Exception):
@@ -115,7 +116,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
 # Method(Function) for creating email package workbook and mail draft.
 def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
-    workbook = rf"{folder}\\MPBN_Email_Package.xlsx"
+    workbook = rf"{folder}\\MPBN_Email_Package_{execution_date}.xlsx"
     
     # Checking if the Email_Package workbook is created or not.
     if(Path(workbook).exists() == False):
@@ -403,11 +404,22 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             else:
                 pass
             
-            # creating a new temp folder with temp excel file for the data to write into.
-            Path(rf"{folder}\\temp").mkdir(exist_ok=True)
-
             # Setting the folder in the folder path for creation of the email package workbook.
             temp_folder = rf"{folder}\\temp"
+
+            if(Path(temp_folder).exists()):
+                try:
+                    shutil.rmtree(temp_folder)
+                
+                except:
+                    import os
+                    for file in os.listdir(temp_folder):
+                        os.remove(os.path.join("\\",temp_folder,file))
+                    
+                    os.rmdir(temp_folder)
+
+            # creating a new temp folder with temp excel file for the data to write into.
+            Path(rf"{folder}\\temp").mkdir(exist_ok=True)
 
             # Writing into a temp xlsx file named temp.xlsx
             temp_file_for_the_evening_message = rf"{temp_folder}\\tmp.xlsx"
@@ -500,4 +512,4 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
     
 
-#evening_task('Arka Maiti','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/New Microsoft Excel Worksheet.xlsx")
+# evening_task('Arka Maiti','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
