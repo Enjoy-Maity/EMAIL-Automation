@@ -357,11 +357,14 @@ def fetch_details(sender,workbook):
 
     # Handling other exceptions that are not handled.
     except Exception as e:
+        import traceback
+        
+        messagebox.showerror("  Exception Occurred",f"{traceback.format_exc()}\n{e}")
+
         objects = dir()
         for object in objects:
             if not object.startswith("__"):
                 del object
-        messagebox.showerror("  Exception Occurred",e)
         return "Unsuccessful"
     
 #fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")

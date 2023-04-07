@@ -509,6 +509,18 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 del object
 
         return "Unsuccessful"
+    
+    except Exception as e:
+        import traceback
+        messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{e}")
+
+        # Delelting all the local variables before returning the value "Unsuccessful"
+        objects = dir()
+        for object in objects:
+            if not object.startswith("__"):
+                del object
+
+        return "Unsuccessful"
 
     
 

@@ -178,7 +178,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             for i in to:
                 if(i.upper() == 'NAN'):
                     to.remove(i)
-                
+               
             for receipient in to_list:
                 to.append(dictionary_for_change_responsible_to_mail_id[receipient])
 
@@ -254,7 +254,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
         
     except Exception as error:
-        messagebox.showerror("  Exception Occured!",error)
+        import traceback
+        messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{error}")
         
         # Removing all local variables in the current scope
         objects = dir()
@@ -347,7 +348,8 @@ def circle_reply_task(sender, workbook):
         return "Unsuccessful"
 
     except ValueError as error:
-        messagebox.showerror("  Exception Occured!",error)
+        import traceback
+        messagebox.showerror("  ValueError Occured!",f"{traceback.format_exc()}\n{error}")
         
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()
@@ -369,7 +371,8 @@ def circle_reply_task(sender, workbook):
         return "Unsuccessful"
     
     except RuntimeError as error:
-        messagebox.showerror("  Exception Occured!",error)
+        import traceback
+        messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{error}")
         
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()
@@ -379,7 +382,8 @@ def circle_reply_task(sender, workbook):
         return "Unsuccessful"
     
     except Exception as error:
-        messagebox.showerror("  Exception Occured!",error)
+        import traceback
+        messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{error}")
         
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()
@@ -388,4 +392,4 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
 
-#circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
+# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")

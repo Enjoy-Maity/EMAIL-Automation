@@ -304,7 +304,8 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
         return "Unsuccessful"
 
     except Exception as error:
-        messagebox.showerror("  Exception Occured!",error)
+        import traceback
+        messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{error}")
         
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()

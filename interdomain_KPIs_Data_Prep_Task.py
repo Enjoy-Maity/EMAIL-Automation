@@ -899,7 +899,8 @@ def paco_cscore(sender,workbook):
 
     # Handling any other Exception that has not been handled.
     except Exception as e:
-        messagebox.showerror("  Exception Occured",e)
+        import traceback
+        messagebox.showerror("  Exception Occured",f"{traceback.format_exc()}\n{e}")
 
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()

@@ -286,7 +286,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         return "Unsuccessful"
     
     except Exception as error:
-        messagebox.showerror(" Exception Occurred!",error)
+        import traceback
+        messagebox.showerror(" Exception Occurred!",f"{traceback.format_exc()}\n{error}")
         
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()

@@ -710,7 +710,7 @@ def email_package_sheet_creater(workbook):
                                         if ((len(str(daily_plan_sheet.iloc[i]['Domain kpi']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() == 'TempNA')):
                                             domain_kpi_temp = str(domain_kpi_temp)
                                         else:
-                                            domain_kpi_temp = str(daily_plan_sheet.iloc[i]['Domain kpi'])
+                                            domain_kpi_temp = str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()
                                     
                                     if ((len(str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip() == 'TempNA')):
                                         kpi_details_temp = str(kpi_details_temp)
@@ -998,7 +998,8 @@ def email_package_sheet_creater(workbook):
         return "Unsuccessful"
     
     except Exception as error:
-        messagebox.showerror("  Exception Occured!",error)
+        import traceback
+        messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{error}")
 
         # Deleting all the variables before returning the value for "Unsuccessful"
         objects = dir()
