@@ -372,18 +372,21 @@ def email_package_sheet_creater(workbook):
                                     else:
                                         if (len(str(impacted_node_temp)) == 0):
                                             if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['IMPACTED NODE']).strip() != 'TempNA')):
-                                                impacted_node_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])}"
+                                                impacted_node_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])}"
                                         else:
                                             if (str(impacted_node_temp).__contains__(str(daily_plan_sheet.iloc[i]['Domain kpi'])) == False):
                                                 if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['IMPACTED NODE']).strip() != 'TempNA')):
-                                                    impacted_node_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])} || {impacted_node_temp}"
+                                                    impacted_node_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])} || {impacted_node_temp}"
                                     
                                     if (len(str(domain_kpi_temp)) == 0):
-                                        domain_kpi_temp = f"{daily_plan_sheet.iloc[i]['Domain kpi']}"
+                                        if(str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA'):
+                                            domain_kpi_temp = f"{str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()}"
+                                        else:
+                                            domain_kpi_temp = daily_plan_sheet.iloc[i]['Domain kpi']
                                     
                                     elif ((len(str(domain_kpi_temp)) > 0) and (str(domain_kpi_temp).__contains__(str(daily_plan_sheet.iloc[i]['Domain kpi'])) == False)):
                                         if (str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA'):
-                                            domain_kpi_temp = f"{daily_plan_sheet.iloc[i]['Domain kpi']} || {domain_kpi_temp}"
+                                            domain_kpi_temp = f"{str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} || {domain_kpi_temp}"
                                     
                                     if ((len(str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip() == 'TempNA')):
                                         kpi_details_temp = kpi_details_temp
@@ -391,11 +394,11 @@ def email_package_sheet_creater(workbook):
                                     else:
                                         if (len(str(kpi_details_temp)) == 0):
                                             if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip() != 'TempNA')):
-                                                kpi_details_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {(daily_plan_sheet.iloc[i]['KPI DETAILS'])}"
+                                                kpi_details_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {(daily_plan_sheet.iloc[i]['KPI DETAILS'])}"
                                         
                                         if ((len(str(kpi_details_temp))>0) and (str(kpi_details_temp).__contains__(str(daily_plan_sheet.iloc[i]['Domain kpi'])) == False)):
                                             if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip() != 'TempNA')):
-                                                kpi_details_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {(daily_plan_sheet.iloc[i]['KPI DETAILS'])} || {kpi_details_temp}"
+                                                kpi_details_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {(daily_plan_sheet.iloc[i]['KPI DETAILS'])} || {kpi_details_temp}"
                                     
                                     if (len(str(daily_plan_sheet.iloc[i]['oss name']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['oss name']).strip() == 'TempNA') :
                                         oss_name_temp = oss_name_temp
@@ -535,29 +538,33 @@ def email_package_sheet_creater(workbook):
                                     else:
                                         if (len(impacted_node_temp) == 0):
                                             if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['IMPACTED NODE']).strip() != 'TempNA')):
-                                                impacted_node_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])}"
+                                                impacted_node_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])}"
                                         else:
                                             if (str(impacted_node_temp).__contains__(str(daily_plan_sheet.iloc[i]['Domain kpi'])) == False):
                                                 if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['IMPACTED NODE']).strip() != 'TempNA')):
-                                                    impacted_node_temp +=  f" || ({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])}"
+                                                    impacted_node_temp +=  f" || ({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {str(daily_plan_sheet.iloc[i]['IMPACTED NODE'])}"
                                     
                                     if (len(domain_kpi_temp) == 0):
-                                        domain_kpi_temp = daily_plan_sheet.iloc[i]['Domain kpi']
+                                        if(str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA'):
+                                            domain_kpi_temp = str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()
+                                        
+                                        else:
+                                            domain_kpi_temp = daily_plan_sheet.iloc[i]['Domain kpi']
                                     
                                     elif ((len(domain_kpi_temp)>0) and (str(domain_kpi_temp).__contains__(str(daily_plan_sheet.iloc[i]['Domain kpi'])) == False)):
                                         if (str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA'):
-                                            domain_kpi_temp +=  f" || {daily_plan_sheet.iloc[i]['Domain kpi']}"
+                                            domain_kpi_temp +=  f" || {str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()}"
                                     
                                     if (len(str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip()) == 0):
                                         kpi_details_temp = kpi_details_temp
                                     else:
                                         if (len(kpi_details_temp) == 0):
                                             if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip() != 'TempNA')):
-                                                kpi_details_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {str(daily_plan_sheet.iloc[i]['KPI DETAILS'])}"
+                                                kpi_details_temp = f"({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {str(daily_plan_sheet.iloc[i]['KPI DETAILS'])}"
                                         
                                         elif ((len(kpi_details_temp) > 0) and (str(kpi_details_temp).__contains__(str(daily_plan_sheet.iloc[i]['Domain kpi'])) == False)):
                                             if ((str(daily_plan_sheet.iloc[i]['Domain kpi']).strip() != 'TempNA') and (str(daily_plan_sheet.iloc[i]['KPI DETAILS']).strip() != 'TempNA')):
-                                                kpi_details_temp +=  f" || ({str(daily_plan_sheet.iloc[i]['Domain kpi'])} ):- {str(daily_plan_sheet.iloc[i]['KPI DETAILS'])}"
+                                                kpi_details_temp +=  f" || ({str(daily_plan_sheet.iloc[i]['Domain kpi']).upper()} ):- {str(daily_plan_sheet.iloc[i]['KPI DETAILS'])}"
                                     
                                     if ((len(str(daily_plan_sheet.iloc[i]['oss name']).strip()) == 0) or (str(daily_plan_sheet.iloc[i]['oss name']).strip() == 'TempNA')):
                                         oss_name_temp = oss_name_temp
