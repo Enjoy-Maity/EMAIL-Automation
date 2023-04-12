@@ -120,7 +120,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             if(flag_variable == 0):
                 folders = inbox.Folders
 
-                if(folders):
+                if(len(folders)):
                     for i in range(0,len(folders)):
                         messages = inbox.Folders[i].Items
                         
@@ -132,6 +132,28 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                                 flag_variable = 1
                                 break
+                        
+                        if (flag_variable == 0):
+                            sub_folders = inbox.Folders[i].Folders
+
+                            if(len(sub_folders)):
+                                for sub_folder in range(len(sub_folders)):
+                                    messages = inbox.Folders[i].Folders[sub_folder].Items
+                        
+                                    # Filtering messages from the messages.
+                                    messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+                                    messages.Sort("[ReceivedTime]",True)
+                                    
+                                    for message in messages:
+                                        if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                            flag_variable = 1
+                                            break
+                                
+                                    if(flag_variable == 1):
+                                        break
+
+                        if(flag_variable == 1):
+                            break
             
             if (flag_variable == 0):
                 new_unique_circles = np.delete(new_unique_circles,np.where(new_unique_circles == cir))
@@ -175,9 +197,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             for i in range(0,len(temp_df)):
                 to_list.append(temp_df.iloc[i]['Change Responsible'])
             
-            for i in to:
-                if(i.upper() == 'NAN'):
-                    to.remove(i)
+            # for i in to:
+            #     if(i.upper() == 'NAN'):
+            #         to.remove(i)
                
             for receipient in to_list:
                 to.append(dictionary_for_change_responsible_to_mail_id[receipient])
@@ -230,6 +252,36 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     mail.Display()
                                     #mail.Send()
                                     break
+                            
+                            if(flag_variable == 0):
+                                sub_folders = inbox.Folders[i].Folders
+                                
+                                if(len(sub_folders)):
+                                    for sub_folder_index in range(0,len(sub_folders)):
+                                        messages = inbox.Folders[i].Folder[sub_folder_index].Items
+                                        # Filtering messages from the messages.
+                                        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
+                                        messages.Sort("[ReceivedTime]",True)
+                                        
+                                        for message in messages:
+                                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                                flag_variable = 1
+                                                mail        = message.ReplyAll()
+                                                result          = email_parser(mail.Body)
+                                                Body            = mail_body.format(dataframe.to_html(index = False), sender)
+                                                mail.HTMLBody   = Body + mail.HTMLBody
+                                                mail.To         = f"{';'.join(to)};{';'.join(result[0])};"
+                                                mail.CC         = f"{';'.join(result[1])};"
+                                                mail.Save()
+                                                mail.Display()
+                                                #mail.Send()
+                                                break
+                                        
+                                        if(flag_variable == 1):
+                                            break
+                                    
+                            if(flag_variable == 1):
+                                break
         
         if(len(circle_mail_not_found) == 0):
             messagebox.showinfo("   Mails Drafted",f"Change Responsible Mails for all mentioned {len(new_unique_circles)} circles have been drafted!")
