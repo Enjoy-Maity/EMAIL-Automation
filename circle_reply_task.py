@@ -3,7 +3,7 @@ import win32com.client as win32             # Importing win32com for opening and
 from tkinter import messagebox              # Importing messagebox for rasing dialogues
 from datetime import datetime, timedelta    # Importing datetime to manipulate time related variables and getting today's maintenance date
 import numpy as np                          # Importing Numpy for numpy array operations.
-import sys
+import sys                                  # Importing sys module for 
 
 
 # Creating Custom Exception inheriting base default Exception class for raising, handling and custom exceptions.
@@ -91,10 +91,10 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         today       = datetime.now()
 
         # Formatting today's date so that we can compare it with the received date and time of the messages in the inbox
-        today       = today.replace(hour = 10, minute = 0, second = 0).strftime('%Y-%m-%d %H:%M %p')
+        today       = today.replace(hour = 10)
         
-        # Filtering messages from the messages.
-        inbox_messages    = inbox_messages.Restrict("[ReceivedTime] >='"+today+"'")
+        # Sorting the mails
+        inbox_messages.Sort("[ReceivedTime]",True)
 
         circle_mail_not_found = []
         new_unique_circles = unique_circles
@@ -108,13 +108,21 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             flag_variable = 0
                 
             if(flag_variable == 0):
-                messages = inbox_messages.Restrict(f"[ReceivedTime] >='{today}'")
-                messages.Sort("[ReceivedTime]",True)
+                messages = inbox_messages
 
                 for message in messages:
-                    if(message.Subject.lower() == subject_we_are_looking_for.lower()):
-                        flag_variable = 1
-                        break
+                    try:
+                        dt = message.ReceivedTime
+                        year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                        if(datetime(year,month,day,hour,minute) >= today):
+                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                flag_variable = 1
+                                break
+                        else:
+                            break
+                    except:
+                        continue
+
                 del messages
 
             if(flag_variable == 0):
@@ -122,38 +130,60 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
                 if(len(folders)):
                     for i in range(0,len(folders)):
-                        messages = inbox.Folders[i].Items
-                        
-                        # Filtering messages from the messages.
-                        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                        messages.Sort("[ReceivedTime]",True)
-                        
-                        for message in messages:
-                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
-                                flag_variable = 1
-                                break
-                        
-                        if (flag_variable == 0):
-                            sub_folders = inbox.Folders[i].Folders
-
-                            if(len(sub_folders)):
-                                for sub_folder in range(len(sub_folders)):
-                                    messages = inbox.Folders[i].Folders[sub_folder].Items
-                        
-                                    # Filtering messages from the messages.
-                                    messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                                    messages.Sort("[ReceivedTime]",True)
-                                    
-                                    for message in messages:
+                        try:
+                            messages = inbox.Folders[i].Items
+                            
+                            # Filtering messages from the messages.
+                            messages.Sort("[ReceivedTime]",True)
+                            
+                            for message in messages:
+                                try:
+                                    dt = message.ReceivedTime
+                                    year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                                    if(datetime(year,month,day,hour,minute) >= today):
                                         if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                                             flag_variable = 1
                                             break
-                                
-                                    if(flag_variable == 1):
+                                    else:
                                         break
+                                except:
+                                    continue
+                            
+                            if (flag_variable == 0):
+                                sub_folders = inbox.Folders[i].Folders
 
-                        if(flag_variable == 1):
-                            break
+                                if(len(sub_folders)):
+                                    for sub_folder in range(len(sub_folders)):
+                                        try:
+                                            messages = inbox.Folders[i].Folders[sub_folder].Items
+                                
+                                            # Filtering messages from the messages.
+                                            messages.Sort("[ReceivedTime]",True)
+                                            
+                                            for message in messages:
+                                                try:
+                                                    dt = message.ReceivedTime
+                                                    year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                                                    if(datetime(year,month,day,hour,minute) >= today):
+                                                        if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                                            flag_variable = 1
+                                                            break
+                                                    else:
+                                                        break
+                                                
+                                                except:
+                                                    continue
+                                        
+                                            if(flag_variable == 1):
+                                                break
+                                        except:
+                                            continue
+
+                            if(flag_variable == 1):
+                                break
+
+                        except:
+                            continue   
             
             if (flag_variable == 0):
                 new_unique_circles = np.delete(new_unique_circles,np.where(new_unique_circles == cir))
@@ -209,37 +239,14 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             
             if(flag_variable == 0):
                 if(flag_variable == 0):
-                    messages = inbox_messages.Restrict(f"[ReceivedTime] >='{today}'")
+                    messages = inbox_messages
                     messages.Sort("[ReceivedTime]",True)
 
                     for message in messages:
-                        if(message.Subject.lower() == subject_we_are_looking_for.lower()):
-                            flag_variable = 1
-                            mail        = message.ReplyAll()
-                            result          = email_parser(mail.Body)
-                            Body            = mail_body.format(dataframe.to_html(index = False), sender)
-                            mail.HTMLBody   = Body + mail.HTMLBody
-                            mail.To         = f"{';'.join(to)};{';'.join(result[0])};"
-                            mail.CC         = f"{';'.join(result[1])};"
-                            mail.Save()
-                            mail.Display()
-                            #mail.Send()
-                            break
-
-                    del messages
-
-                if(flag_variable == 0):
-                    folders = inbox.Folders
-
-                    if(folders):
-                        for i in range(0,len(folders)):
-                            messages = inbox.Folders[i].Items
-                            
-                            # Filtering messages from the messages.
-                            messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                            messages.Sort("[ReceivedTime]",True)
-                            
-                            for message in messages:
+                        try:
+                            dt = message.ReceivedTime
+                            year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                            if(datetime(year,month,day,hour,minute) >= today):
                                 if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                                     flag_variable = 1
                                     mail        = message.ReplyAll()
@@ -253,17 +260,30 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     #mail.Send()
                                     break
                             
-                            if(flag_variable == 0):
-                                sub_folders = inbox.Folders[i].Folders
+                            else:
+                                break
+                        
+                        except:
+                            continue
+                    
+                    del messages
+
+                if(flag_variable == 0):
+                    folders = inbox.Folders
+
+                    if(folders):
+                        for i in range(0,len(folders)):
+                            try:
+                                messages = inbox.Folders[i].Items
                                 
-                                if(len(sub_folders)):
-                                    for sub_folder_index in range(0,len(sub_folders)):
-                                        messages = inbox.Folders[i].Folder[sub_folder_index].Items
-                                        # Filtering messages from the messages.
-                                        messages    = messages.Restrict("[ReceivedTime] >='"+today+"'")
-                                        messages.Sort("[ReceivedTime]",True)
-                                        
-                                        for message in messages:
+                                # Filtering messages from the messages.
+                                messages.Sort("[ReceivedTime]",True)
+                                
+                                for message in messages:
+                                    try:
+                                        dt = message.ReceivedTime
+                                        year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                                        if(datetime(year,month,day,hour,minute) >= today):
                                             if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                                                 flag_variable = 1
                                                 mail        = message.ReplyAll()
@@ -276,12 +296,56 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                                 mail.Display()
                                                 #mail.Send()
                                                 break
-                                        
-                                        if(flag_variable == 1):
+                                        else:
                                             break
                                     
-                            if(flag_variable == 1):
-                                break
+                                    except:
+                                        continue
+                                
+                                if(flag_variable == 0):
+                                    sub_folders = inbox.Folders[i].Folders
+                                    
+                                    if(len(sub_folders)):
+                                        for sub_folder_index in range(0,len(sub_folders)):
+                                            try:
+                                                messages = inbox.Folders[i].Folder[sub_folder_index].Items
+                                                # Filtering messages from the messages.
+                                                messages.Sort("[ReceivedTime]",True)
+                                                
+                                                for message in messages:
+                                                    try:
+                                                        dt = message.ReceivedTime
+                                                        year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                                                        if(datetime(year,month,day,hour,minute) >= today):
+                                                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                                                flag_variable = 1
+                                                                mail        = message.ReplyAll()
+                                                                result          = email_parser(mail.Body)
+                                                                Body            = mail_body.format(dataframe.to_html(index = False), sender)
+                                                                mail.HTMLBody   = Body + mail.HTMLBody
+                                                                mail.To         = f"{';'.join(to)};{';'.join(result[0])};"
+                                                                mail.CC         = f"{';'.join(result[1])};"
+                                                                mail.Save()
+                                                                mail.Display()
+                                                                #mail.Send()
+                                                                break
+                                                        else:
+                                                            break
+                                                    except:
+                                                        continue
+
+                                                if(flag_variable == 1):
+                                                    break
+                                            
+                                            except:
+                                                continue
+                                        
+                                if(flag_variable == 1):
+                                    break
+                            
+                            except:
+                                continue
+
         
         if(len(circle_mail_not_found) == 0):
             messagebox.showinfo("   Mails Drafted",f"Change Responsible Mails for all mentioned {len(new_unique_circles)} circles have been drafted!")
