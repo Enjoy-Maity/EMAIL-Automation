@@ -1,3 +1,4 @@
+import traceback                                # Importing traceback for the traceback of the exception
 import tkinter as tk                            # Importing the Tkinter Module for Developing the GUI with alias.
 from tkinter import *                           # Importing all the modules and methods available in Tkinter.
 from tkinter import filedialog, messagebox      # Importing Filedialog and messagebox modules from tkinter module to browse files and show messages.
@@ -1351,13 +1352,13 @@ class App(tk.Tk):
                     else:
                         # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
                         # status of the Task in status flag.
+
                         self.executor_mail_communication_status_flag = circle_reply_task.circle_reply_task(
                             self.sender, self.file_browser_file)
 
                         # Checking if the status of the task is successful or not.
                         if (self.executor_mail_communication_status_flag == "Successful"):
                             # Setting the label for task to successful.
-                            print("successful\n\n")
                             self.executor_mail_communication_status.set(
                                 " Successful ")
                             
@@ -1389,24 +1390,10 @@ class App(tk.Tk):
                     self.task_running = 0
                     self.task_module_running = ""
 
-                except RecursionError:
-                    # Setting the label for task to successful.
-                    self.self.executor_mail_communication_status.set(
-                        " Successful ")
-                    
-                    # Setting the color of the Successful label
-                    self.executor_mail_communication_color_get.set(
-                        self.color[1])
-
-                    # Setting the status checker flag of the task to 1 indicating that this task has been successfully created
-                    # and need not to run this task again.
-                    self.executor_mail_communication_status_checker_flag = 1
-                    self.task_running = 0
-                    self.task_module_running = ""
 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
-                    messagebox.showerror(" Exception Occured", error)
+                    messagebox.showerror(" Exception Occured", f"{traceback.format_exc()}\n\n{error}")
                     self.executor_mail_communication_color_get.set(self.color[0])
                     self.executor_mail_communication_status_checker_flag = 0
                     self.executor_mail_communication_status.set(" Unsuccessful ")

@@ -508,4 +508,4 @@ def circle_reply_task(sender, workbook):
                 del object
         return "Unsuccessful"
 
-# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\OneDrive - Ericsson\Documents\MPBN Daily Planning Sheet.xlsx")
+# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
