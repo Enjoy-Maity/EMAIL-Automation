@@ -1355,6 +1355,8 @@ class App(tk.Tk):
 
                         self.executor_mail_communication_status_flag = circle_reply_task.circle_reply_task(
                             self.sender, self.file_browser_file)
+                        
+                        print(self.executor_mail_communication_status_flag)
 
                         # Checking if the status of the task is successful or not.
                         if (self.executor_mail_communication_status_flag == "Successful"):
@@ -1381,6 +1383,7 @@ class App(tk.Tk):
                             self.executor_mail_communication_status_checker_flag = 0
                             self.task_running = 0
                             self.task_module_running = ""
+                        
 
                 # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
                 except FileNotSelected:

@@ -99,6 +99,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         circle_mail_not_found = []
         new_unique_circles = unique_circles
         
+        print("Entering the test for mail")
+
         # Iterating through the unique circles for checking if the mails for the circle are found or not.
         for cir in unique_circles:
             # Making the subject for finding in the inbox
@@ -111,11 +113,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 messages = inbox_messages
 
                 for message in messages:
+                    print(message.Subject)
                     try:
                         dt = message.ReceivedTime
                         year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
                         if(datetime(year,month,day,hour,minute) >= today):
                             if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                print(f"test:{cir}")
                                 flag_variable = 1
                                 break
                         else:
@@ -137,11 +141,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             messages.Sort("[ReceivedTime]",True)
                             
                             for message in messages:
+                                print(message.Subject)
                                 try:
                                     dt = message.ReceivedTime
                                     year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
                                     if(datetime(year,month,day,hour,minute) >= today):
                                         if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                            print(f"test:{cir}")
                                             flag_variable = 1
                                             break
                                     else:
@@ -161,11 +167,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                             messages.Sort("[ReceivedTime]",True)
                                             
                                             for message in messages:
+                                                print(message.Subject)
                                                 try:
                                                     dt = message.ReceivedTime
                                                     year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
                                                     if(datetime(year,month,day,hour,minute) >= today):
                                                         if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                                            print(f"test:{cir}")
                                                             flag_variable = 1
                                                             break
                                                     else:
@@ -441,7 +449,8 @@ def circle_reply_task(sender, workbook):
 
                 # Creating a variable to get today's maintenance date
                 today_maintenance_date = datetime.now() + timedelta(1)
-
+                
+                print("Function called")
                 # Calling the Method (function) for replying the mail.
                 flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
                 
