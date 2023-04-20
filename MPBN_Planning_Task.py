@@ -1464,7 +1464,7 @@ def main():
         app = App(root)
 
     # Handling exceptions for empty string entry.
-    except EmptyString:
+    except EmptyString as e:
         current_file = __file__  # gets the value of current running file
         subprocess.run(["python", current_file])
         sys.exit(0)
