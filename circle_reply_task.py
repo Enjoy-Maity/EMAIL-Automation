@@ -127,7 +127,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     # print(dt >= today)
 
                     if(dt >= today):
-                        print(message.Subject.lower() == subject_we_are_looking_for.lower())
+                        # print(message.Subject.lower() == subject_we_are_looking_for.lower())
                         if(message.Subject.lower() == subject_we_are_looking_for.lower()):
                             # print(f"\n\ntest:{cir}\n\n")
                             flag_variable = 1
@@ -157,9 +157,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                 dt = datetime(year,month,day,hour,minute)
                                 # print(dt >= today)
                                 if(dt >= today):
-                                    print(message.Subject.lower() == subject_we_are_looking_for.lower())
+                                    # print(message.Subject.lower() == subject_we_are_looking_for.lower())
                                     if(message.Subject.lower() == subject_we_are_looking_for.lower()):
-                                        print(f"\n\ntest:{cir}\n\n")
+                                        # print(f"\n\ntest:{cir}\n\n")
                                         flag_variable = 1
                                         break
                                 else:
@@ -173,7 +173,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             if (flag_variable == 0):
                 folders = len(inbox.Folders[i].Folders)
 
-                if(len(folders) > 0):
+                if(folders > 0):
                     for i in range(0,folders):
                         sub_folders = inbox.Folders[i].Folders
 
@@ -332,7 +332,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         
             if(flag_variable == 0):
                 folders = len(inbox.Folders)
-                if(len(folders) > 0):
+                if(folders > 0):
                     for i in range(0,folders):
                         sub_folders = inbox.Folders[i].Folders
                         
