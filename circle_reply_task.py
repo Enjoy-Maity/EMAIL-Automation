@@ -15,6 +15,12 @@ class CustomException(Exception):
         super().__init__(title,message)
         messagebox.showerror(self.title, self.message)
 
+def airtel_remover(temp_list):
+    for mail_id in temp_list:
+        if(mail_id.__contains__("@airtel")):
+            temp_list.remove(mail_id)
+    return temp_list
+
 def email_parser(body):
     new_body_list = body.splitlines()
 
@@ -44,6 +50,8 @@ def email_parser(body):
         cc[i] = cc[i].split("<")[1]
 
     to.append(from_mail)
+    to = airtel_remover(to)
+    cc = airtel_remover(cc)
     result = [to,cc]
     
     
