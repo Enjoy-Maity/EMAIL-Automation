@@ -12,6 +12,11 @@ from openpyxl.worksheet.datavalidation import DataValidation        # Importing 
 import numpy as np
 import shutil
 
+flag = ""
+workbook1 = ""
+workbook2 = ""
+workbook3 = ""
+
 # Creating classes for custom made exceptions inheriting the default Exception class for raising and handling custom raised exceptions.
 class CustomException(Exception):
     # Defining the Counstructor method for the CustomException Class
@@ -117,6 +122,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
 def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
     workbook = rf"{folder}\\MPBN_Email_Package_{execution_date}.xlsx"
+    global workbook3; workbook3 = workbook
     
     # Checking if the Email_Package workbook is created or not.
     if(Path(workbook).exists() == False):
@@ -203,6 +209,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
 # Method(Function) for creating the evening message text.
 def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
     try:
+        global workbook1; workbook1 = workbook
         wb=pd.ExcelFile(workbook)
         ws=wb.sheet_names
         worksheet=''
@@ -222,7 +229,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 if not object.startswith("__"):
                     del object
 
-            return 'Unsuccessful'
+            global flag; flag = 'Unsuccessful'
         
         else:
         # Reading relevant sheet.
@@ -238,7 +245,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                     if not object.startswith("__"):
                         del object
 
-                return 'Unsuccessful'
+                global flag; flag = 'Unsuccessful'
             
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
             total_no_of_resource = 16           
@@ -423,6 +430,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
             # Writing into a temp xlsx file named temp.xlsx
             temp_file_for_the_evening_message = rf"{temp_folder}\\tmp.xlsx"
+            global workbook2; workbook2 = temp_file_for_the_evening_message
 
             # Checking if the temp_file_for_evening_message is existent or not
             if (Path(temp_file_for_the_evening_message).exists() == False):
@@ -498,7 +506,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 if not object.startswith("__"):
                     del object
 
-            return 'Successful'
+            global flag; flag = 'Successful'
 
     # Handling Exceptions 
     except CustomException:
@@ -508,7 +516,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     except Exception as e:
         import traceback
@@ -520,7 +528,29 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
+    
+    finally:
+        import gc
+
+        excel = win32.Dispatch("Excel.Application")
+
+        if(len(workbook1) > 0):
+            wb = excel.Workbooks.Open(workbook1)
+            wb.Close()
+        
+        if(len(workbook2) > 0):
+            wb = excel.Workbooks.Open(workbook2)
+            wb.Close()
+        
+        if(len(workbook3) > 0):
+            wb = excel.Workbooks.Open(workbook3)
+            wb.Close()
+
+        excel.Application.Quit()
+
+        gc.collect()
+        return flag
 
     
 

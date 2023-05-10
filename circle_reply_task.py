@@ -4,6 +4,9 @@ from tkinter import messagebox              # Importing messagebox for rasing di
 from datetime import datetime, timedelta    # Importing datetime to manipulate time related variables and getting today's maintenance date
 import numpy as np                          # Importing Numpy for numpy array operations.
 
+flag = ""
+workbook1 = ""
+
 # Always use --hidden-import win32timezone or import it in your file when using datetime comparisions or using datetime implicitly in any condition or else 
 # the module will work fine individually by not in an exe.
 
@@ -390,7 +393,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 if not object.startswith("__"):
                     del object
 
-            return "Successful"
+            global flag; flag = "Successful"
         
         if(len(circle_mail_not_found)):
             messagebox.showwarning("    Mails Drafted",f"Change Responsible Mails have been drafted except for below circles:\n{', '.join(circle_mail_not_found)}")
@@ -400,7 +403,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             for object in objects:
                 if not object.startswith("__"):
                     del object
-            return "Unsuccessful"
+            global flag; flag = "Unsuccessful"
 
         
     except Exception as error:
@@ -413,7 +416,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
 
 # Main Driver Method(Function)
 def circle_reply_task(sender, workbook):
@@ -478,7 +481,7 @@ def circle_reply_task(sender, workbook):
                 
                 #print("Function called")
                 # Calling the Method (function) for replying the mail.
-                flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
+                temp_flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
                 #print(flag)
                 # Deleting all the variables before returning the value for "Successful"
                 # dir() gives the list of local variables.
@@ -487,7 +490,7 @@ def circle_reply_task(sender, workbook):
                     if not object.startswith("__"):
                         del object
 
-                return flag
+                return temp_flag
     
     except CustomException:
         # Deleting all the variables before returning the value for "Unsuccessful"
@@ -496,7 +499,7 @@ def circle_reply_task(sender, workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
 
     except ValueError as error:
         import traceback
@@ -507,7 +510,7 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     except RecursionError:
         messagebox.showinfo("   Recursion Error","The Program is stuck inside an Infinite loop!")
@@ -519,7 +522,7 @@ def circle_reply_task(sender, workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     except RuntimeError as error:
         import traceback
@@ -530,7 +533,7 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     except Exception as error:
         import traceback
@@ -541,6 +544,20 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
+    
+    finally:
+        import gc
+        
+        excel = win32.Dispatch("Excel.Application")
+        
+        if(len(workbook1) > 0):
+            wb = excel.Workbooks.Open(workbook1)
+            wb.Close()
+
+        excel.Application.Quit()
+
+        gc.collect()
+        return flag
 
 # circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")

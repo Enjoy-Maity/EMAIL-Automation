@@ -4,6 +4,9 @@ import pandas as pd                         # Importing Pandas to manipulate the
 import win32com.client as win32             # Importing the win32com.client module to create Microsoft Office Suite COM object for sending mails.
 from tkinter import messagebox              # Importing Messagebox from tkinter for displaying messages.
 
+flag = ""
+workbook1 = ""
+
 # Creating the Custom Exception Class for raising and handling custom Exceptions that are not defined by-default in the system.
 class TomorrowDataNotFound(Exception):
     def __init__(self,msg):
@@ -59,6 +62,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         #user=subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
 
+        global workbook1;workbook1 = workbook
         # Reading the Worksheet in pandas.
         wb               = pd.ExcelFile(workbook)
         wb_sheets        = wb.sheet_names
@@ -229,7 +233,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
         
-        return "Successful"
+        global flag; flag = "Successful"
 
    
     # Exception Handling in case File not found, in our case the workbook path is illegal.
@@ -243,7 +247,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     # Handling the Exception when the file that's required for the task is opened in background.
     except PermissionError as e:
@@ -258,7 +262,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
 
     # Exception for handling Value error, in our case when the relevant Sheet is missing the workbook.
     except ValueError:
@@ -271,7 +275,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag;flag =  "Unsuccessful"
 
     # Custom Exception for handling Date Error, in our case Wrong dates other than today's maintenance date present in our data.
     except TomorrowDataNotFound as error:
@@ -283,7 +287,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
                 
-        return "Unsuccessful"
+        global flag;flag = "Unsuccessful"
     
     except Exception as error:
         import traceback
@@ -295,6 +299,20 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
                 
-        return "Unsuccessful"
+        global flag;flag = "Unsuccessful"
+    
+    finally:
+        import gc
+
+        excel = win32.Dispatch("Excel.Application")
+
+        if(len(workbook1) > 0):
+            wb = excel.Workbooks.Open(workbook1)
+            wb.Close()
+
+        excel.Application.Quit()
+        gc.collect()
+        
+        return flag
     
 #paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx","","")

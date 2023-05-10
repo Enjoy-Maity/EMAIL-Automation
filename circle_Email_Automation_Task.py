@@ -5,6 +5,10 @@ import win32com.client as win32             # Importing the win32com.client modu
 from tkinter import *                       # Importing all the classes from tkinter GUI Module of python.
 from tkinter import messagebox              # Importing Messagebox from tkinter for displaying messages.
 
+
+flag  = ""
+workbook1 = ""
+
 # Creating the Custom Exception class inheriting the base Exception Class defined in the defaul python libraries, for raising and handling 
 # custom Exceptions
 class CustomException(Exception):
@@ -60,6 +64,8 @@ def fetch_details(sender,workbook):
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
 
         # Checking if any path for the workbook is selected or not.
+        global workbook1;workbook1 = workbook
+        
         if (len(workbook) == 0):
             # Raising 
             raise CustomException ("Please Browse for the Excel File to continue")
@@ -110,7 +116,7 @@ def fetch_details(sender,workbook):
                     if not object.startswith("__"):
                         del object
                 
-                return "Unsuccessful"
+                flag = "Unsuccessful"
 
             else:
                 # Here we are finding out the rows with Execution date other than today's maintenance date.
@@ -211,7 +217,7 @@ def fetch_details(sender,workbook):
                                 if not object.startswith("__"):
                                     del object
 
-                            return "Unsuccessful"
+                            flag = "Unsuccessful"
                     
                     daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
                     
@@ -323,7 +329,7 @@ def fetch_details(sender,workbook):
                         if not object.startswith("__"):
                             del object
 
-                    return "Successful"
+                    flag = "Successful"
     
     # Handling Custom Exceptions which are raised in the above try section.
     except CustomException as error:
@@ -332,7 +338,7 @@ def fetch_details(sender,workbook):
             if not object.startswith("__"):
                 del object
         messagebox.showerror("  Data can't be found",error)
-        return "Unsuccessful"
+        flag = "Unsuccessful"
     
     # Handling the AttributeError Exception.
     except AttributeError as e:
@@ -341,7 +347,7 @@ def fetch_details(sender,workbook):
             if not object.startswith("__"):
                 del object
         messagebox.showerror("  Heading missing!",f"Kindly Check the below Heading in Planning Sheet\n{e}")
-        return "Unsuccessful"
+        flag = "Unsuccessful"
     
     # Handling the Exception when the file that's required for the task is opened in background.
     except PermissionError as e:
@@ -353,7 +359,7 @@ def fetch_details(sender,workbook):
             if not object.startswith("__"):
                 del object
         messagebox.showerror("    Permission Error!",f"Kindly Close the selected {e} if opened in Excel!")
-        return "Unsuccessful"
+        flag = "Unsuccessful"
 
     # Handling other exceptions that are not handled.
     except Exception as e:
@@ -365,6 +371,20 @@ def fetch_details(sender,workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        return "Unsuccessful"
+        flag = "Unsuccessful"
+    
+    finally:
+        import gc
+        
+        excel = win32.Dispatch("Excel.Application")
+        
+        if(len(workbook1) > 0):
+            excel_workbook = excel.Workbooks.Open(workbook1)
+            excel_workbook.Close()
+        
+        excel.Application.Quit()
+        
+        gc.collect()
+        return flag
     
 #fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")

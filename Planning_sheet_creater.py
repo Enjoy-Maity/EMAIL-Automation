@@ -5,6 +5,9 @@ from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing 
 from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
 from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in planning sheet.
 
+flag = ""
+workbook1 = ""
+
 # Creating Custom Exception inheriting base default Exception class for raising, handling and custom exceptions.
 class CustomException(Exception):
     def __init__(self,title,message):
@@ -177,6 +180,8 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
                                             "Inter-domain KPI status",
                                             "MOP View Status"]
             
+            global workbook1;workbook1 = planning_workbook
+
             # Creating the dataframe for daily_planning_sheet to write into the planning sheet of the planning workbook.
             daily_planning_sheet = pd.DataFrame(columns= columns_for_planning_sheet)
             
@@ -314,5 +319,18 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
                 del object
 
         return "Unsuccessful"
+
+    finally:
+        import gc
+        import win32com.client as win32
+
+        excel = win32.Dispatch("Excel.Application")
+        if(len(workbook1) > 0):
+            wb = excel.Workbooks.Open(workbook1)
+            wb.Close()
+            
+        excel.Application.Quit()
+        gc.collect()
+        return flag
 
 #planning_sheet_creater(r"C:/Users/emaienj/OneDrive - Ericsson/Documents/Report.csv",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx","Enjoy Maity")

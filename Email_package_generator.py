@@ -1,5 +1,4 @@
 import pandas as pd                                                 # Importing pandas with alias pd for reading the excel sheet and manipulating it freely.
-import numpy as np
 from tkinter import messagebox                                      # Importing Messagebox from tkinter to display messages.
 from openpyxl import load_workbook                                  # Importing load_workbook class from the openpyxl to load existing excel workbook.
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing classes from openpyxl to style the excel workbooks.
@@ -7,6 +6,9 @@ from openpyxl import Workbook                                       # Importing 
 from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
 from datetime import datetime, timedelta                            # Importing the datetime and timedelta from datetime module, to filter out the excel sheet basd on today's maintenance date.
 from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in email-package
+
+flag = ""
+workbook1 = ""
 
 # Creating classes for custom made exceptions inheriting the default Exception class for raising and handling custom raised exceptions.
 class CustomException(Exception):
@@ -122,6 +124,7 @@ def validation_adder(workbook,worksheet):
 # Creating the main driver Method(Function) 
 def email_package_sheet_creater(workbook):
     try:
+        workbook1 = workbook
         # Checking if the workboook is not selected.
         if (len(workbook) == 0):
             raise CustomException(" File Not Selected!","Kindly select the MPBN Planning Workbook for Email-Package Creation!")
@@ -130,13 +133,13 @@ def email_package_sheet_creater(workbook):
         wb = pd.ExcelFile(workbook)
         sheets = wb.sheet_names
 
-        flag   = 0
+        temp_flag   = 0
         for sheet in sheets:
             if(sheet == "Planning Sheet"):
-                flag = 1
+                temp_flag = 1
                 break
 
-        if (flag == 0):
+        if (temp_flag == 0):
             raise CustomException(" Planning Sheet Absent!","Kindly check the selected workbook for 'Planning Sheet' worksheet!")
 
         daily_plan_sheet  = pd.read_excel(wb,"Planning Sheet")
@@ -268,7 +271,7 @@ def email_package_sheet_creater(workbook):
                     if not object.startswith("__"):
                         del object
                 
-                return 'Unsuccessful'
+                flag = 'Unsuccessful'
             
             if (len(circle_not_proper) > 0):
                 messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
@@ -279,7 +282,7 @@ def email_package_sheet_creater(workbook):
                     if not object.startswith("__"):
                         del object
 
-                return 'Unsuccessful'
+                flag = 'Unsuccessful'
             
             
             # Writing into the Email-Package Sheet
@@ -322,15 +325,14 @@ def email_package_sheet_creater(workbook):
                 counter = 0
 
                 # Creating temp variables to hold the temporary data until that temporary data is written onto the result dataframe.
-                """
-                Change responsible	(K)
-                Final Status		(Q)
-                Reason For Rollback / Cancel(R)
-                Inter-domain Name	(AF)
-                Second Level Validation Status(AG)	
-                Inter-domain KPI status	(AH)
-                MOP View Status		(AI)
-                """
+                # Change responsible	(K)
+                # Final Status		(Q)
+                # Reason For Rollback / Cancel(R)
+                # Inter-domain Name	(AF)
+                # Second Level Validation Status(AG)	
+                # Inter-domain KPI status	(AH)
+                # MOP View Status		(AI)
+                
                 execution_date_temp                                     = daily_plan_sheet.iloc[0]['Execution Date']
                 cr_no_temp                                              = cr
                 maintenance_window_temp                                 =  ''
@@ -971,7 +973,7 @@ def email_package_sheet_creater(workbook):
                     del object
             
             # Returning Successful status
-            return "Successful"
+            flag = "Successful"
     
     # Handling Exceptions
     except CustomException:
@@ -981,7 +983,7 @@ def email_package_sheet_creater(workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        flag = "Unsuccessful"
 
     except PermissionError as e:
         e = str(e).split(":")
@@ -995,7 +997,7 @@ def email_package_sheet_creater(workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        flag = "Unsuccessful"
     
     except Exception as error:
         import traceback
@@ -1007,6 +1009,21 @@ def email_package_sheet_creater(workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        flag = "Unsuccessful"
+    
+    finally:
+        import gc
+        import win32com.client as win32
+
+        excel = win32.Dispatch("Excel.Application")
+        
+        if(len(workbook1) > 0):
+            excel_workbook = excel.Workbooks.Open(workbook1)
+            excel_workbook.Close()
+        
+        excel.Application.Quit()
+        
+        gc.collect()
+        return flag
 
 # email_package_sheet_creater(r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")

@@ -5,11 +5,17 @@ from openpyxl import Workbook                                       # Importing 
 from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
 import pandas as pd                                                 # Importing Pandas to manipulate the data from the excel sheet.
 from datetime import datetime,timedelta                             # Importing datetime and timedelta to get today's maintenance date based on system's current date and time settings.
-from tkinter import *                                               # Importing all the classes from tkinter GUI Module of python.
+#from tkinter import *                                               # Importing all the classes from tkinter GUI Module of python.
 from tkinter import messagebox                                      # Importing Messagebox to invoke messages where required.
 from pathlib import Path                                            # Importing Path from pathlib to check the existence of a file.
 from threading import Thread                                        # Importing Thread for creation of threads
 import numpy as np                                                  # Importing numpy for operations on numpy arrays obtained from pandas.
+import gc
+
+flag = ""
+workbook1 = ""
+workbook2 = ""
+workbook3 = ""
 
 # # Creating class for Threads with returning value.
 # class CustomThread(Thread):
@@ -111,6 +117,7 @@ def p_one_p_three_appender(sender,workbook):
             file_path.remove(file_path[-1])
             file_path = '/'.join(file_path)
             p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
+            global workbook2; workbook2 = p1_workbook_file
             p1_sheet_name = 'MPBN Activity List'
 
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
@@ -193,7 +200,7 @@ def p_one_p_three_appender(sender,workbook):
                     if not object.startswith("__"):
                         del object
             
-            return 'Successful'
+            global flag; flag = 'Successful'
         
             
                 
@@ -204,6 +211,7 @@ def p_one_p_three_appender(sender,workbook):
             file_path.remove(file_path[-1])
             file_path = "/".join(file_path)
             p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
+            global workbook3; workbook3 = p3_workbook_file
             p3_sheet_name = 'MPBN Activity List'
 
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
@@ -285,7 +293,7 @@ def p_one_p_three_appender(sender,workbook):
                     if not object.startswith("__"):
                         del object
             
-            return 'Successful'
+            global flag; flag = 'Successful'
 
     else:
         # Message showing that the user who is running the application is not a technical validator.
@@ -296,7 +304,7 @@ def p_one_p_three_appender(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
 
 
 #####################################################################
@@ -340,12 +348,13 @@ def styling(workbook,sheetname):
     # Styling all the occupied cells in the sheet, by adding border to the cells, aligning the text in the center
     
     for row in ws:
-        for cell in row:
+        for cell in row:    #type: ignore
             cell.alignment = Alignment(horizontal = 'center',vertical = 'center',wrap_text=False)
             cell.border = Border(top = Side(border_style = 'medium',color = '000000'),bottom = Side(border_style = 'medium',color = '000000'),left = Side(border_style = 'medium',color = '000000'),right = Side(border_style = 'medium',color = '000000'))
 
     # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
+    wb.close()
 
     # Deleting all the variables before returning to main method.
     objects = dir()
@@ -422,7 +431,7 @@ def validation_adder(workbook,worksheet):
 #####################################################################
 
 # Driver Method(Function)
-def paco_cscore(sender,workbook):
+def paco_cscore(sender,workbook):   #type:ignore
     try:
         #user = subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
 
@@ -430,7 +439,7 @@ def paco_cscore(sender,workbook):
 
         flag_for_planning_sheet = 0
         flag_for_mail_id        = 0
-
+        global workbook1; workbook1 = workbook
         wb = load_workbook(workbook)
         sheets = wb.sheetnames
         for sheet in sheets:
@@ -562,13 +571,13 @@ def paco_cscore(sender,workbook):
 
             if (len(input_error) > 0):
                 messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
-                return 'Unsuccessful'
+                global flag; flag = 'Unsuccessful'
             if (len(circle_not_proper) > 0):
                 messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
-                return 'Unsuccessful'
+                global flag; flag = 'Unsuccessful'
             if (len(change_responsible_not_proper) > 0):
                 messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
-                return 'Unsuccessful'
+                global flag; flag = 'Unsuccessful'
             else:
                 thread = Thread(target = sheet_cleaner,args = (workbook,))
                 thread.start()
@@ -819,7 +828,7 @@ def paco_cscore(sender,workbook):
                             del object
                     
                     # Calling the Method(Function) that can write into the Automation tracker sheet.
-                    flag = p_one_p_three_appender(sender,workbook)
+                    global flag;flag = p_one_p_three_appender(sender,workbook)
                     return flag
                 
                 else:
@@ -833,7 +842,7 @@ def paco_cscore(sender,workbook):
                         if not object.startswith("__"):
                             del object
                     
-                    return "Unsuccessful"
+                    global flag; flag = "Unsuccessful"
 
 
     # Exception for condition when Today's maintenance date is not present.
@@ -846,7 +855,7 @@ def paco_cscore(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     # Handling Custom Exception
     except CustomException:
@@ -856,7 +865,7 @@ def paco_cscore(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     #Handling Key Error 
     except KeyError as e:
@@ -868,7 +877,7 @@ def paco_cscore(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     #Handling Attribute Error 
     except AttributeError as e:
@@ -880,7 +889,7 @@ def paco_cscore(sender,workbook):
             if not object.startswith("__"):
                 del object
         
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -895,7 +904,7 @@ def paco_cscore(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
 
     # Handling any other Exception that has not been handled.
     except Exception as e:
@@ -908,6 +917,28 @@ def paco_cscore(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        global flag; flag = "Unsuccessful"
+    
+    finally:
+        import win32com.client as win32
+
+        excel = win32.Dispatch("Excel.Application")
+        
+        if (len(workbook1) > 0):
+            wb = excel.Workbooks.Open(workbook1)
+            wb.Close()
+        
+        if (len(workbook2) > 0):
+            wb = excel.Workbooks.Open(workbook2)
+            wb.Close()
+
+        if (len(workbook3) > 0):
+            wb = excel.Workbooks.Open(workbook3)
+            wb.Close()
+
+        excel.Application.Quit()
+        
+        gc.collect()
+        return flag
 
 #paco_cscore("Manoj Kumar",r"C:/Daily/MPBN Daily Planning Sheet.xlsx")
