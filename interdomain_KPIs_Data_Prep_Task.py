@@ -200,7 +200,7 @@ def p_one_p_three_appender(sender,workbook):
                     if not object.startswith("__"):
                         del object
             
-            global flag; flag = 'Successful'
+            flag = 'Successful'
         
             
                 
@@ -293,7 +293,7 @@ def p_one_p_three_appender(sender,workbook):
                     if not object.startswith("__"):
                         del object
             
-            global flag; flag = 'Successful'
+            flag = 'Successful'
 
     else:
         # Message showing that the user who is running the application is not a technical validator.
@@ -304,7 +304,7 @@ def p_one_p_three_appender(sender,workbook):
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
 
 
 #####################################################################
@@ -571,13 +571,13 @@ def paco_cscore(sender,workbook):   #type:ignore
 
             if (len(input_error) > 0):
                 messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
-                global flag; flag = 'Unsuccessful'
+                flag = 'Unsuccessful'
             if (len(circle_not_proper) > 0):
                 messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
-                global flag; flag = 'Unsuccessful'
+                flag = 'Unsuccessful'
             if (len(change_responsible_not_proper) > 0):
                 messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
-                global flag; flag = 'Unsuccessful'
+                flag = 'Unsuccessful'
             else:
                 thread = Thread(target = sheet_cleaner,args = (workbook,))
                 thread.start()
@@ -828,7 +828,7 @@ def paco_cscore(sender,workbook):   #type:ignore
                             del object
                     
                     # Calling the Method(Function) that can write into the Automation tracker sheet.
-                    global flag;flag = p_one_p_three_appender(sender,workbook)
+                    flag = p_one_p_three_appender(sender,workbook)
                     return flag
                 
                 else:
@@ -842,7 +842,7 @@ def paco_cscore(sender,workbook):   #type:ignore
                         if not object.startswith("__"):
                             del object
                     
-                    global flag; flag = "Unsuccessful"
+                    flag = "Unsuccessful"
 
 
     # Exception for condition when Today's maintenance date is not present.
@@ -855,7 +855,7 @@ def paco_cscore(sender,workbook):   #type:ignore
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     # Handling Custom Exception
     except CustomException:
@@ -865,7 +865,7 @@ def paco_cscore(sender,workbook):   #type:ignore
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     #Handling Key Error 
     except KeyError as e:
@@ -877,7 +877,7 @@ def paco_cscore(sender,workbook):   #type:ignore
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     #Handling Attribute Error 
     except AttributeError as e:
@@ -889,7 +889,7 @@ def paco_cscore(sender,workbook):   #type:ignore
             if not object.startswith("__"):
                 del object
         
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -904,7 +904,7 @@ def paco_cscore(sender,workbook):   #type:ignore
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
 
     # Handling any other Exception that has not been handled.
     except Exception as e:
@@ -917,7 +917,7 @@ def paco_cscore(sender,workbook):   #type:ignore
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     finally:
         import win32com.client as win32

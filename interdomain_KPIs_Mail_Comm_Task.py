@@ -233,7 +233,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
         
-        global flag; flag = "Successful"
+        flag = "Successful"
 
    
     # Exception Handling in case File not found, in our case the workbook path is illegal.
@@ -247,7 +247,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     # Handling the Exception when the file that's required for the task is opened in background.
     except PermissionError as e:
@@ -262,7 +262,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
 
     # Exception for handling Value error, in our case when the relevant Sheet is missing the workbook.
     except ValueError:
@@ -275,7 +275,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
 
-        global flag;flag =  "Unsuccessful"
+        flag =  "Unsuccessful"
 
     # Custom Exception for handling Date Error, in our case Wrong dates other than today's maintenance date present in our data.
     except TomorrowDataNotFound as error:
@@ -287,7 +287,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
                 
-        global flag;flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     except Exception as error:
         import traceback
@@ -299,7 +299,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
                 
-        global flag;flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     finally:
         import gc

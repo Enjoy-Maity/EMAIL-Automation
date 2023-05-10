@@ -393,7 +393,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 if not object.startswith("__"):
                     del object
 
-            global flag; flag = "Successful"
+            flag = "Successful"
         
         if(len(circle_mail_not_found)):
             messagebox.showwarning("    Mails Drafted",f"Change Responsible Mails have been drafted except for below circles:\n{', '.join(circle_mail_not_found)}")
@@ -403,7 +403,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             for object in objects:
                 if not object.startswith("__"):
                     del object
-            global flag; flag = "Unsuccessful"
+            flag = "Unsuccessful"
 
         
     except Exception as error:
@@ -416,7 +416,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
 
 # Main Driver Method(Function)
 def circle_reply_task(sender, workbook):
@@ -499,7 +499,7 @@ def circle_reply_task(sender, workbook):
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
 
     except ValueError as error:
         import traceback
@@ -510,7 +510,7 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     except RecursionError:
         messagebox.showinfo("   Recursion Error","The Program is stuck inside an Infinite loop!")
@@ -522,7 +522,7 @@ def circle_reply_task(sender, workbook):
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     except RuntimeError as error:
         import traceback
@@ -533,7 +533,7 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     except Exception as error:
         import traceback
@@ -544,7 +544,7 @@ def circle_reply_task(sender, workbook):
         for object in objects:
             if not object.startswith("__"):
                 del object
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     finally:
         import gc

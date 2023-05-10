@@ -141,7 +141,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
                         if not object.startswith("__"):
                             del object
                     
-                    return "Unsuccessful"
+                    flag = "Unsuccessful"
             
             # Columns for the planning sheet in the planning workbook.
             columns_for_planning_sheet =    ["Execution Date",
@@ -283,7 +283,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
                 if not object.startswith("__"):
                     del object
 
-            return "Successful"
+            flag = "Successful"
 
     except CustomException:
         # Deleting all the variables before returning the value for "Unsuccessful"
@@ -292,7 +292,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        flag = "Unsuccessful"
     
     except PermissionError as e:
         e = str(e).split(":")
@@ -306,7 +306,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        flag = "Unsuccessful"
 
     except Exception as error:
         import traceback
@@ -318,7 +318,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             if not object.startswith("__"):
                 del object
 
-        return "Unsuccessful"
+        flag = "Unsuccessful"
 
     finally:
         import gc
@@ -328,7 +328,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
         if(len(workbook1) > 0):
             wb = excel.Workbooks.Open(workbook1)
             wb.Close()
-            
+
         excel.Application.Quit()
         gc.collect()
         return flag

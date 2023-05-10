@@ -229,7 +229,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 if not object.startswith("__"):
                     del object
 
-            global flag; flag = 'Unsuccessful'
+            flag = 'Unsuccessful'
         
         else:
         # Reading relevant sheet.
@@ -245,7 +245,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                     if not object.startswith("__"):
                         del object
 
-                global flag; flag = 'Unsuccessful'
+                flag = 'Unsuccessful'
             
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
             total_no_of_resource = 16           
@@ -506,7 +506,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 if not object.startswith("__"):
                     del object
 
-            global flag; flag = 'Successful'
+            flag = 'Successful'
 
     # Handling Exceptions 
     except CustomException:
@@ -516,7 +516,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     except Exception as e:
         import traceback
@@ -528,7 +528,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             if not object.startswith("__"):
                 del object
 
-        global flag; flag = "Unsuccessful"
+        flag = "Unsuccessful"
     
     finally:
         import gc
