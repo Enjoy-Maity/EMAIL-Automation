@@ -5,7 +5,7 @@ import win32com.client as win32             # Importing the win32com.client modu
 from tkinter import messagebox              # Importing Messagebox from tkinter for displaying messages.
 
 flag = ""
-workbook1 = ""
+# workbook1 = ""
 
 # Creating the Custom Exception Class for raising and handling custom Exceptions that are not defined by-default in the system.
 class TomorrowDataNotFound(Exception):
@@ -62,7 +62,7 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         #user=subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
 
-        global workbook1;workbook1 = workbook
+        # global workbook1;workbook1 = workbook
         # Reading the Worksheet in pandas.
         wb               = pd.ExcelFile(workbook)
         wb_sheets        = wb.sheet_names
@@ -70,17 +70,18 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         flag_for_planning_sheet = 0
         flag_for_mail_id        = 0
 
-        for sheet in wb_sheets:
-            if(sheet == 'Planning Sheet'):
-                flag_for_planning_sheet = 1
+        if('Planning Sheet' in wb_sheets):
+            flag_for_planning_sheet = 1
             
-            if(sheet == 'Mail Id'):
-                flag_for_mail_id        = 1
+        if('Mail Id' in wb_sheets):
+            flag_for_mail_id        = 1
                 
         if(flag_for_mail_id == 0):
+            del wb
             raise TomorrowDataNotFound("Mail Id sheet not Found in the Workbook, Kindly Check!")
         
         if(flag_for_planning_sheet == 0):
+            del wb
             raise TomorrowDataNotFound("Planning sheet not Found in the Workbook, Kindly Check!")
         
         daily_plan_sheet = pd.read_excel(workbook,'Planning Sheet')
@@ -104,11 +105,17 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         
 
         if (len(daily_plan_sheet) == 0):
+                del daily_plan_sheet
+                del Email_Id
+                del wb
                 # Raising Custom Exception defined through a class inheriting the base Exception class (defined in the default Python lib modules),
                 # for the case when there's no data pertaining today's maintenance date.
                 raise TomorrowDataNotFound("Data for tomorrow's date is not present in the MPBN Daily Planning Sheet, kindly check!")
         
         elif (len(input_error) > 0):
+                del daily_plan_sheet
+                del Email_Id
+                del wb
                 # Raising Custom Exception defined through a class inheriting the base Exception class (defined in the default Python lib modules) for 
                 # illegal date, other than today's maintenance date present in our dataframe.
                 raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join(input_error)}")    
@@ -223,6 +230,19 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 
                 # Message showing that the respective selected interdomain mail has been sent.
                 messagebox.showinfo("     Mail Sent Info",f"Mail sent for {i} Interdomain KPIs!")
+                if(len(df) > 0):
+                    del df
+                
+                if(len(df2) > 0):
+                    del df2
+                
+                if(len(df2) > 0):
+                    del df2
+                
+                if(len(df2) > 0):
+                    del df2
+
+                del dataframe
             
         # Message showing that all the interdomain mails have been successfuly sent.
         messagebox.showinfo(" Mails Sent Successfully","Mails for all Interdomain Kpis have been sent!")
@@ -233,6 +253,10 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
             if not object.startswith("__"):
                 del object
         
+        del daily_plan_sheet
+        del Email_Id
+        del wb
+
         flag = "Successful"
 
    
@@ -304,13 +328,13 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
     finally:
         import gc
 
-        excel = win32.Dispatch("Excel.Application")
+        # excel = win32.Dispatch("Excel.Application")
 
-        if(len(workbook1) > 0):
-            wb = excel.Workbooks.Open(workbook1)
-            wb.Close()
+        # if(len(workbook1) > 0):
+        #     wb = excel.Workbooks.Open(workbook1)
+        #     wb.Close()
 
-        excel.Application.Quit()
+        # excel.Application.Quit()
         gc.collect()
         
         return flag

@@ -261,7 +261,7 @@ class App(tk.Tk):
                                               "Kaushal Kumar                        ",
                                               "Aswini Kumar Behera                  ",
                                               "Amit Tandon                          ",
-                                              "Ashwini Kumar I                      ",
+                                              "Ashwani Kumar I                      ",
                                               "Kartar Singh                         ",
                                               "Enjoy Maity                          ",
                                               "No                                   "]

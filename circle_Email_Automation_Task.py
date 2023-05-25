@@ -4,7 +4,7 @@ import pandas as pd                         # Importing Pandas to manipulate the
 import win32com.client as win32             # Importing the win32com.client module to create Microsoft Office Suite COM object for sending mails.
 from tkinter import *                       # Importing all the classes from tkinter GUI Module of python.
 from tkinter import messagebox              # Importing Messagebox from tkinter for displaying messages.
-
+from Custom_Warning import CustomWarning
 
 flag  = ""
 workbook1 = ""
@@ -78,17 +78,19 @@ def fetch_details(sender,workbook):
             flag_for_daily_planning_sheet = 0
             flag_for_mail_id              = 0
             
-            for sheet in excel_sheets:
-                if (sheet == 'Planning Sheet'):
-                    flag_for_daily_planning_sheet = 1
-                
-                if (sheet == 'Mail Id'):
-                    flag_for_mail_id = 1
+            
+            if ('Planning Sheet' in excel_sheets):
+                flag_for_daily_planning_sheet = 1
+            
+            if ('Mail Id' in excel_sheets):
+                flag_for_mail_id = 1
 
             if (flag_for_daily_planning_sheet == 0):
+                del excel
                 raise CustomException("'Planning Sheet' worksheet is missing, Kindly Check!")
             
             if(flag_for_mail_id == 0):
+                del excel
                 raise CustomException("'Mail Id' worksheet is missing, Kindly Check!")
             
             daily_plan_sheet=pd.read_excel(excel,'Planning Sheet')
@@ -111,6 +113,9 @@ def fetch_details(sender,workbook):
                 '''
                 messagebox.showerror(" Date Format Error!","Please check the Execution Date format in Planning Sheet!")
                 
+                del daily_plan_sheet
+                del excel
+                
                 objects = dir()
                 for object in objects:
                     if not object.startswith("__"):
@@ -129,10 +134,14 @@ def fetch_details(sender,workbook):
 
                 # Checking if there's no data for today's maintenance date in the sheet.
                 if len(daily_plan_sheet)==0:
+                    del daily_plan_sheet
+                    del excel
                     raise CustomException(f"Today's Maintenance Data not Found in the {workbook}, kindly check!")
                 
                 # Checking if we do have data for Execution Date other than today's maintenance date.
                 elif (len(input_error) > 0):
+                    del daily_plan_sheet
+                    del excel
                     raise CustomException(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join(input_error)}")
                 
                 else:
@@ -152,6 +161,10 @@ def fetch_details(sender,workbook):
                 
                     
                     if (len(daily_plan_sheet) == 0):
+                        del Email_ID
+                        del daily_plan_sheet
+                        del excel
+                        
                         raise CustomException('Kindly Enter the Planning Status input in uploaded sheet!')
                     
                     # Creating an empty list to grab the S.NO. of all the rows with Input errors and an empty dataframe to filter out only relevant data from the dataframe.
@@ -182,6 +195,11 @@ def fetch_details(sender,workbook):
                     '''
                     if (len(remainder) > 0):
                         remainder.sort()
+                        
+                        del Email_ID
+                        del daily_plan_sheet
+                        del excel
+                        
                         raise CustomException(f"The mails for these circles will not be sent as there's no mail IDs present in the Mail ID sheet\n{', '.join(remainder)}\nKindly Check! and then retry!")
                     
                     
@@ -210,128 +228,155 @@ def fetch_details(sender,workbook):
                     input_error.sort()
 
                     if len(input_error)>0:
-                            messagebox.showwarning("  Input Error Detected",f"Input Error! Kindly Check CR NO, Activity title and Circle fields in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
+                            # messagebox.showwarning("  Input Error Detected",f"Input Error! Kindly Check CR NO, Activity title and Circle fields in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
 
-                            objects = dir()
-                            for object in objects:
-                                if not object.startswith("__"):
-                                    del object
+                            if(len(result_df) > 0):
+                                del result_df
+                            
+                            del Email_ID
+                            del daily_plan_sheet
+                            del excel
 
                             flag = "Unsuccessful"
-                    
-                    daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
-                    
-                    del daily_plan_sheet
-                    new_result_df = pd.DataFrame()
+                            raise CustomWarning("  Input Error Detected",f"Input Error! Kindly Check CR NO, Activity title and Circle fields in Planning Sheet for S.NO : {', '.join(str(num) for num in input_error)}")
+                            
+                    else:
+                        daily_plan_sheet_unique_cr = result_df['CR NO'].value_counts().index.to_list()
+                        
+                        del daily_plan_sheet
+                        new_result_df = pd.DataFrame()
 
-                    for index, cr_no in enumerate(daily_plan_sheet_unique_cr):
-                        counter = result_df['CR NO'].value_counts().to_list()[index]
-                        temp_df = pd.DataFrame()
-                        temp_df = result_df[result_df['CR NO'] == cr_no]
-                        if (counter > 1):
-                            if (len(temp_df['Circle'].unique()) > 1):
-                                for i in range(0,len(temp_df)):
-                                    try:
-                                        input_error.append(temp_df.iloc[i]['S.NO'])
+                        for index, cr_no in enumerate(daily_plan_sheet_unique_cr):
+                            counter = result_df['CR NO'].value_counts().to_list()[index]
+                            temp_df = pd.DataFrame()
+                            temp_df = result_df[result_df['CR NO'] == cr_no]
+                            if (counter > 1):
+                                if (len(temp_df['Circle'].unique()) > 1):
+                                    for i in range(0,len(temp_df)):
+                                        try:
+                                            input_error.append(temp_df.iloc[i]['S.NO'])
+                                        
+                                        except TypeError as err:
+                                            del Email_ID
+                                            del result_df
+                                            del new_result_df
+                                            del temp_df
+                                            del excel
+                                            if (err.__contains__("'<' not supported between instances of 'str' and 'int'")):
+                                                messagebox.showerror("  S.NO error","Kindly Check all the S.NO. in the Planning Sheet, either ther's an empty S.NO. or a string is used as a S.NO.!")
+                                                flag = "Unsuccessful"
+                                            
+                                            else:
+                                                messagebox.showerror("  TypeError",err)
+                                                flag = "Unsuccessful"
+                                        
+                                        except Exception as err:
+                                            del Email_ID
+                                            del result_df
+                                            del new_result_df
+                                            del temp_df
+                                            del excel
+                                            messagebox.showerror("  Exception Occured!",err)
+                                            flag = "Unsuccessful"
+                                        
+                                        else: 
+                                            pass
+                                        
+                                        continue
                                     
-                                    except TypeError as err:
-                                        if (err.__contains__("'<' not supported between instances of 'str' and 'int'")):
-                                            messagebox.showerror("  S.NO error","Kindly Check all the S.NO. in the Planning Sheet, either ther's an empty S.NO. or a string is used as a S.NO.!")
-                                        else:
-                                            messagebox.showerror("  TypeError",err)
+                                if (len(temp_df['Circle'].unique()) == 1):
+                                    new_result_df = pd.concat([new_result_df, temp_df.iloc[0].to_frame().T],ignore_index = True)
+                            else:
+                                new_result_df = pd.concat([new_result_df,temp_df.iloc[0].to_frame().T],ignore_index = True)
+                            
+                            del temp_df
+                        
+                        daily_plan_sheet = new_result_df.copy(deep = True)
+                        
+                        del new_result_df
+                        del result_df
+                        
+                        for i in range(0,len(circles)):
+                            execution_date=[]       #  list for collecting execution date of each Cr
+                            circle=[]               #  list for collecting circle of each CR
+                            maintenance_window=[]   #  list for collecting the maintenance window of each CR
+                            cr_no=[]                #  list for collecting the CR No
+                            activity_title=[]       #  list for collecting the activity title each CR
+                            risk=[]                 #  list for collecting the risk level of each CR
+                            location=[]             #  list for collecting the location of each CR
+
+                            for j in range(0,len(daily_plan_sheet)):
+                                if (daily_plan_sheet.iloc[j]['Circle']==circles[i]): # Adding constraint to check for CRs for next date only
+                                    execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
+                                    maintenance_window.append(daily_plan_sheet.iloc[j]['Maintenance Window'])
+                                    cr_no.append(daily_plan_sheet.iloc[j]['CR NO'])
+                                    activity_title.append(daily_plan_sheet.iloc[j]['Activity Title'])
+                                    risk.append(daily_plan_sheet.iloc[j]['Risk'])
+                                    circle.append(daily_plan_sheet.iloc[j]['Circle'])
+                                    location.append(daily_plan_sheet.iloc[j]['Location'])
+
+                            dictionary_for_insertion={'Execution Date':execution_date, 'Maintenance Window':maintenance_window, 'CR NO':cr_no, 'Activity Title':activity_title, 'Risk':risk,'Location':location,'Circle':circle}
+                            dataframe=pd.DataFrame(dictionary_for_insertion)
+                            dataframe.reset_index(drop=True,inplace=True)
+                            dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
+                            dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = '%m/%d/%Y')
+                            dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%m/%d/%Y')
+
+                            # Taking the circle in the cir variable to avoid writing circles[i] again & again.
+                            cir=circles[i]
+
+                            # Creating the mail body and sending the circle mails.
+                            for i in range(0,len(Email_ID)):
+                                if (Email_ID.at[i,'Circle'] == cir):
+                                    row_to_fetch = i
+                                    to=Email_ID.iloc[row_to_fetch]['To Mail List']
+                                    cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
                                     
-                                    except Exception as err:
-                                        messagebox.showerror("  Exception Occured!",err)
-                                    
-                                    else: 
-                                        pass
-                                    
-                                    continue
-                                
-                            if (len(temp_df['Circle'].unique()) == 1):
-                                new_result_df = pd.concat([new_result_df, temp_df.iloc[0].to_frame().T],ignore_index = True)
-                        else:
-                            new_result_df = pd.concat([new_result_df,temp_df.iloc[0].to_frame().T],ignore_index = True)
-                    
-                    daily_plan_sheet = new_result_df.copy(deep = True)
-                    
-                    del new_result_df
-                    del result_df
-                    
-                    for i in range(0,len(circles)):
-                        execution_date=[]       #  list for collecting execution date of each Cr
-                        circle=[]               #  list for collecting circle of each CR
-                        maintenance_window=[]   #  list for collecting the maintenance window of each CR
-                        cr_no=[]                #  list for collecting the CR No
-                        activity_title=[]       #  list for collecting the activity title each CR
-                        risk=[]                 #  list for collecting the risk level of each CR
-                        location=[]             #  list for collecting the location of each CR
-
-                        for j in range(0,len(daily_plan_sheet)):
-                            if (daily_plan_sheet.iloc[j]['Circle']==circles[i]): # Adding constraint to check for CRs for next date only
-                                execution_date.append(daily_plan_sheet.iloc[j]['Execution Date'])
-                                maintenance_window.append(daily_plan_sheet.iloc[j]['Maintenance Window'])
-                                cr_no.append(daily_plan_sheet.iloc[j]['CR NO'])
-                                activity_title.append(daily_plan_sheet.iloc[j]['Activity Title'])
-                                risk.append(daily_plan_sheet.iloc[j]['Risk'])
-                                circle.append(daily_plan_sheet.iloc[j]['Circle'])
-                                location.append(daily_plan_sheet.iloc[j]['Location'])
-
-                        dictionary_for_insertion={'Execution Date':execution_date, 'Maintenance Window':maintenance_window, 'CR NO':cr_no, 'Activity Title':activity_title, 'Risk':risk,'Location':location,'Circle':circle}
-                        dataframe=pd.DataFrame(dictionary_for_insertion)
-                        dataframe.reset_index(drop=True,inplace=True)
-                        dataframe.fillna("NA",inplace=True) #adding inplace to replace nan or NaN with the string NA or else it won't replace the nan values
-                        dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = '%m/%d/%Y')
-                        dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime('%m/%d/%Y')
-
-                        # Taking the circle in the cir variable to avoid writing circles[i] again & again.
-                        cir=circles[i]
-
-                        # Creating the mail body and sending the circle mails.
-                        for i in range(0,len(Email_ID)):
-                            if (Email_ID.at[i,'Circle'] == cir):
-                                row_to_fetch = i
-                                to=Email_ID.iloc[row_to_fetch]['To Mail List']
-                                cc=Email_ID.iloc[row_to_fetch]['Copy Mail List']
-                                
-                                subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%d-%m-%Y')}"
-                                body="\
-                                    <html>\
-                                        <body>\
-                                            <div><p>Hi team,<br></p>\
-                                                <p>Please confirm below points so that we will approve CR’s.<br></p>\
-                                                <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>\
-                                                <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>\
-                                                <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA). Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.</p>\
-                                                <p>4)  Is redundancy working or all parameters ensured in shared plan for SAPC integration/reachability related activity on MPBN nodes (Yes/No, Applicable only in case of SAPC integration).<br><br></p>\
-                                            </div>\
-                                            <div>\
-                                                <p>{}</p>\
-                                            </div>\
-                                            <div>\
-                                                <p>Regards,<br>{}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.</p>\
+                                    subject=f"Connected End Nodes and their services on MPBN devices: {cir}_{tomorrow.strftime('%d-%m-%Y')}"
+                                    body="\
+                                        <html>\
+                                            <body>\
+                                                <div><p>Hi team,<br></p>\
+                                                    <p>Please confirm below points so that we will approve CR’s.<br></p>\
+                                                    <p>1)  End nodes and service details are required which are running on respective MPBN device (In case of changes on Core/STP/DRA/PACO/HLR connected MPBN nodes).</p>\
+                                                    <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR connected MPBN nodes.</p>\
+                                                    <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA). Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR conneted MPBN nodes.</p>\
+                                                    <p>4)  Is redundancy working or all parameters ensured in shared plan for SAPC integration/reachability related activity on MPBN nodes (Yes/No, Applicable only in case of SAPC integration).<br><br></p>\
                                                 </div>\
-                                        </body>\
-                                    </html>\
-                                    "
-                                # Formatting the dataframe's 'Execution Date' column to "dd-mm-YYYY" format.
-                                dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = "%m/%d/%Y")
-                                dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime("%d-%m-%Y")
-                                
-                                # Calling the Sendmail Method(Function) for sending circle emails.
-                                sendmail(dataframe,to,cc,body,subject,sender)
+                                                <div>\
+                                                    <p>{}</p>\
+                                                </div>\
+                                                <div>\
+                                                    <p>Regards,<br>{}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.</p>\
+                                                    </div>\
+                                            </body>\
+                                        </html>\
+                                        "
+                                    # Formatting the dataframe's 'Execution Date' column to "dd-mm-YYYY" format.
+                                    dataframe['Execution Date'] = pd.to_datetime(dataframe['Execution Date'],format = "%m/%d/%Y")
+                                    dataframe['Execution Date'] = dataframe['Execution Date'].dt.strftime("%d-%m-%Y")
+                                    
+                                    # Calling the Sendmail Method(Function) for sending circle emails.
+                                    sendmail(dataframe,to,cc,body,subject,sender)
 
-                    # Message Showing that the all the mails to all the present circles have been successfully sent.
-                    messagebox.showinfo("  Mail Sent Successfully!",f"All Mails for mentioned planned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
+                        # Message Showing that the all the mails to all the present circles have been successfully sent.
+                        messagebox.showinfo("  Mail Sent Successfully!",f"All Mails for mentioned planned {total_circles_in_planning_sheet} Circles in Daily Planning Sheet have been sent!")
 
-                    objects = dir()
-                    for object in objects:
-                        if not object.startswith("__"):
-                            del object
+                        del Email_ID
+                        del daily_plan_sheet
+                        del dataframe
+                        del excel
+                        objects = dir()
+                        for object in objects:
+                            if not object.startswith("__"):
+                                del object
 
-                    flag = "Successful"
+                        flag = "Successful"
     
     # Handling Custom Exceptions which are raised in the above try section.
+    except CustomWarning:
+        flag = "Unsuccessful"
+
     except CustomException as error:
         objects = dir()
         for object in objects:
@@ -376,13 +421,13 @@ def fetch_details(sender,workbook):
     finally:
         import gc
         
-        excel = win32.Dispatch("Excel.Application")
+        # excel = win32.Dispatch("Excel.Application")
         
-        if(len(workbook1) > 0):
-            excel_workbook = excel.Workbooks.Open(workbook1)
-            excel_workbook.Close()
+        # if(len(workbook1) > 0):
+        #     excel_workbook = excel.Workbooks.Open(workbook1)
+        #     excel_workbook.Close()
         
-        excel.Application.Quit()
+        # excel.Application.Quit()
         
         gc.collect()
         return flag

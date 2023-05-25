@@ -59,6 +59,8 @@ def styling(workbook,sheetname):
 
     #rows = ws.max_row
     wb.save(workbook)
+    wb.close()
+    del wb
 
     # Deleting all the variables before returning to main method.
     objects = dir()
@@ -102,6 +104,8 @@ def validation_adder(workbook,worksheet):
 
     # Saving the Workbook
     wb.save(workbook)
+    wb.close()
+    del wb
 
     # Deleting all the variables before returning to main method.
     objects = dir()
@@ -267,6 +271,7 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
             writer = pd.ExcelWriter(planning_workbook,engine = "openpyxl", mode = "a", if_sheet_exists = "replace")
             daily_planning_sheet.to_excel(writer,"Planning Sheet",index = False)    # writing daily_planning_sheet into the planning sheet.
             writer.close()
+            del writer
 
             # styling the worksheet.
             styling(planning_workbook,"Planning Sheet")
@@ -276,7 +281,9 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
 
             # Message shown after successful task running.
             messagebox.showinfo("   Sheet Creation Successful!","Tonight CRs Parameter Copied in MPBN Planning Sheet!")
-
+            del daily_planning_sheet
+            del report
+            
             # Deleting all the variables before returning the value for "Successful"
             objects = dir()
             for object in objects:
@@ -322,14 +329,14 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
 
     finally:
         import gc
-        import win32com.client as win32
+        # import win32com.client as win32
 
-        excel = win32.Dispatch("Excel.Application")
-        if(len(workbook1) > 0):
-            wb = excel.Workbooks.Open(workbook1)
-            wb.Close()
+        # excel = win32.Dispatch("Excel.Application")
+        # if(len(workbook1) > 0):
+        #     wb = excel.Workbooks.Open(workbook1)
+        #     wb.Close()
 
-        excel.Application.Quit()
+        # excel.Application.Quit()
         gc.collect()
         return flag
 

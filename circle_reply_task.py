@@ -5,7 +5,7 @@ from datetime import datetime, timedelta    # Importing datetime to manipulate t
 import numpy as np                          # Importing Numpy for numpy array operations.
 
 flag = ""
-workbook1 = ""
+# workbook1 = ""
 
 # Always use --hidden-import win32timezone or import it in your file when using datetime comparisions or using datetime implicitly in any condition or else 
 # the module will work fine individually by not in an exe.
@@ -119,7 +119,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         # Iterating through the unique circles for checking if the mails for the circle are found or not.
         for cir in unique_circles:
             # Making the subject for finding in the inbox
-            subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
+            subject_we_are_looking_for = f"Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
 
             # Creating a flag variable for searching the mail.
             flag_variable = 0
@@ -138,8 +138,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     # print(dt >= today)
 
                     if(dt >= today):
-                        # print(message.Subject.lower() == subject_we_are_looking_for.lower())
-                        if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                        # print(message.Subject.lower().__contains__(subject_we_are_looking_for.lower()))
+                        if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                             # print(f"\n\ntest:{cir}\n\n")
                             flag_variable = 1
                             break
@@ -168,8 +168,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                 dt = datetime(year,month,day,hour,minute)
                                 # print(dt >= today)
                                 if(dt >= today):
-                                    # print(message.Subject.lower() == subject_we_are_looking_for.lower())
-                                    if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                    # print(message.Subject.lower().__contains__(subject_we_are_looking_for.lower()))
+                                    if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                                         # print(f"\n\ntest:{cir}\n\n")
                                         flag_variable = 1
                                         break
@@ -204,7 +204,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                         dt = datetime(year,month,day,hour,minute)
                                         #print(dt >= today)
                                         if(dt >= today):
-                                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                            if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                                                 #print(f"test:{cir}")
                                                 flag_variable = 1
                                                 break
@@ -261,13 +261,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             # Iterating through the temp_df to attach to the to variable.
             for i in range(0,len(temp_df)):
                 to_list.append(temp_df.iloc[i]['Change Responsible'])
-            
-            # for i in to:
-            #     if(i.upper() == 'NAN'):
-            #         to.remove(i)
                
-            for reciepient in to_list:
-                to.append(dictionary_for_change_responsible_to_mail_id[reciepient])
+            for receipient in to_list:
+                to.append(dictionary_for_change_responsible_to_mail_id[receipient])
 
             # Converting the list to set to have only unique values.
             to = set(to)
@@ -283,7 +279,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         dt = datetime(year,month,day,hour,minute)
                         # print(dt >= today)
                         if(dt >= today):
-                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                            if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                                 flag_variable = 1
                                 mail        = message.ReplyAll()
                                 result          = email_parser(mail.Body)
@@ -320,7 +316,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                 year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
                                 dt = datetime(year,month,day,hour,minute)
                                 if(dt >= today):
-                                    if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                    if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                                         flag_variable = 1
                                         mail        = message.ReplyAll()
                                         result          = email_parser(mail.Body)
@@ -358,7 +354,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                         dt = message.ReceivedTime
                                         year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
                                         if(datetime(year,month,day,hour,minute) >= today):
-                                            if(message.Subject.lower() == subject_we_are_looking_for.lower()):
+                                            if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                                                 flag_variable = 1
                                                 mail        = message.ReplyAll()
                                                 result          = email_parser(mail.Body)
@@ -428,9 +424,15 @@ def circle_reply_task(sender, workbook):
 
         # Checking the dataframe read in pandas is empty or not
         if (len(required_worksheet) == 0):
+            del mail_id_sheet
+            del required_worksheet
+            del workbook_read_in_pandas
             raise CustomException(" Worksheet Empty or Not Present!","Email-Package worksheet is not present in the workbook, Kindly Check!")
         
         if(len(mail_id_sheet) == 0):
+            del mail_id_sheet
+            del required_worksheet
+            del workbook_read_in_pandas
             raise CustomException(" Worksheet Empty or Not Present!","Mail ID worksheet is not present in the workbook, Kindly Check!")
 
         # Creating a variable to get today's maintenance date
@@ -452,6 +454,9 @@ def circle_reply_task(sender, workbook):
         
         # Checking whether there are rows with different maintenance date if there're such rows then raising exception.
         if(len(sr_for_row_with_wrong_maintenance_date) > 0):
+            del mail_id_sheet
+            del required_worksheet
+            del workbook_read_in_pandas
             raise CustomException(" Data with Wrong Maintenance Date",f"Data with other Execution Date detected for the below S.NO, kindly check!:\n{', '.join(str(num) for num in sr_for_row_with_wrong_maintenance_date)}")
 
         # Filtering data for the today's maintenance date
@@ -459,6 +464,9 @@ def circle_reply_task(sender, workbook):
 
         # Checking whether data present in the required sheet is of today's maintenance date
         if(len(required_worksheet) == 0):
+            del mail_id_sheet
+            del required_worksheet
+            del workbook_read_in_pandas
             raise CustomException(" Data for Today's Maintenance Date Absent","Kindly Check! Data for today's maintenance data is not preset")
         
         else:
@@ -467,6 +475,9 @@ def circle_reply_task(sender, workbook):
 
             # Checking if the technical validator is present in the sheet or not.
             if(len(required_worksheet) == 0):
+                del mail_id_sheet
+                del required_worksheet
+                del workbook_read_in_pandas
                 raise CustomException(" Technical Validator Not Found!",f"'{sender}' is not found as Technical Validator in the Email Package Sheet of the selected workbook, Kindly check and try again!")
             
             else:
@@ -483,6 +494,10 @@ def circle_reply_task(sender, workbook):
                 # Calling the Method (function) for replying the mail.
                 temp_flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
                 #print(flag)
+                
+                del mail_id_sheet
+                del required_worksheet
+                del workbook_read_in_pandas
                 # Deleting all the variables before returning the value for "Successful"
                 # dir() gives the list of local variables.
                 objects = dir()
@@ -549,13 +564,13 @@ def circle_reply_task(sender, workbook):
     finally:
         import gc
         
-        excel = win32.Dispatch("Excel.Application")
+        # excel = win32.Dispatch("Excel.Application")
         
-        if(len(workbook1) > 0):
-            wb = excel.Workbooks.Open(workbook1)
-            wb.Close()
+        # if(len(workbook1) > 0):
+        #     wb = excel.Workbooks.Open(workbook1)
+        #     wb.Close()
 
-        excel.Application.Quit()
+        # excel.Application.Quit()
 
         gc.collect()
         return flag

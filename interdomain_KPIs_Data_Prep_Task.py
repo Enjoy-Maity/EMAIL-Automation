@@ -94,6 +94,9 @@ def p_one_p_three_appender(sender,workbook):
     '''
     
     if (sender not in unique_technical_validator_set):
+        del planning_sheet
+        del email_package
+        del wb
         raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
     
     if ('Arka Maiti' in unique_technical_validator_set):
@@ -387,6 +390,9 @@ def validation_adder(workbook,worksheet):
         
     
     if(len(blank_change_responsible_field) > 0):
+        del planning_sheet
+        del email_package
+        del wb
         raise CustomException(" Blank Change Responsible Field!",f"Kindly Enter the Change Responsible detail for S.NO:\n{', '.join(str(num) for num in blank_change_responsible_field)}")
     
     else:
@@ -439,7 +445,7 @@ def paco_cscore(sender,workbook):   #type:ignore
 
         flag_for_planning_sheet = 0
         flag_for_mail_id        = 0
-        global workbook1; workbook1 = workbook
+        # global workbook1; workbook1 = workbook
         wb = load_workbook(workbook)
         sheets = wb.sheetnames
         for sheet in sheets:
@@ -452,9 +458,11 @@ def paco_cscore(sender,workbook):   #type:ignore
         wb.close()
         
         if(flag_for_planning_sheet == 0):
+            del wb
             raise TomorrowDataNotFound("The Planning Sheet is not present! Kindly Check!")
         
         if(flag_for_mail_id == 0):
+            del wb
             raise TomorrowDataNotFound("The Mail Id  is empty! Kindly Check!")
         
         # Calling the method to add vlookup to the column of Change Responsible in Planning Sheet
@@ -470,6 +478,8 @@ def paco_cscore(sender,workbook):   #type:ignore
         daily_plan_sheet['Execution Date'] = pd.to_datetime(daily_plan_sheet['Execution Date'])
         
         if (len(daily_plan_sheet) == 0):
+            del daily_plan_sheet
+            del wb
             raise TomorrowDataNotFound("The Planning Sheet is empty! Kindly Check!")
 
         for i in range(0,len(daily_plan_sheet)):
@@ -480,9 +490,13 @@ def paco_cscore(sender,workbook):   #type:ignore
         daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == tomorrow.strftime("%m/%d/%Y")]
         
         if (len(daily_plan_sheet) == 0):
+            del daily_plan_sheet
+            del wb
             raise TomorrowDataNotFound("Data for today's maintenance date is not present in the MPBN Daily Planning Sheet, kindly check!")
         
         if (len(difference) > 0):
+            del daily_plan_sheet
+            del wb
             raise TomorrowDataNotFound(f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join([str(num) for num in difference])}")
         
         else:
@@ -570,14 +584,29 @@ def paco_cscore(sender,workbook):   #type:ignore
             input_error.sort()
 
             if (len(input_error) > 0):
-                messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
+                # messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
                 flag = 'Unsuccessful'
+                del daily_plan_sheet
+                del Email_ID
+                del wb
+                raise CustomException("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
+            
             if (len(circle_not_proper) > 0):
-                messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
+                # messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
                 flag = 'Unsuccessful'
+                del daily_plan_sheet
+                del Email_ID
+                del wb
+                raise CustomException("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
+            
             if (len(change_responsible_not_proper) > 0):
-                messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
+                # messagebox.showerror("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
                 flag = 'Unsuccessful'
+                del daily_plan_sheet
+                del Email_ID
+                del wb
+                raise CustomException("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
+            
             else:
                 thread = Thread(target = sheet_cleaner,args = (workbook,))
                 thread.start()
@@ -808,15 +837,19 @@ def paco_cscore(sender,workbook):   #type:ignore
                     # Styling the worksheets.
                     if(len(df)):
                         styling(workbook,sheetname)
+                        del df
                     
                     if(len(df2)):
                         styling(workbook,sheetname2)
+                        del df2
                     
                     if(len(df3)):
                         styling(workbook,sheetname3)
+                        del df3
                     
                     if(len(df4)):
                         styling(workbook,sheetname4)
+                        del df4
                     
                     # Message showing that all the Interdomain Sheets have been written.
                     messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
@@ -829,6 +862,7 @@ def paco_cscore(sender,workbook):   #type:ignore
                     
                     # Calling the Method(Function) that can write into the Automation tracker sheet.
                     flag = p_one_p_three_appender(sender,workbook)
+                    del daily_plan_sheet
                     return flag
                 
                 else:
@@ -920,23 +954,23 @@ def paco_cscore(sender,workbook):   #type:ignore
         flag = "Unsuccessful"
     
     finally:
-        import win32com.client as win32
+        # import win32com.client as win32
 
-        excel = win32.Dispatch("Excel.Application")
+        # excel = win32.Dispatch("Excel.Application")
         
-        if (len(workbook1) > 0):
-            wb = excel.Workbooks.Open(workbook1)
-            wb.Close()
+        # if (len(workbook1) > 0):
+        #     wb = excel.Workbooks.Open(workbook1)
+        #     wb.Close()
         
-        if (len(workbook2) > 0):
-            wb = excel.Workbooks.Open(workbook2)
-            wb.Close()
+        # if (len(workbook2) > 0):
+        #     wb = excel.Workbooks.Open(workbook2)
+        #     wb.Close()
 
-        if (len(workbook3) > 0):
-            wb = excel.Workbooks.Open(workbook3)
-            wb.Close()
+        # if (len(workbook3) > 0):
+        #     wb = excel.Workbooks.Open(workbook3)
+        #     wb.Close()
 
-        excel.Application.Quit()
+        # excel.Application.Quit()
         
         gc.collect()
         return flag

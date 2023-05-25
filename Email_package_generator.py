@@ -66,7 +66,9 @@ def styling(workbook,sheetname):
 
     # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
-
+    wb.close()
+    del wb
+    
     objects = dir()
     for object in objects:
         if not object.startswith("__"):
@@ -115,6 +117,8 @@ def validation_adder(workbook,worksheet):
     
     # Saving the Workbook
     wb.save(workbook)
+    wb.close()
+    del wb
 
     objects = dir()
     for object in objects:
@@ -140,6 +144,7 @@ def email_package_sheet_creater(workbook):
                 break
 
         if (temp_flag == 0):
+            del wb
             raise CustomException(" Planning Sheet Absent!","Kindly check the selected workbook for 'Planning Sheet' worksheet!")
 
         daily_plan_sheet  = pd.read_excel(wb,"Planning Sheet")
@@ -160,6 +165,8 @@ def email_package_sheet_creater(workbook):
 
         # Checking if there's any data present or not.
         if (len(daily_plan_sheet) == 0):
+            del daily_plan_sheet
+            del wb
             raise CustomException(" Data Missing!","The Planning Sheet is empty!, Kindly Check!")
         
         difference = []
@@ -171,9 +178,13 @@ def email_package_sheet_creater(workbook):
         daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Execution Date'] == todays_maintenance_date]
 
         if (len(daily_plan_sheet) == 0):
+            del daily_plan_sheet
+            del wb
             raise CustomException(" Today's Maintenance Data Missing!","Today's Maintenance Data is missing in the Planning Sheet! Kindly Check!")
         
         if (len(difference) > 0):
+            del daily_plan_sheet
+            del wb
             raise CustomException(" Maintenance Data for Other Date Present!",f"All the CR's present are not of Today's Maintenace Date for S.NO : {', '.join([str(num) for num in difference])}")
         
         else:
@@ -188,6 +199,9 @@ def email_package_sheet_creater(workbook):
                 planned_status_unique_values[i] = planned_status_unique_values[i].strip().upper()
             
             if ((len(planned_status_unique_values) == 1) and (planned_status_unique_values[0] == "NA")):
+                del daily_plan_sheet
+                del wb
+                
                 # Raising custom exception for condition when there's no input in the planning status column of the Excel Sheet.
                 raise CustomException(" Input Missing!","Kindly Enter the Planning Status input in uploaded sheet!")
             
@@ -200,6 +214,9 @@ def email_package_sheet_creater(workbook):
                             # Appending the S.NO of row with wrong input.
                             input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
                     
+                    del daily_plan_sheet
+                    del wb
+                
                     # Raising the Exception for rows with no planning status.
                     raise CustomException(" Input Missing!",f"Planning Status Input is Missing for the below S.NO:\n{', '.join(str(num) for num in input_error)}")
                 
@@ -209,6 +226,9 @@ def email_package_sheet_creater(workbook):
                     daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
 
                 else:
+                    del daily_plan_sheet
+                    del wb
+                
                     # Raising Custom Exception for not finding any dataframe row with Planning Status.
                     raise CustomException(" Incorrect Input","Kindly Check the Planning Status input in uploaded sheet!")
                 
@@ -263,8 +283,11 @@ def email_package_sheet_creater(workbook):
                     continue
             
             if (len(input_error) > 0):
-                messagebox.showerror("  Input Errors",f"Input Details are missing for mandatory parameters for S.NO.: {','.join([str(num) for num in input_error])} in uploaded Planning sheet!")
+                # messagebox.showerror("  Input Errors",f"Input Details are missing for mandatory parameters for S.NO.: {','.join([str(num) for num in input_error])} in uploaded Planning sheet!")
                 
+                del daily_plan_sheet
+                del wb
+
                 # Deleting all the variables before returning the value for "Unsuccessful"
                 objects = dir()
                 for object in objects:
@@ -272,18 +295,23 @@ def email_package_sheet_creater(workbook):
                         del object
                 
                 flag = 'Unsuccessful'
+
+                raise CustomException("  Input Errors",f"Input Details are missing for mandatory parameters for S.NO.: {','.join([str(num) for num in input_error])} in uploaded Planning sheet!")
             
             if (len(circle_not_proper) > 0):
-                messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
+                # messagebox.showerror("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
                 
+                del daily_plan_sheet
+                del wb
+
                 # Deleting all the variables before returning the value for "Unsuccessful"
                 objects = dir()
                 for object in objects:
                     if not object.startswith("__"):
                         del object
-
+                
                 flag = 'Unsuccessful'
-            
+                raise CustomException("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
             
             # Writing into the Email-Package Sheet
             daily_plan_sheet_unique_cr = daily_plan_sheet['CR NO'].value_counts().index.to_list()
@@ -961,6 +989,11 @@ def email_package_sheet_creater(workbook):
             df.to_excel(writer,sheet_name = new_sheetname,index_label = 'S.NO')
             writer.close()
             
+            del writer
+            del df
+            del daily_plan_sheet
+            del wb
+            
             # Calling the styling function to stylise the worksheet.
             styling(workbook,new_sheetname)
             validation_adder(workbook,new_sheetname)
@@ -1013,15 +1046,15 @@ def email_package_sheet_creater(workbook):
     
     finally:
         import gc
-        import win32com.client as win32
+        # import win32com.client as win32
 
-        excel = win32.Dispatch("Excel.Application")
+        # excel = win32.Dispatch("Excel.Application")
         
-        if(len(workbook1) > 0):
-            excel_workbook = excel.Workbooks.Open(workbook1)
-            excel_workbook.Close()
+        # if(len(workbook1) > 0):
+        #     excel_workbook = excel.Workbooks.Open(workbook1)
+        #     excel_workbook.Close()
         
-        excel.Application.Quit()
+        # excel.Application.Quit()
         
         gc.collect()
         return flag

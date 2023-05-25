@@ -11,6 +11,7 @@ from datetime import datetime, timedelta                            # Importing 
 from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in email-package
 import numpy as np
 import shutil
+from Custom_Warning import CustomWarning
 
 flag = ""
 workbook1 = ""
@@ -122,7 +123,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
 def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
     workbook = rf"{folder}\\MPBN_Email_Package_{execution_date}.xlsx"
-    global workbook3; workbook3 = workbook
+    # global workbook3; workbook3 = workbook
     
     # Checking if the Email_Package workbook is created or not.
     if(Path(workbook).exists() == False):
@@ -143,6 +144,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
                 del wb[sheet]
         wb.save(workbook)
         wb.close()
+        del wb
 
     # Changing the NA to blank space.
     worksheet.replace("TempNA"," ",inplace = True)
@@ -152,6 +154,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     writer = pd.ExcelWriter(new_workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
     worksheet.to_excel(writer,"Email-Package",index = False)
     writer.close()
+    del writer
 
     styling(workbook, "Email-Package")
 
@@ -199,6 +202,8 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     # Calling the Mail Drafter Method for drafting the mail but not send it.
     mail_drafter(worksheet,evening_message_workbook_message,html_body,sender,execution_date,workbook,maintenance_window)
 
+    del new_workbook
+
     # Deleting the objects before the returning back to the main function.
     objects = dir()
     for object in objects:
@@ -209,20 +214,20 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
 # Method(Function) for creating the evening message text.
 def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
     try:
-        global workbook1; workbook1 = workbook
+        # global workbook1; workbook1 = workbook
         wb=pd.ExcelFile(workbook)
         ws=wb.sheet_names
         worksheet=''
 
         # Finding the Email package worksheet.
-        for sheet in ws:
-            if sheet == 'Email-Package':
-                worksheet=sheet
+        if('Email-Package' in ws):
+            worksheet='Email-Package'
         
 
         if (len(worksheet) == 0):
-            messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
-            
+            # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            del worksheet
+            del wb
             # Deleting all the variables before returning the value "Unsuccessful"
             objects = dir()
             for object in objects:
@@ -230,6 +235,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                     del object
 
             flag = 'Unsuccessful'
+            raise CustomWarning((' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!'))
         
         else:
         # Reading relevant sheet.
@@ -237,8 +243,9 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
             # Checking Condition for the data pertaining to today's maintenance date being non-existent.
             if (len(worksheet) == 0):
-                messagebox.showwarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
-
+                # messagebox.showwarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+                del worksheet
+                del wb
                 # Deleting all the variables before returning the value "Unsuccessful"
                 objects = dir()
                 for object in objects:
@@ -246,6 +253,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                         del object
 
                 flag = 'Unsuccessful'
+                raise CustomWarning((' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!'))
             
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
             total_no_of_resource = 16           
@@ -399,8 +407,9 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             # Writing the text into the file defined by the file path.
             with open(file_path,'w') as f:
                 f.write(message)
+                f.close()
             messagebox.showinfo("   Task Completed Successfully",f"Evening Message generated successfully at {file_path}")
-            
+            del f
             # Asking for response, whether thr user wants to check the message being created.
             response = messagebox.askyesno("   Evening Message","Do You want to open the Evening Message text?")
             
@@ -430,7 +439,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
             # Writing into a temp xlsx file named temp.xlsx
             temp_file_for_the_evening_message = rf"{temp_folder}\\tmp.xlsx"
-            global workbook2; workbook2 = temp_file_for_the_evening_message
+            # global workbook2; workbook2 = temp_file_for_the_evening_message
 
             # Checking if the temp_file_for_evening_message is existent or not
             if (Path(temp_file_for_the_evening_message).exists() == False):
@@ -468,6 +477,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 # Closing the openpyxl.Workbook variable.
                 wb.save(temp_file_for_the_evening_message)
                 wb.close()
+                del wb
             
             else:
                 # Loading the xlsx file in openpyxl module of python
@@ -491,6 +501,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 # Closing and saving the openpyxl.Workbook variable.
                 wb.save(temp_file_for_the_evening_message)
                 wb.close()
+                del wb
             
             evening_message_workbook = pd.ExcelFile(temp_file_for_the_evening_message)
             evening_message_workbook_message = pd.read_excel(evening_message_workbook,'evening_message')
@@ -533,21 +544,21 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     finally:
         import gc
 
-        excel = win32.Dispatch("Excel.Application")
+        # excel = win32.Dispatch("Excel.Application")
 
-        if(len(workbook1) > 0):
-            wb = excel.Workbooks.Open(workbook1)
-            wb.Close()
+        # if(len(workbook1) > 0):
+        #     wb = excel.Workbooks.Open(workbook1)
+        #     wb.Close()
         
-        if(len(workbook2) > 0):
-            wb = excel.Workbooks.Open(workbook2)
-            wb.Close()
+        # if(len(workbook2) > 0):
+        #     wb = excel.Workbooks.Open(workbook2)
+        #     wb.Close()
         
-        if(len(workbook3) > 0):
-            wb = excel.Workbooks.Open(workbook3)
-            wb.Close()
+        # if(len(workbook3) > 0):
+        #     wb = excel.Workbooks.Open(workbook3)
+        #     wb.Close()
 
-        excel.Application.Quit()
+        # excel.Application.Quit()
 
         gc.collect()
         return flag
