@@ -75,6 +75,7 @@ def styling(workbook,sheetname):
     # Saving the workbook with worksheet with all the changes.
     wb.save(workbook)
     wb.close()
+    del wb
     
     objects = dir()
     for object in objects:
@@ -87,6 +88,8 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
     mail_draft          = mail_draft.CreateItem(0)
     mail_draft.To       = 'PDLMPBNSRF@pdl.internal.ericsson.com;'
     mail_draft.CC       = 'rohit.mahajan@ericsson.com;karan.k.loomba@ericsson.com;PDLPBNSRFP@pdl.internal.ericsson.com'
+    # mail_draft.To       = 'enjoy.maity@ericsson.com;'
+    # mail_draft.CC       = 'enjoy.maity@ericsson.com'
     mail_draft.Subject  = f"MPBN CRs For Tonight Maintenance Window - {execution_date} {maintenance_window}"
 
     dataframe = dataframe.style.set_table_styles([
@@ -131,6 +134,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
         wb.create_sheet("Email-Package", index = 0)
         wb.save(workbook)
         wb.close()
+        del wb
 
         # Loading the workbook
         wb = load_workbook(workbook)
@@ -214,7 +218,6 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
 # Method(Function) for creating the evening message text.
 def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
     try:
-        # global workbook1; workbook1 = workbook
         wb=pd.ExcelFile(workbook)
         ws=wb.sheet_names
         worksheet=''
@@ -543,7 +546,6 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     
     finally:
         import gc
-
         # excel = win32.Dispatch("Excel.Application")
 
         # if(len(workbook1) > 0):
@@ -559,10 +561,9 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
         #     wb.Close()
 
         # excel.Application.Quit()
-
         gc.collect()
         return flag
 
     
 
-# evening_task('Arka Maiti','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+# evening_task('Manoj Kumar','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")

@@ -168,6 +168,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 if (i == "CS-Core"):
                     to=Email_Id.iloc[24]['To Mail List']
                     cc=Email_Id.iloc[24]['Copy Mail List']
+                    # to = 'enjoy.maity@ericsson.com'
+                    # cc = 'enjoy.maity@ericsson.com'
                     dataframe=df2
                     
                     # Checking if the dataframe for the respective interdomain is empty or not, i.e. whether there's any data to sent to the respective 
@@ -178,6 +180,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 elif (i == "PS-Core"):
                     to=Email_Id.iloc[23]['To Mail List']
                     cc=Email_Id.iloc[23]['Copy Mail List']
+                    # to = 'enjoy.maity@ericsson.com'
+                    # cc = 'enjoy.maity@ericsson.com'
                     dataframe=df
                     
                     # Checking if the dataframe for the respective interdomain is empty or not, i.e. whether there's any data to sent to the respective 
@@ -188,6 +192,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 elif (i == "RAN"):
                     to=Email_Id.iloc[25]['To Mail List']
                     cc=Email_Id.iloc[25]['Copy Mail List']
+                    # to = 'enjoy.maity@ericsson.com'
+                    # cc = 'enjoy.maity@ericsson.com'
                     dataframe=df3
                     
                     # Checking if the dataframe for the respective interdomain is empty or not, i.e. whether there's any data to sent to the respective 
@@ -198,6 +204,8 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 elif (i == "VAS"):
                     to=Email_Id.iloc[26]['To Mail List']
                     cc=Email_Id.iloc[26]['Copy Mail List']
+                    # to = 'enjoy.maity@ericsson.com'
+                    # cc = 'enjoy.maity@ericsson.com'
                     dataframe=df4
                     
                     # Checking if the dataframe for the respective interdomain is empty or not, i.e. whether there's any data to sent to the respective 
@@ -230,17 +238,17 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
                 
                 # Message showing that the respective selected interdomain mail has been sent.
                 messagebox.showinfo("     Mail Sent Info",f"Mail sent for {i} Interdomain KPIs!")
-                if(len(df) > 0):
+                if(i == "PS-Core"):
                     del df
                 
-                if(len(df2) > 0):
+                if(i == "CS-Core"):
                     del df2
                 
-                if(len(df2) > 0):
-                    del df2
+                if(i == "RAN"):
+                    del df3
                 
-                if(len(df2) > 0):
-                    del df2
+                if(i == "VAS"):
+                    del df4
 
                 del dataframe
             
@@ -339,4 +347,4 @@ def paco_cscore(sender,workbook,north_and_west_region,east_region_and_south_regi
         
         return flag
     
-#paco_cscore("Enjoy Maity",r"C:/Users/emaienj/OneDrive - Ericsson/Documents/MPBN Daily Planning Sheet.xlsx","","")
+# paco_cscore("Manoj Kumar",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx","","")

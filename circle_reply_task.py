@@ -390,6 +390,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     del object
 
             flag = "Successful"
+            return flag
         
         if(len(circle_mail_not_found)):
             messagebox.showwarning("    Mails Drafted",f"Change Responsible Mails have been drafted except for below circles:\n{', '.join(circle_mail_not_found)}")
@@ -400,6 +401,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 if not object.startswith("__"):
                     del object
             flag = "Unsuccessful"
+            return flag
 
         
     except Exception as error:
@@ -413,10 +415,12 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 del object
 
         flag = "Unsuccessful"
+        return flag
 
 # Main Driver Method(Function)
 def circle_reply_task(sender, workbook):
     try:
+        global flag;
         # Reading workbook in pandas
         workbook_read_in_pandas = pd.ExcelFile(workbook)
         required_worksheet = pd.read_excel(workbook_read_in_pandas,"Email-Package")
@@ -505,7 +509,7 @@ def circle_reply_task(sender, workbook):
                     if not object.startswith("__"):
                         del object
 
-                return temp_flag
+                flag = temp_flag
     
     except CustomException:
         # Deleting all the variables before returning the value for "Unsuccessful"
@@ -575,4 +579,4 @@ def circle_reply_task(sender, workbook):
         gc.collect()
         return flag
 
-# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
+circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")

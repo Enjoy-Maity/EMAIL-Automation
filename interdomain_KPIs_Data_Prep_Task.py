@@ -13,9 +13,9 @@ import numpy as np                                                  # Importing 
 import gc
 
 flag = ""
-workbook1 = ""
-workbook2 = ""
-workbook3 = ""
+# workbook1 = ""
+# workbook2 = ""
+# workbook3 = ""
 
 # # Creating class for Threads with returning value.
 # class CustomThread(Thread):
@@ -40,7 +40,7 @@ class CustomException(Exception):
     def __init__(self,title,msg):
         self.title = title
         self.msg = msg
-        # messagebox.showerror(self.title,self.msg)
+        messagebox.showerror(self.title,self.msg)
 
 def sheet_cleaner(workbook):
     # Loading the Workbook
@@ -78,12 +78,14 @@ def p_one_p_three_appender(sender,workbook):
     planning_sheet['Execution Date'] = pd.to_datetime(planning_sheet['Execution Date'], format="%d-%b-%Y")
     planning_sheet['Execution Date'] = planning_sheet['Execution Date'].dt.strftime("%m/%d/%Y")
 
-    email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
+    if(len(planning_sheet) > 0):
+        email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
     # Getting the unique technical validator.
-    unique_technical_validator_set = email_package['Technical Validator'].unique()
+    unique_technical_validator_set = email_package['Technical Validator'].dropna().unique()
+    # print(unique_technical_validator_set)
     unique_technical_validator_set = unique_technical_validator_set.astype(str)
-    unique_technical_validator_set = np.delete(unique_technical_validator_set,np.where((unique_technical_validator_set == 'nan')|(unique_technical_validator_set == 'Nan')))
+    # unique_technical_validator_set = np.delete(unique_technical_validator_set,np.where((unique_technical_validator_set == 'nan')|(unique_technical_validator_set == 'Nan')))
     
     p1 = ''
     p3 = ''
@@ -120,7 +122,7 @@ def p_one_p_three_appender(sender,workbook):
             file_path.remove(file_path[-1])
             file_path = '/'.join(file_path)
             p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
-            global workbook2; workbook2 = p1_workbook_file
+            # global workbook2; workbook2 = p1_workbook_file
             p1_sheet_name = 'MPBN Activity List'
 
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
@@ -140,6 +142,8 @@ def p_one_p_three_appender(sender,workbook):
                     col = get_column_letter(i+2)
                     ws[col+'1'] = p1_columns[i]
                 wb.save(p1_workbook_file)
+                wb.close()
+                del wb
 
                 wb = load_workbook(p1_workbook_file)
                 sheets = wb.sheetnames
@@ -150,6 +154,8 @@ def p_one_p_three_appender(sender,workbook):
                     
                 wb.save(p1_workbook_file)
                 wb.close()
+                del wb  
+            
 
             # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
             p1_workbook = load_workbook(p1_workbook_file)
@@ -159,6 +165,9 @@ def p_one_p_three_appender(sender,workbook):
             p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
             p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
             
+            p1_workbook.close()
+            del p1_workbook
+
             # Reading the Excel file in pandas.
             p1_file_read = pd.ExcelFile(p1_workbook_file)
             p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
@@ -181,6 +190,10 @@ def p_one_p_three_appender(sender,workbook):
                 writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
                 p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
                 writer1.close()
+                del writer1
+                del p1_dataframe
+                del p1_file_read
+                
                 
                 # Styling the worksheet.
                 styling(p1_workbook_file,p1_sheet_name)
@@ -204,8 +217,7 @@ def p_one_p_three_appender(sender,workbook):
                         del object
             
             flag = 'Successful'
-        
-            
+            return flag
                 
             
         if (sender == p3):
@@ -214,7 +226,7 @@ def p_one_p_three_appender(sender,workbook):
             file_path.remove(file_path[-1])
             file_path = "/".join(file_path)
             p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
-            global workbook3; workbook3 = p3_workbook_file
+            # global workbook3; workbook3 = p3_workbook_file
             p3_sheet_name = 'MPBN Activity List'
 
             # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
@@ -235,6 +247,8 @@ def p_one_p_three_appender(sender,workbook):
                     col = get_column_letter(i+2)
                     ws[col+'1'] = p3_columns[i]
                 wb.save(p3_workbook_file)
+                wb.close()
+                del wb
 
                 wb = load_workbook(p3_workbook_file)
                 sheets = wb.sheetnames
@@ -245,6 +259,8 @@ def p_one_p_three_appender(sender,workbook):
 
                 wb.save(p3_workbook_file)
                 wb.close()
+                del wb
+
             
             # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
             p3_workbook = load_workbook(p3_workbook_file)
@@ -252,6 +268,9 @@ def p_one_p_three_appender(sender,workbook):
             # Changing the Index of the dataframe to start from 1
             p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
             p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
+
+            p3_workbook.close()
+            del p3_workbook
 
             # Reading the Excel sheet in pandas.
             p3_file_read = pd.ExcelFile(p3_workbook_file)
@@ -275,6 +294,10 @@ def p_one_p_three_appender(sender,workbook):
                 writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
                 p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
                 writer3.close()
+                del writer3
+                del p3_dataframe
+                del p3_file_read
+
 
                 # Styling the worksheet.
                 styling(p3_workbook_file,p3_sheet_name)
@@ -297,6 +320,7 @@ def p_one_p_three_appender(sender,workbook):
                         del object
             
             flag = 'Successful'
+            return flag
 
     else:
         # Message showing that the user who is running the application is not a technical validator.
@@ -308,6 +332,7 @@ def p_one_p_three_appender(sender,workbook):
                 del object
 
         flag = "Unsuccessful"
+        return flag
 
 
 #####################################################################
@@ -442,7 +467,7 @@ def paco_cscore(sender,workbook):   #type:ignore
         #user = subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
 
         #workbook = r"C:/Daily/MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
-
+        global flag;
         flag_for_planning_sheet = 0
         flag_for_mail_id        = 0
         # global workbook1; workbook1 = workbook
@@ -526,62 +551,64 @@ def paco_cscore(sender,workbook):   #type:ignore
             # Iterating (Looping) through the daily_plan_sheet dataframe index wise (index given by pandas to each row with data), to find out the serial 
             # numbers of the rows where the Circle input and the Change responsible is not properly entered by the user and any other fields that should be left unblank
             # by the user.
+            # print(daily_plan_sheet)
             for i in range(0,len(daily_plan_sheet)):
+                # print(daily_plan_sheet.iloc[i]['CR NO'])
                 if (daily_plan_sheet.iloc[i]['CR NO'] == "TempNA") or (daily_plan_sheet.iloc[i]['CR NO'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+
                 if (not daily_plan_sheet.iloc[i]['Circle'] in circle):
                     circle_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (not daily_plan_sheet.iloc[i]['Change Responsible'] in original_change_responsible):
                     change_responsible_not_proper.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Activity Title'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Activity Title'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Circle'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Circle'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Risk'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Risk'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Location'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Location'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Change Responsible'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Change Responsible'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Impact'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Impact'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Technical Validator'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Technical Validator'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Activity-Type'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Activity-Type'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Vendor'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Vendor'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Protocol'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Protocol'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+                    
                 if (daily_plan_sheet.iloc[i]['Execution Projection'] == 'TempNA') or (daily_plan_sheet.iloc[i]['Execution Projection'] == None):
                     input_error.append(daily_plan_sheet.iloc[i]['S.NO'])
-                    continue
+
                 else:
                     result_df = pd.concat([result_df,daily_plan_sheet.iloc[i].to_frame().T], ignore_index= True)
+                    
+                    
             
             result_df.drop_duplicates(keep = 'first', inplace= True)
-
+            
             # Deleting the old daily_plan_sheet dataframe which we won't be using, to free up memory space.
             del daily_plan_sheet
             daily_plan_sheet = result_df.copy(deep = True)
             # Deleting the result_df after creating a deep copy of it and assigning variable daily_plan_sheet to that deep copy.
             del result_df
             
-            # Sorting the input error indices to get the list of input error in ascending order.
-            input_error.sort()
 
             if (len(input_error) > 0):
                 # messagebox.showerror("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
@@ -589,6 +616,11 @@ def paco_cscore(sender,workbook):   #type:ignore
                 del daily_plan_sheet
                 del Email_ID
                 del wb
+
+                input_error = list(set(input_error))
+                # Sorting the input error indices to get the list of input error in ascending order.
+                input_error.sort()
+                # print(input_error)
                 raise CustomException("  Input Errors",f"Input Error in Planning Sheet! Check 'Location', 'Circle', 'Change Responsible', 'Impact', 'Vendor', 'Protocol' & 'Execution Projection' for S.NO.: {','.join([str(num) for num in input_error])}")
             
             if (len(circle_not_proper) > 0):
@@ -597,6 +629,7 @@ def paco_cscore(sender,workbook):   #type:ignore
                 del daily_plan_sheet
                 del Email_ID
                 del wb
+                # print("circle")
                 raise CustomException("  Circles Errors",f"Input Circles are wrong in Planning Sheet for S.NO. : {','.join([str(num) for num in circle_not_proper])}")
             
             if (len(change_responsible_not_proper) > 0):
@@ -605,278 +638,282 @@ def paco_cscore(sender,workbook):   #type:ignore
                 del daily_plan_sheet
                 del Email_ID
                 del wb
+                # print("change_responsible_not_proper",change_responsible_not_proper)
                 raise CustomException("  Change Responsible Errors",f"Input Change Responsible are wrong in Planning Sheet for S.NO.: {','.join([str(num) for num in change_responsible_not_proper])}")
             
+
+            # print("Hello")
+            thread = Thread(target = sheet_cleaner,args = (workbook,))
+            thread.start()
+
+            sheetname = "PS Core-Inter Domain"
+            sheetname2 = "CS Core-Inter Domain"
+            sheetname3 = "RAN-Inter Domain"
+            sheetname4 = "VAS-Inter Domain"
+
+            category = "MPBN-MS"
+            owner_domain = "SRF MPBN"
+            team_leader = "Karan Loomba"
+
+            ####################################################### Entering details for ps core or paco circle ###########################################################
+            execution_date = []
+            maintenance_window = []
+            mpbn_cr_no = []
+            location = []
+            mpbn_change_responsible_executor = []
+            validator = []
+            impact = []
+            circle = []
+            mpbn_activity_title = []
+            cr_owner_domain = []
+            inter_domain = []
+            cr_category = []
+            impacted_node_details = []
+            Kpis_to_be_monitored = []
+            # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
+            for i in range(0,len(daily_plan_sheet)):
+                if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS-CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS_CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('PACO')) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("PS")) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')):
+                    execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
+                    maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
+                    mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
+                    cr_category.append(category)
+                    impact.append(daily_plan_sheet.iloc[i]['Impact'])
+                    location.append(daily_plan_sheet.iloc[i]['Location'])
+                    txt = str(daily_plan_sheet.iloc[i]['Circle'])
+                    circle.append(txt.upper())
+                    mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
+                    cr_owner_domain.append(owner_domain)
+                    mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
+                    technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
+                    if technical_validator == team_leader:
+                        validator.append(team_leader)
+                    else:
+                        tech_validator_team_leader = technical_validator+"/"+team_leader
+                        validator.append(tech_validator_team_leader)
+                    inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
+                    impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
+                    Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
+
+            dictionary1 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
+            df = pd.DataFrame(dictionary1)
+            df.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
+            df.replace("TempNA","",inplace = True)
+            
+            ######################################################### Entering details for Cs core #######################################################################
+            execution_date = []
+            maintenance_window = []
+            mpbn_cr_no = []
+            location = []
+            mpbn_change_responsible_executor = []
+            validator = []
+            impact = []
+            circle = []
+            mpbn_activity_title = []
+            cr_owner_domain = []
+            inter_domain = []
+            cr_category = []
+            impacted_node_details = []
+            Kpis_to_be_monitored = []
+            for i in range(0,len(daily_plan_sheet)):
+                if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')) :
+                    execution_date.append((daily_plan_sheet.iloc[i]['Execution Date']))
+                    maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
+                    mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
+                    cr_category.append(category)
+                    impact.append(daily_plan_sheet.iloc[i]['Impact'])
+                    location.append(daily_plan_sheet.iloc[i]['Location'])
+                    txt = str(daily_plan_sheet.iloc[i]['Circle'])
+                    circle.append(txt.upper())
+                    mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
+                    cr_owner_domain.append(owner_domain)
+                    mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
+                    technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
+                    if technical_validator == team_leader:
+                        validator.append(team_leader)
+                    else:
+                        tech_validator_team_leader = technical_validator+"/"+team_leader
+                        validator.append(tech_validator_team_leader)
+                    inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
+                    impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
+                    Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
+            dictionary2 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
+            df2 = pd.DataFrame(dictionary2)
+            df2.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
+            df2.replace("TempNA","",inplace = True)
+
+            ##########################################################  Entering details for RAN  ########################################################################
+            execution_date = []
+            maintenance_window = []
+            mpbn_cr_no = []
+            location = []
+            mpbn_change_responsible_executor = []
+            validator = []
+            impact = []
+            circle = []
+            mpbn_activity_title = []
+            cr_owner_domain = []
+            inter_domain = []
+            cr_category = []
+            impacted_node_details = []
+            Kpis_to_be_monitored = []
+            oss_name = []
+            oss_IP = []
+            # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
+            for i in range(0,len(daily_plan_sheet)):
+                if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("RAN") and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED'))):
+                    execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
+                    maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
+                    mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
+                    cr_category.append(category)
+                    impact.append(daily_plan_sheet.iloc[i]['Impact'])
+                    location.append(daily_plan_sheet.iloc[i]['Location'])
+                    txt = str(daily_plan_sheet.iloc[i]['Circle'])
+                    circle.append(txt.upper())
+                    mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
+                    cr_owner_domain.append(owner_domain)
+                    mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
+                    technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
+                    if technical_validator == team_leader:
+                        validator.append(team_leader)
+                    else:
+                        tech_validator_team_leader = technical_validator+"/"+team_leader
+                        validator.append(tech_validator_team_leader)
+                    inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'])
+                    impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
+                    Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
+                    oss_name.append(daily_plan_sheet.iloc[i]['oss name'])
+                    oss_IP.append(daily_plan_sheet.iloc[i]['oss ip'])
+
+            dictionary3 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored,'OSS Name':oss_name,'OSS IP':oss_IP}
+            df3 = pd.DataFrame(dictionary3)
+            df3.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
+            df3.replace("TempNA","",inplace = True)
+
+            ##########################################################  Entering details for VAS  ########################################################################
+            
+            execution_date = []
+            maintenance_window = []
+            mpbn_cr_no = []
+            location = []
+            mpbn_change_responsible_executor = []
+            validator = []
+            impact = []
+            circle = []
+            mpbn_activity_title = []
+            cr_owner_domain = []
+            inter_domain = []
+            cr_category = []
+            impacted_node_details = []
+            Kpis_to_be_monitored = []
+            oss_name = []
+            oss_IP = []
+            for i in range(0,len(daily_plan_sheet)):
+                if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('VAS')) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')):
+                    execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
+                    maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
+                    mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
+                    cr_category.append(category)
+                    impact.append(daily_plan_sheet.iloc[i]['Impact'])
+                    location.append(daily_plan_sheet.iloc[i]['Location'])
+                    txt = str(daily_plan_sheet.iloc[i]['Circle'])
+                    circle.append(txt.upper())
+                    mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
+                    cr_owner_domain.append(owner_domain)
+                    mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
+                    technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
+                    if technical_validator == team_leader:
+                        validator.append(team_leader)
+                    else:
+                        tech_validator_team_leader = technical_validator+"/"+team_leader
+                        validator.append(tech_validator_team_leader)
+                    inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
+                    impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
+                    Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
+
+            dictionary4 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
+            df4 = pd.DataFrame(dictionary4)
+            df4.drop_duplicates(subset = 'CR', keep = "first", inplace = True)
+            df4.replace("TempNA","",inplace = True)
+
+            # Dropping the Index of each Dataframe so that they're not written into the excel sheets.
+            df.reset_index(drop = True,inplace = True)
+            df2.reset_index(drop = True,inplace = True)
+            df3.reset_index(drop = True,inplace = True)
+            df4.reset_index(drop = True,inplace = True)
+
+            thread.join()
+
+            # writer = pd.ExcelWriter(workbook,engine = 'xlsxwriter')
+
+            # daily_plan_sheet.to_excel(writer,sheet_name = 'Planning Sheet',index = False)
+            # df.to_excel(writer,sheet_name = sheetname,index = False)
+            # df2.to_excel(writer,sheet_name = sheetname2,index = False)
+            # df3.to_excel(writer,sheet_name = sheetname3,index = False)
+            # Email_Id.to_excel(writer,sheet_name = 'Mail Id',index = False)
+            # print("Hello")
+            # Writing the dataframes into the worksheets.
+            # Checking whether the interdomain data are present in the sheet or not.
+            if((len(df) > 0) or (len(df2) > 0) or (len(df3) > 0) or (len(df4) > 0)):
+                writer = pd.ExcelWriter(workbook,engine = "openpyxl",mode = "a",if_sheet_exists = "replace")
+                if (len(df) > 0):
+                    df.to_excel(writer,sheet_name = sheetname,index = False)
+                
+                if (len(df2) > 0):
+                    df2.to_excel(writer,sheet_name = sheetname2,index = False)
+                
+                if (len(df3) > 0):
+                    df3.to_excel(writer,sheet_name = sheetname3,index = False)
+                
+                if (len(df4) > 0):
+                    df4.to_excel(writer,sheet_name = sheetname4,index = False)
+
+                writer.close()
+                del writer
+                
+                # Styling the worksheets.
+                if(len(df)):
+                    styling(workbook,sheetname)
+                    del df
+                
+                if(len(df2)):
+                    styling(workbook,sheetname2)
+                    del df2
+                
+                if(len(df3)):
+                    styling(workbook,sheetname3)
+                    del df3
+                
+                if(len(df4)):
+                    styling(workbook,sheetname4)
+                    del df4
+                
+                # Message showing that all the Interdomain Sheets have been written.
+                messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
+                
+
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
+                
+                # Calling the Method(Function) that can write into the Automation tracker sheet.
+                flag = p_one_p_three_appender(sender,workbook)
+                del daily_plan_sheet
+                # print(flag)
+                # return flag
+            
             else:
-                thread = Thread(target = sheet_cleaner,args = (workbook,))
-                thread.start()
 
-                sheetname = "PS Core-Inter Domain"
-                sheetname2 = "CS Core-Inter Domain"
-                sheetname3 = "RAN-Inter Domain"
-                sheetname4 = "VAS-Inter Domain"
+                # Message for the case when there's no Interdomain data present(pre-defined interdomains i.e. CS-Core, PS-Core, RAN, VAS, aren't present in the 
+                # 'Domain Kpi' column of the sheet)
+                messagebox.showerror("  No Interdomain Data Present!","Kindly Check the 'Domain kpi' column of the Planning Status Sheet for the required Domains, i.e, CS-Core(CS,Core), PS-Core(Paco), RAN, VAS! and then retry!")
 
-                category = "MPBN-MS"
-                owner_domain = "SRF MPBN"
-                team_leader = "Karan Loomba"
-
-                ####################################################### Entering details for ps core or paco circle ###########################################################
-                execution_date = []
-                maintenance_window = []
-                mpbn_cr_no = []
-                location = []
-                mpbn_change_responsible_executor = []
-                validator = []
-                impact = []
-                circle = []
-                mpbn_activity_title = []
-                cr_owner_domain = []
-                inter_domain = []
-                cr_category = []
-                impacted_node_details = []
-                Kpis_to_be_monitored = []
-                # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
-                for i in range(0,len(daily_plan_sheet)):
-                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS-CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper() == 'PS_CORE') or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('PACO')) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("PS")) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')):
-                        execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
-                        maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
-                        mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
-                        cr_category.append(category)
-                        impact.append(daily_plan_sheet.iloc[i]['Impact'])
-                        location.append(daily_plan_sheet.iloc[i]['Location'])
-                        txt = str(daily_plan_sheet.iloc[i]['Circle'])
-                        circle.append(txt.upper())
-                        mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
-                        cr_owner_domain.append(owner_domain)
-                        mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
-                        technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
-                        if technical_validator == team_leader:
-                            validator.append(team_leader)
-                        else:
-                            tech_validator_team_leader = technical_validator+"/"+team_leader
-                            validator.append(tech_validator_team_leader)
-                        inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
-                        impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
-                        Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
-
-                dictionary1 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
-                df = pd.DataFrame(dictionary1)
-                df.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
-                df.replace("TempNA","",inplace = True)
-
-                ######################################################### Entering details for Cs core #######################################################################
-                execution_date = []
-                maintenance_window = []
-                mpbn_cr_no = []
-                location = []
-                mpbn_change_responsible_executor = []
-                validator = []
-                impact = []
-                circle = []
-                mpbn_activity_title = []
-                cr_owner_domain = []
-                inter_domain = []
-                cr_category = []
-                impacted_node_details = []
-                Kpis_to_be_monitored = []
-                for i in range(0,len(daily_plan_sheet)):
-                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CS")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("STP")) or (daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("CORE")) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')) :
-                        execution_date.append((daily_plan_sheet.iloc[i]['Execution Date']))
-                        maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
-                        mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
-                        cr_category.append(category)
-                        impact.append(daily_plan_sheet.iloc[i]['Impact'])
-                        location.append(daily_plan_sheet.iloc[i]['Location'])
-                        txt = str(daily_plan_sheet.iloc[i]['Circle'])
-                        circle.append(txt.upper())
-                        mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
-                        cr_owner_domain.append(owner_domain)
-                        mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
-                        technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
-                        if technical_validator == team_leader:
-                            validator.append(team_leader)
-                        else:
-                            tech_validator_team_leader = technical_validator+"/"+team_leader
-                            validator.append(tech_validator_team_leader)
-                        inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
-                        impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
-                        Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
-                dictionary2 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
-                df2 = pd.DataFrame(dictionary2)
-                df2.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
-                df2.replace("TempNA","",inplace = True)
-
-                ##########################################################  Entering details for RAN  ########################################################################
-                execution_date = []
-                maintenance_window = []
-                mpbn_cr_no = []
-                location = []
-                mpbn_change_responsible_executor = []
-                validator = []
-                impact = []
-                circle = []
-                mpbn_activity_title = []
-                cr_owner_domain = []
-                inter_domain = []
-                cr_category = []
-                impacted_node_details = []
-                Kpis_to_be_monitored = []
-                oss_name = []
-                oss_IP = []
-                # Execution Date	Maintenance Window	MPBN CR NO	CR Category	Impact	Location	Circle	MPBN Activity Title	CR Owner Domain	MPBN Change Responsible	Technical Validator/Team Lead	InterDomain	Impacted Node Details	KPI's to be monitored
-                for i in range(0,len(daily_plan_sheet)):
-                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith("RAN") and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED'))):
-                        execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
-                        maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
-                        mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
-                        cr_category.append(category)
-                        impact.append(daily_plan_sheet.iloc[i]['Impact'])
-                        location.append(daily_plan_sheet.iloc[i]['Location'])
-                        txt = str(daily_plan_sheet.iloc[i]['Circle'])
-                        circle.append(txt.upper())
-                        mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
-                        cr_owner_domain.append(owner_domain)
-                        mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
-                        technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
-                        if technical_validator == team_leader:
-                            validator.append(team_leader)
-                        else:
-                            tech_validator_team_leader = technical_validator+"/"+team_leader
-                            validator.append(tech_validator_team_leader)
-                        inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'])
-                        impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
-                        Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
-                        oss_name.append(daily_plan_sheet.iloc[i]['oss name'])
-                        oss_IP.append(daily_plan_sheet.iloc[i]['oss ip'])
-
-                dictionary3 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored,'OSS Name':oss_name,'OSS IP':oss_IP}
-                df3 = pd.DataFrame(dictionary3)
-                df3.drop_duplicates(subset = 'CR',keep = "first", inplace = True)
-                df3.replace("TempNA","",inplace = True)
-
-                ##########################################################  Entering details for VAS  ########################################################################
+                objects = dir()
+                for object in objects:
+                    if not object.startswith("__"):
+                        del object
                 
-                execution_date = []
-                maintenance_window = []
-                mpbn_cr_no = []
-                location = []
-                mpbn_change_responsible_executor = []
-                validator = []
-                impact = []
-                circle = []
-                mpbn_activity_title = []
-                cr_owner_domain = []
-                inter_domain = []
-                cr_category = []
-                impacted_node_details = []
-                Kpis_to_be_monitored = []
-                oss_name = []
-                oss_IP = []
-                for i in range(0,len(daily_plan_sheet)):
-                    if ((daily_plan_sheet.iloc[i]['Domain kpi'].upper().startswith('VAS')) and (daily_plan_sheet.iloc[i]['Planning Status'].upper() == 'PLANNED')):
-                        execution_date.append(daily_plan_sheet.iloc[i]['Execution Date'])
-                        maintenance_window.append(daily_plan_sheet.iloc[i]['Maintenance Window'])
-                        mpbn_cr_no.append(daily_plan_sheet.iloc[i]['CR NO'])
-                        cr_category.append(category)
-                        impact.append(daily_plan_sheet.iloc[i]['Impact'])
-                        location.append(daily_plan_sheet.iloc[i]['Location'])
-                        txt = str(daily_plan_sheet.iloc[i]['Circle'])
-                        circle.append(txt.upper())
-                        mpbn_activity_title.append(daily_plan_sheet.iloc[i]['Activity Title'])
-                        cr_owner_domain.append(owner_domain)
-                        mpbn_change_responsible_executor.append(daily_plan_sheet.iloc[i]['Change Responsible'])
-                        technical_validator = daily_plan_sheet.iloc[i]['Technical Validator']
-                        if technical_validator == team_leader:
-                            validator.append(team_leader)
-                        else:
-                            tech_validator_team_leader = technical_validator+"/"+team_leader
-                            validator.append(tech_validator_team_leader)
-                        inter_domain.append(daily_plan_sheet.iloc[i]['Domain kpi'].upper())
-                        impacted_node_details.append(daily_plan_sheet.iloc[i]['IMPACTED NODE'])
-                        Kpis_to_be_monitored.append(daily_plan_sheet.iloc[i]['KPI DETAILS'])
-
-                dictionary4 = {'CR':mpbn_cr_no,'Maintenance Window':maintenance_window,'CR Category':cr_category,'Impact':impact,'Location':location,'Circle':circle,'MPBN Activity Title':mpbn_activity_title,'CR Owner Domain':cr_owner_domain,'Change Responsible':mpbn_change_responsible_executor,'Technical Validator/Team Lead':validator,'InterDomain':inter_domain,'Impacted Node Details':impacted_node_details,'KPIs to be monitored':Kpis_to_be_monitored}
-                df4 = pd.DataFrame(dictionary4)
-                df4.drop_duplicates(subset = 'CR', keep = "first", inplace = True)
-                df4.replace("TempNA","",inplace = True)
-
-                # Dropping the Index of each Dataframe so that they're not written into the excel sheets.
-                df.reset_index(drop = True,inplace = True)
-                df2.reset_index(drop = True,inplace = True)
-                df3.reset_index(drop = True,inplace = True)
-                df4.reset_index(drop = True,inplace = True)
-
-                thread.join()
-
-                # writer = pd.ExcelWriter(workbook,engine = 'xlsxwriter')
-
-                # daily_plan_sheet.to_excel(writer,sheet_name = 'Planning Sheet',index = False)
-                # df.to_excel(writer,sheet_name = sheetname,index = False)
-                # df2.to_excel(writer,sheet_name = sheetname2,index = False)
-                # df3.to_excel(writer,sheet_name = sheetname3,index = False)
-                # Email_Id.to_excel(writer,sheet_name = 'Mail Id',index = False)
-
-                # Writing the dataframes into the worksheets.
-                # Checking whether the interdomain data are present in the sheet or not.
-                if((len(df) > 0) or (len(df2) > 0) or (len(df3) > 0) or (len(df4) > 0)):
-                    writer = pd.ExcelWriter(workbook,engine = "openpyxl",mode = "a",if_sheet_exists = "replace")
-                    if (len(df) > 0):
-                        df.to_excel(writer,sheet_name = sheetname,index = False)
-                    
-                    if (len(df2) > 0):
-                        df2.to_excel(writer,sheet_name = sheetname2,index = False)
-                    
-                    if (len(df3) > 0):
-                        df3.to_excel(writer,sheet_name = sheetname3,index = False)
-                    
-                    if (len(df4) > 0):
-                        df4.to_excel(writer,sheet_name = sheetname4,index = False)
-
-                    writer.close()
-                    
-                    # Styling the worksheets.
-                    if(len(df)):
-                        styling(workbook,sheetname)
-                        del df
-                    
-                    if(len(df2)):
-                        styling(workbook,sheetname2)
-                        del df2
-                    
-                    if(len(df3)):
-                        styling(workbook,sheetname3)
-                        del df3
-                    
-                    if(len(df4)):
-                        styling(workbook,sheetname4)
-                        del df4
-                    
-                    # Message showing that all the Interdomain Sheets have been written.
-                    messagebox.showinfo("   Interdomain Data Preparation Status","Interdomain KPIs Mail Data Preparation Task Completed!")
-                    
-
-                    objects = dir()
-                    for object in objects:
-                        if not object.startswith("__"):
-                            del object
-                    
-                    # Calling the Method(Function) that can write into the Automation tracker sheet.
-                    flag = p_one_p_three_appender(sender,workbook)
-                    del daily_plan_sheet
-                    return flag
-                
-                else:
-
-                    # Message for the case when there's no Interdomain data present(pre-defined interdomains i.e. CS-Core, PS-Core, RAN, VAS, aren't present in the 
-                    # 'Domain Kpi' column of the sheet)
-                    messagebox.showerror("  No Interdomain Data Present!","Kindly Check the 'Domain kpi' column of the Planning Status Sheet for the required Domains, i.e, CS-Core(CS,Core), PS-Core(Paco), RAN, VAS! and then retry!")
-
-                    objects = dir()
-                    for object in objects:
-                        if not object.startswith("__"):
-                            del object
-                    
-                    flag = "Unsuccessful"
+                flag = "Unsuccessful"
 
 
     # Exception for condition when Today's maintenance date is not present.
@@ -973,6 +1010,7 @@ def paco_cscore(sender,workbook):   #type:ignore
         # excel.Application.Quit()
         
         gc.collect()
+        # print(flag)
         return flag
 
-#paco_cscore("Manoj Kumar",r"C:/Daily/MPBN Daily Planning Sheet.xlsx")
+# paco_cscore("Manoj Kumar",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
