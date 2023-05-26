@@ -166,7 +166,6 @@ def p_one_p_three_appender(sender,workbook):
             p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
             
             p1_workbook.close()
-            del p1_workbook
 
             # Reading the Excel file in pandas.
             p1_file_read = pd.ExcelFile(p1_workbook_file)
@@ -193,6 +192,7 @@ def p_one_p_three_appender(sender,workbook):
                 del writer1
                 del p1_dataframe
                 del p1_file_read
+                del p1_workbook
                 
                 
                 # Styling the worksheet.
@@ -208,6 +208,7 @@ def p_one_p_three_appender(sender,workbook):
             
         
             else:
+                del p1_workbook
                 # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
                 messagebox.showinfo("   Data already present","Data for today's maintenance date is already present in the MPBN Planning Automation Tracker")
 
@@ -270,7 +271,6 @@ def p_one_p_three_appender(sender,workbook):
             p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
 
             p3_workbook.close()
-            del p3_workbook
 
             # Reading the Excel sheet in pandas.
             p3_file_read = pd.ExcelFile(p3_workbook_file)
@@ -297,6 +297,7 @@ def p_one_p_three_appender(sender,workbook):
                 del writer3
                 del p3_dataframe
                 del p3_file_read
+                del p3_workbook
 
 
                 # Styling the worksheet.
@@ -311,6 +312,7 @@ def p_one_p_three_appender(sender,workbook):
                         del object
             
             else:
+                del p3_workbook
                 # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
                 messagebox.showinfo("   Data already present","Data for today's mainteance date is already present in the MPBN Planning Automation Tracker")
 
