@@ -103,7 +103,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         today       = datetime.now()
 
         # Formatting today's date so that we can compare it with the received date and time of the messages in the inbox
-        today       = today.replace(hour = 10,minute=0,second = 0)
+        today       = today.replace(hour = 7,minute=0,second = 0)
         year,month,day,hour,minute = today.year,today.month,today.day,today.hour,today.minute
 
         today = datetime(year=year,month=month,day=day,hour=hour,minute=minute)
@@ -182,44 +182,46 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             break 
                         
             if (flag_variable == 0):
-                folders = len(inbox.Folders[i].Folders)
+                folder = inbox.Folders
+                for i in range(len(folder)):
+                    folders = len(inbox.Folders[i].Folders)
 
-                if(folders > 0):
-                    for i in range(0,folders):
-                        sub_folders = inbox.Folders[i].Folders
+                    if(folders > 0):
+                        for i in range(0,folders):
+                            sub_folders = inbox.Folders[i].Folders
 
-                        if(len(sub_folders) > 0):
-                            for sub_folder in range(len(sub_folders)):
-                                messages = inbox.Folders[i].Folders[sub_folder].Items
-                    
-                                # Filtering messages from the messages.
-                                messages.Sort("[ReceivedTime]",True)
-                                
-                                for message in messages:
-                                    try:
-                                        #print("\n\nChecking {inbox.Folders[i].Folders[sub_folder]}inside folder {inbox.Folders[i].Name} ")
-                                        #print(message.ReceivedTime)
-                                        dt = message.ReceivedTime
-                                        year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
-                                        dt = datetime(year,month,day,hour,minute)
-                                        #print(dt >= today)
-                                        if(dt >= today):
-                                            if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
-                                                #print(f"test:{cir}")
-                                                flag_variable = 1
-                                                break
-                                        else:
-                                            break
-                                    
-                                    except:
-                                        continue
-                            
-                                if(flag_variable == 1):
-                                    break
+                            if(len(sub_folders) > 0):
+                                for sub_folder in range(len(sub_folders)):
+                                    messages = inbox.Folders[i].Folders[sub_folder].Items
                         
-                        if(flag_variable == 1):
-                            break
-            
+                                    # Filtering messages from the messages.
+                                    messages.Sort("[ReceivedTime]",True)
+                                    
+                                    for message in messages:
+                                        try:
+                                            #print("\n\nChecking {inbox.Folders[i].Folders[sub_folder]}inside folder {inbox.Folders[i].Name} ")
+                                            #print(message.ReceivedTime)
+                                            dt = message.ReceivedTime
+                                            year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
+                                            dt = datetime(year,month,day,hour,minute)
+                                            #print(dt >= today)
+                                            if(dt >= today):
+                                                if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
+                                                    #print(f"test:{cir}")
+                                                    flag_variable = 1
+                                                    break
+                                            else:
+                                                break
+                                        
+                                        except:
+                                            continue
+                                
+                                    if(flag_variable == 1):
+                                        break
+                            
+                            if(flag_variable == 1):
+                                break
+                
             if (flag_variable == 0):
                 new_unique_circles = np.delete(new_unique_circles,np.where(new_unique_circles == cir))
                 circle_mail_not_found.append(cir)
