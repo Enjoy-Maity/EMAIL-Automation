@@ -10,7 +10,9 @@ from tkinter import messagebox                                      # Importing 
 from pathlib import Path                                            # Importing Path from pathlib to check the existence of a file.
 from threading import Thread                                        # Importing Thread for creation of threads
 import numpy as np                                                  # Importing numpy for operations on numpy arrays obtained from pandas.
+import win32com.client as win32
 import gc
+import os
 
 flag = ""
 # workbook1 = ""
@@ -68,6 +70,127 @@ def sheet_cleaner(workbook):
 #########################  P1 P3 appender  ##########################
 #####################################################################
 
+def p1_sheet_finder_and_loader(workbook_path):
+    outlook = win32.Dispatch("Outlook.Application")
+    mapi = outlook.GetNamespace("MAPI")
+    inbox = mapi.GetDefaultFolder(6)
+
+    messages = inbox.Items
+    messages.Sort("[ReceivedTime]",True)
+
+    subject_line_we_are_looking_for = "MPBN Planning Automation Tracker P1_Sheet"
+    subject_line_we_are_looking_for = subject_line_we_are_looking_for.lower()
+
+    last_date_for_mail_check = datetime.now() - timedelta(days = 3)
+    last_date_for_mail_check = last_date_for_mail_check.replace(hour=0,minute=0,second=0)
+
+    temp_flag = 0
+    
+    for message in messages:
+        try:
+            dt = message.ReceivedTime
+            year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+            dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
+
+            if(dt>=last_date_for_mail_check):
+                mail_Subject = message.Subject
+
+                if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
+                    temp_flag = 1
+                    attachment = message.Attachements.Item(1)
+                    attachment.SaveAsFile(workbook_path)
+                    break
+        except:
+            continue
+    
+    if(temp_flag == 0):
+        folders = len(inbox.Folders)
+        if(folders > 0):
+            for i in range(folders):
+                folder_messages = inbox.Folders[i].Items
+                folder_messages.Sort("[ReceivedTime]",True)
+
+                for message in folder_messages:
+                    try:
+                        dt = message.ReceivedTime
+                        year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+                        dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
+
+                        if(dt>=last_date_for_mail_check):
+                            mail_Subject = message.Subject
+
+                            if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
+                                temp_flag = 1
+                                attachment = message.Attachements.Item(1)
+                                attachment.SaveAsFile(workbook_path)
+                                break
+                    except:
+                        continue
+                
+                if(temp_flag == 1):
+                    break
+        
+    if(temp_flag == 0):
+        folders = len(inbox.Folders)
+        if(folders > 0):
+            for i in range(folders):
+                sub_folders = len(inbox.Folders[i].Folders)
+
+                if(sub_folders > 0):
+                    for j in range(sub_folders):
+                        sub_folder_messages = inbox.Folders[i].Folders[j].Items
+
+                        sub_folder_messages.Sort("[ReceivedTime]",True)
+
+                        for message in sub_folder_messages:
+                            try:
+                                dt = message.ReceivedTime
+                                year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+                                dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
+
+                                if(dt>=last_date_for_mail_check):
+                                    mail_Subject = message.Subject
+
+                                    if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
+                                        temp_flag = 1
+                                        attachment = message.Attachements.Item(1)
+                                        attachment.SaveAsFile(workbook_path)
+                                        break
+                            except:
+                                continue
+                        
+                        if(temp_flag == 1):
+                            break
+                
+                if(temp_flag == 1):
+                    break
+    objects = dir()
+    for object in objects:
+        if not object.startswith("__"):
+            del object
+
+def p1_mailer(workbook_path,sender):
+    outlook = win32.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)
+    mail.Attachments.Add(workbook_path)
+    mail.HTMLBody = f"<html>\
+                        <body>\
+                                <div>\
+                                    <p>Hi Team,</p>\
+                                    <br><br><p>Kindly find the updated MPBN Planning Automation Tracker File</p>\
+                                    </div>\
+                                        <br><br><br><div>\
+                                            Regards,<br>{sender}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.<br>\
+                                            </div>\
+                            </body>\
+                    </html>"
+    mail.To = "PDLPBNSRFP@pdl.internal.ericsson.com;"
+    # mail.CC = ""
+    mail.Save()
+    mail.Display()
+    # mail.Send()
+
+
 def p_one_p_three_appender(sender,workbook):
     # Getting the email-package-sheet
     wb              = pd.ExcelFile(workbook)
@@ -79,6 +202,7 @@ def p_one_p_three_appender(sender,workbook):
     planning_sheet['Execution Date'] = planning_sheet['Execution Date'].dt.strftime("%m/%d/%Y")
 
     if(len(planning_sheet) > 0):
+        # Concatenating the email package and the remaining rows from planning sheet with planning status 'Discussed'
         email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
     # Getting the unique technical validator.
@@ -86,9 +210,6 @@ def p_one_p_three_appender(sender,workbook):
     # print(unique_technical_validator_set)
     unique_technical_validator_set = unique_technical_validator_set.astype(str)
     # unique_technical_validator_set = np.delete(unique_technical_validator_set,np.where((unique_technical_validator_set == 'nan')|(unique_technical_validator_set == 'Nan')))
-    
-    p1 = ''
-    p3 = ''
     
     ''' 
         If the User is not a technical validator then we are throwing an Exception so that only the respective Technical Validator file 
@@ -99,242 +220,109 @@ def p_one_p_three_appender(sender,workbook):
         del planning_sheet
         del email_package
         del wb
-        raise CustomException(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
-    
-    if ('Arka Maiti' in unique_technical_validator_set):
-        p3 = 'Arka Maiti'
-        #np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p3))
-
-    if ('Manoj Kumar' in unique_technical_validator_set):
-        p1 = 'Manoj Kumar'
-        #np.delete(unique_technical_validator_set, np.where(unique_technical_validator_set == p1))
-
-    if ((len(p1) > 0) and (len(p3) == 0)):
-        p3 = str(np.setdiff1d(unique_technical_validator_set,np.array([p1],dtype = str))[0])
-    
-    if ((len(p3) > 0) and (len(p1) == 0)):
-        p1 = str(np.setdiff1d(unique_technical_validator_set,np.array([p3],dtype = str))[0])
-    
-    if (len(p1)>0 and len(p3)>0):
-        if (sender == p1):
-            # Here we are trying to get the parent folder path of the Workbook containing the Email_package sheet.
-            file_path = workbook.split("/")
-            file_path.remove(file_path[-1])
-            file_path = '/'.join(file_path)
-            p1_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P1.xlsx'
-            # global workbook2; workbook2 = p1_workbook_file
-            p1_sheet_name = 'MPBN Activity List'
-
-            # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
-            p1_dataframe = email_package[email_package['Technical Validator'] == p1]
-            p1_dataframe.drop("S.NO",axis = "columns",inplace = True)
-            p1_columns = p1_dataframe.columns.to_list()
-            
-            # Finding out whether the file for MPBN Planning Automation Tracker P1.xlsx exists or not
-            # If the File does not exists then in that case the file is created
-
-            if (Path(p1_workbook_file).exists() == False):
-                wb = Workbook()
-                wb.create_sheet(index=0,title = p1_sheet_name)
-                ws = wb[p1_sheet_name]
-                ws['A1'] = 'S.NO'
-                for i in range(0,len(p1_columns)):
-                    col = get_column_letter(i+2)
-                    ws[col+'1'] = p1_columns[i]
-                wb.save(p1_workbook_file)
-                wb.close()
-                del wb
-
-                wb = load_workbook(p1_workbook_file)
-                sheets = wb.sheetnames
-
-                for sheet in sheets:
-                    if sheet != p1_sheet_name:
-                        del wb[sheet]
-                    
-                wb.save(p1_workbook_file)
-                wb.close()
-                del wb  
-            
-
-            # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
-            p1_workbook = load_workbook(p1_workbook_file)
-
-            # Changing the Index of the dataframe to start from 1
-            p1_dataframe.reset_index(drop = True, inplace = True)
-            p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
-            p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
-            
-            p1_workbook.close()
-
-            # Reading the Excel file in pandas.
-            p1_file_read = pd.ExcelFile(p1_workbook_file)
-            p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
-
-            #Converting the execution date column values in the email_package to datetime datatype to execute the further operations
-            p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format= "%m/%d/%Y")
-            p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
-
-            # Getting the unique Execution Date from the Execution Date Column of the MPBN Planning Automation Tracker
-            p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
-            
-            # Assigning a Variable to get the today's maintenance date to check whether today's maintenance date's data is present in the MPBN Planning Automation Tracker
-            todays_maintenance_date = email_package.iloc[1]['Execution Date']
-            
-            ''' 
-                In this condition we are trying to check whether today's maintenance date is present in the MPBN Planning Automation Tracker Workbook's 
-                MPBN Activity List 
-            '''
-            if (todays_maintenance_date not in p1_file_read_unique_execution_date):
-                writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-                p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
-                writer1.close()
-                del writer1
-                del p1_dataframe
-                del p1_file_read
-                del p1_workbook
-                
-                
-                # Styling the worksheet.
-                styling(p1_workbook_file,p1_sheet_name)
-                
-                # message showing MPBN Planning Automation Tracker Status is successfully edited.
-                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
-                
-                objects = dir()
-                for object in objects:
-                    if not object.startswith("__"):
-                        del object
-            
-        
-            else:
-                del p1_workbook
-                # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
-                messagebox.showinfo("   Data already present","Data for today's maintenance date is already present in the MPBN Planning Automation Tracker")
-
-                objects = dir()
-                for object in objects:
-                    if not object.startswith("__"):
-                        del object
-            
-            flag = 'Successful'
-            return flag
-                
-            
-        if (sender == p3):
-            # Here we are trying to get the parent folder path of the Workbook containing the Email_package sheet.
-            file_path = workbook.split("/")
-            file_path.remove(file_path[-1])
-            file_path = "/".join(file_path)
-            p3_workbook_file = f'{file_path}/MPBN Planning Automation Tracker P3.xlsx'
-            # global workbook3; workbook3 = p3_workbook_file
-            p3_sheet_name = 'MPBN Activity List'
-
-            # Here we are filtering rows with the particular Technical Validator to write into the excel sheet.
-            p3_dataframe = email_package[email_package['Technical Validator'] == p3]
-            p3_dataframe.reset_index(drop = True, inplace = True)
-            p3_dataframe.drop("S.NO",axis = "columns", inplace = True)
-            p3_dataframe.replace('NA'," ",inplace = True)
-            p3_columns = p3_dataframe.columns.to_list()
-
-            # Finding out whether the file for MPBN Planning Automation Tracker P3.xlsx exists or not
-            # If the File does not exists then in that case the file is created
-            if (Path(p3_workbook_file).exists() == False):
-                wb = Workbook()
-                wb.create_sheet(index=0,title = p3_sheet_name)
-                ws = wb[p3_sheet_name]
-                ws['A1'] = 'S.NO'
-                for i in range(0,len(p3_columns)):
-                    col = get_column_letter(i+2)
-                    ws[col+'1'] = p3_columns[i]
-                wb.save(p3_workbook_file)
-                wb.close()
-                del wb
-
-                wb = load_workbook(p3_workbook_file)
-                sheets = wb.sheetnames
-
-                for sheet in sheets:
-                    if sheet != p3_sheet_name:
-                        del wb[sheet]
-
-                wb.save(p3_workbook_file)
-                wb.close()
-                del wb
-
-            
-            # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
-            p3_workbook = load_workbook(p3_workbook_file)
-
-            # Changing the Index of the dataframe to start from 1
-            p3_dataframe.index += (p3_workbook[p3_sheet_name].max_row)
-            p3_dataframe.insert(0,'S.NO',p3_dataframe.index)
-
-            p3_workbook.close()
-
-            # Reading the Excel sheet in pandas.
-            p3_file_read = pd.ExcelFile(p3_workbook_file)
-            p3_file_read = pd.read_excel(p3_file_read, p3_sheet_name)
-
-            # Formatting the 'Execution Date' to pandas datetime datatype for further usage in the program.
-            p3_file_read['Execution Date'] = pd.to_datetime(p3_file_read['Execution Date'],format="%m/%d/%Y")
-            p3_file_read['Execution Date'] = p3_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
-
-            # Getting the unique 'Execution Date' from the Execution Date Column of the MPBN Planning Automation Tracker.
-            p3_file_read_unique_execution_date = list(p3_file_read['Execution Date'].unique())
-            
-            # Assigning a Variable to get the today's maintenance date to check whether today's maintenance date's data is present in the MPBN Planning Automation Tracker
-            todays_maintenance_date = email_package.iloc[1]['Execution Date']
-            
-            ''' 
-                In this condition we are trying to check whether today's maintenance date is present in the MPBN Planning Automation Tracker Workbook's 
-                MPBN Activity List 
-            '''
-            if (todays_maintenance_date not in p3_file_read_unique_execution_date):
-                writer3 = pd.ExcelWriter(p3_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
-                p3_dataframe.to_excel(writer3,p3_sheet_name,startrow = p3_workbook[p3_sheet_name].max_row, index = False,index_label = 'S.NO', header = False)
-                writer3.close()
-                del writer3
-                del p3_dataframe
-                del p3_file_read
-                del p3_workbook
-
-
-                # Styling the worksheet.
-                styling(p3_workbook_file,p3_sheet_name)
-
-                # message showing MPBN Planning Automation Tracker Status is successfully edited.
-                messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator '{sender}' has been updated in MPBN Planning Automation Tracker!")
-
-                objects = dir()
-                for object in objects:
-                    if not object.startswith("__"):
-                        del object
-            
-            else:
-                del p3_workbook
-                # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
-                messagebox.showinfo("   Data already present","Data for today's mainteance date is already present in the MPBN Planning Automation Tracker")
-
-                objects = dir()
-                for object in objects:
-                    if not object.startswith("__"):
-                        del object
-            
-            flag = 'Successful'
-            return flag
-
-    else:
-        # Message showing that the user who is running the application is not a technical validator.
-        messagebox.showinfo("   Technical Validator Name Mismatch!",f"{sender}'s name is not matching with Technical Validator")
-
         objects = dir()
         for object in objects:
             if not object.startswith("__"):
                 del object
 
         flag = "Unsuccessful"
+        messagebox.showerror(' Technical Validator not Found!','Technical Validator is not found in the Planning Sheet, Kindly Check!')
         return flag
+    
+    else:
+        # Here we are trying to get the parent folder path of the Workbook containing the Email_package sheet.
+        p1_workbook_file = os.path.join(os.path.dirname(workbook),"MPBN Planning Automation Tracker P1.xlsx")
+        p1_sheet_name = 'MPBN Activity List'
+        p1_dataframe = email_package
+        
+        del email_package
+
+        p1_dataframe.drop("S.NO",axis = "columns",inplace = True)
+        p1_columns = p1_dataframe.columns.to_list()
+
+        # Finding out whether the file for MPBN Planning Automation Tracker P1.xlsx exists or not
+        # If the File does not exists then in that case the file is created
+
+        if (Path(p1_workbook_file).exists() == False):
+            p1_sheet_finder_and_loader(p1_workbook_file)
+        
+        else:
+            response = messagebox.askyesno("P1 workbook already exists!",f"MPBN Planning Automation Tracker P1.xlsx already exists, do you want to use the existing file (click 'yes') or download the file from outlook (click 'no')?")
+
+            if(not response):
+                os.remove(p1_workbook_file)
+                p1_sheet_finder_and_loader(p1_workbook_file)
+        
+        # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
+        p1_workbook = load_workbook(p1_workbook_file)
+
+        # Changing the Index of the dataframe to start from 1
+        p1_dataframe.reset_index(drop = True, inplace = True)
+        p1_dataframe.index += (p1_workbook[p1_sheet_name].max_row)
+        p1_dataframe.insert(0,'S.NO',p1_dataframe.index)
+                
+        p1_workbook.close()
+
+        # Reading the Excel file in pandas.
+        p1_file_read = pd.ExcelFile(p1_workbook_file)
+        p1_file_read = pd.read_excel(p1_file_read,p1_sheet_name)
+
+        #Converting the execution date column values in the email_package to datetime datatype to execute the further operations
+        p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format= "%m/%d/%Y")
+        p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
+
+        # Getting the unique Execution Date from the Execution Date Column of the MPBN Planning Automation Tracker
+        p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
+                
+        # Assigning a Variable to get the today's maintenance date to check whether today's maintenance date's data is present in the MPBN Planning Automation Tracker
+        todays_maintenance_date = email_package.iloc[1]['Execution Date']
+                
+        ''' 
+            In this condition we are trying to check whether today's maintenance date is present in the MPBN Planning Automation Tracker Workbook's 
+            MPBN Activity List 
+        '''
+        if (todays_maintenance_date not in p1_file_read_unique_execution_date):
+            writer1 = pd.ExcelWriter(p1_workbook_file, engine = 'openpyxl', mode = 'a', if_sheet_exists = 'overlay')
+            p1_dataframe.to_excel(writer1,p1_sheet_name,startrow = p1_workbook[p1_sheet_name].max_row, index = False,index_label = 'S.NO',header = False)
+            writer1.close()
+            del writer1
+            del p1_dataframe
+            del p1_file_read
+            del p1_workbook
+                    
+                    
+            # Styling the worksheet.
+            styling(p1_workbook_file,p1_sheet_name)
+                    
+            # message showing MPBN Planning Automation Tracker Status is successfully edited.
+            messagebox.showinfo("   MPBN Planning Automation Tracker Status",f"All planned CRs for Validator {sender} has been updated in MPBN Planning Automation Tracker!")
+                    
+            p1_mailer(p1_workbook_file,sender)
+
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                   del object
+                
+            
+        else:
+            del p1_workbook
+            # Message showing that the data for today's maintenance date is already present in the MPBN Planning Automation Tracker Status Excel worksheet.
+            messagebox.showinfo("   Data already present","Data for today's maintenance date is already present in the MPBN Planning Automation Tracker")
+
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
+
+
+        flag = 'Successful'
+        return flag
+
+            
+
+
+        
 
 
 #####################################################################
