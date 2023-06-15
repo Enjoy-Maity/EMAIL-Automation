@@ -244,33 +244,22 @@ class App(tk.Tk):
             self.evening_task_status_checker_flag                           = 0
             self.executor_mail_communication_status_checker_flag            = 0
             self.update(1)
-        
+
+        self.change_responsible_text_file_lines = open("./change_responsible.txt","r")
+    
         # List of all the users.
-        self.acceptable_change_responsible = ["Select Your Name!                ",
-                                              "Akash                                ",
-                                              "Arka Maiti                           ",
-                                              "Rupesh Mudgil                        ",
-                                              "Karan Loomba                         ",
-                                              "Manoj Kumar                          ",
-                                              "Bharat Ji                            ",
-                                              "Sachin Sharma                        ",
-                                              "Pulluru Sreeramulu                   ",
-                                              "Paras                                ",
-                                              "Ajay Kumar                           ",
-                                              "Abhishek Srivastava                  ",
-                                              "Kaushal Kumar                        ",
-                                              "Aswini Kumar Behera                  ",
-                                              "Amit Tandon                          ",
-                                              "Ashwani Kumar I                      ",
-                                              "Kartar Singh                         ",
-                                              "Enjoy Maity                          ",
-                                              "No                                   "]
+        self.acceptable_change_responsible = self.change_responsible_text_file_lines.readlines()
         
+        for i in range(0,len(self.acceptable_change_responsible)):
+            self.acceptable_change_responsible[i] = self.acceptable_change_responsible[i].strip()
+
+        self.change_responsible_text_file_lines.close()
+
         # Calling the Method to get the user name via GUI.
-        self.get_sender_name()
+        self.get_sender_name(self.acceptable_change_responsible)
     
     # Creating the GUI for getting the User name in the variable named sender.
-    def get_sender_name(self):
+    def get_sender_name(self,acceptable_change_responsible):
         self.sender_win = Toplevel(self.main_win)                           # Creating the Child GUI Window of the main Window GUI.
         self.main_win.withdraw()                                            # Making the Main Window GUI to hide when the Child GUI window appears.
         self.sender_win.title(" Please Select Your Name To Proceed")        # Setting the title of the GUI Window.
@@ -282,6 +271,7 @@ class App(tk.Tk):
         self.sender_win.bind("<Return>", self.submit_sender_name)           # Setting the Enter key to click the Button for submitting the file browser.
         self.sender_win.protocol(
             "WM_DELETE_WINDOW", lambda: self.sender_win_quit(1))            # Setting protocol for the condition, when the user deliberately closes the child GUI window.
+        
         self.sender_win.grab_set()                                          # Focussing on the child GUI Window when the child GUI window appears on the screen.
 
         # Setting the background image of the child GUI window.
@@ -297,14 +287,21 @@ class App(tk.Tk):
         
         # Creating the dropdown list of available users.
         self.sender_win_entry = ttk.OptionMenu(
-            self.sender_win, self.sender_win_entry_var, *self.acceptable_change_responsible, style="TMenubutton")
+            self.sender_win, self.sender_win_entry_var, *acceptable_change_responsible, style="TMenubutton",direction='flush')
         self.sender_win_entry['menu'].config(font=("Ericsson Hilda", 14))
+        self.sender_win_entry.config(width=20)
         
         self.sender_win_entry.focus_force()                     # Forcing the Focus on the sender window entry when the Sender Name Child GUI
-        
+
         # Creating the Button for the Submission of the entry.
         self.sender_win_btn = ttk.Button(
             self.sender_win, text="Submit", command=lambda: self.submit_sender_name(1))
+        
+        # Creating a button for adding the list of the change reponsible
+        self.user_addition_button = ttk.Button(self.sender_win, text = "Add User", command = lambda:self.add_user_func(1))
+
+        # Creating a button for deleting a user
+        self.user_deletion_button = ttk.Button(self.sender_win, text = "Remove User", command = lambda:self.delete_user_func(1))
 
         # Setting the background image over the Child GUI.
         self.sender_win_canvas.create_image(
@@ -319,9 +316,140 @@ class App(tk.Tk):
             60, 70, anchor="nw", window=self.sender_win_entry)
         self.sender_win_canvas.create_window(
             422, 85, window=self.sender_win_btn)
+        
+        self.sender_win_canvas.create_window(60,105,anchor = "nw", window=self.user_addition_button)
+
+        self.sender_win_canvas.create_window(378,105,anchor = "nw", window=self.user_deletion_button)
 
         # Calling the Child GUI Window in a loop until any Interruption event is occured.
         self.sender_win.mainloop()
+
+    # Method(Function) for adding user name
+    def add_user_func(self,event):
+        self.add_user_win = Toplevel(self.sender_win)
+        self.sender_win.withdraw()
+        self.add_user_win.bind("<Escape>", self.add_user_quit)
+        self.add_user_win.bind("<Alt-F4>", self.add_user_quit)
+        self.add_user_win.protocol("WM_DELETE_WINDOW",lambda:self.add_user_quit(1))
+        self.add_user_win.geometry("600x150")
+        self.add_user_win.minsize(600,150)
+        self.add_user_win.maxsize(600,150)
+        self.add_user_win.title("   Add User Name")
+        self.add_user_win.iconbitmap("./images/ericsson-blue-icon-logo.ico")
+
+        self.add_user_func_canvas = Canvas(self.add_user_win,width = 600, height = 150, relief = "ridge",highlightthickness=0,bd = 0)
+        self.add_user_func_canvas.grid(column=0, row=0, sticky=NW)
+
+        self.add_user_win_bg = ImageTk.PhotoImage(
+            Image.open("./images/MPBN PLANNING TASK_3_2.png"))
+        self.add_user_func_canvas.create_image(0,0,image = self.add_user_win_bg,anchor = "nw")
+
+        self.user_add_entry = ttk.Entry(self.add_user_win,width=30,font=('Ericsson Hilda',12,'normal'))
+        self.user_add_submit= ttk.Button(self.add_user_win,text="Submit", command = lambda:self.change_responsible_text_editor(1,'add'))
+        self.user_add_submit.bind("<Return>",lambda:self.change_responsible_text_editor(1,'add'))
+        self.user_add_entry.focus_force()
+        self.add_user_func_canvas.create_text(285,40,text = "Enter the Name you want to add!",fill = "#FFFFFF",font = ('Ericsson Hilda',19,'bold'))
+        self.add_user_func_canvas.create_window(200,80,window = self.user_add_entry)
+        self.add_user_func_canvas.create_window(400,79,window = self.user_add_submit)
+        
+    
+    # Method for destruction of the add_user_window
+    def add_user_quit(self,event):
+        self.add_user_win.destroy()
+        self.sender_win.destroy()
+        self.get_sender_name(self.acceptable_change_responsible)
+
+    # Method(Fuction) for deleting user name
+    def delete_user_func(self,event):
+        self.delete_user_win = Toplevel(self.sender_win)
+        self.sender_win.withdraw()
+        self.delete_user_win.bind("<Escape>", self.delete_user_quit)
+        self.delete_user_win.bind("<Alt-F4>", self.delete_user_quit)
+        self.delete_user_win.protocol("WM_DELETE_WINDOW",lambda:self.delete_user_quit(1))
+        self.delete_user_win.geometry("600x150")
+        self.delete_user_win.minsize(600,150)
+        self.delete_user_win.maxsize(600,150)
+        self.delete_user_win.title("    Remove User Name")
+        self.delete_user_win.iconbitmap("./images/ericsson-blue-icon-logo.ico")
+
+        self.delete_user_func_canvas = Canvas(self.delete_user_win,width = 600, height = 150, relief = "ridge",highlightthickness=0,bd = 0)
+        self.delete_user_func_canvas.grid(column=0, row=0, sticky=NW)
+
+        self.delete_user_win_bg = ImageTk.PhotoImage(
+            Image.open("./images/MPBN PLANNING TASK_3_2.png"))
+        self.delete_user_func_canvas.create_image(0,0,image = self.delete_user_win_bg,anchor = "nw")
+
+        self.user_delete_entry = ttk.Entry(self.delete_user_win,width=30,font=('Ericsson Hilda',12,'normal'))
+        self.user_delete_entry.focus_force()
+        self.user_delete_submit= ttk.Button(self.delete_user_win,text="Submit", command = lambda:self.change_responsible_text_editor(1,'delete'))
+        self.user_delete_submit.bind("<Return>", lambda:self.change_responsible_text_editor(1,'delete'))
+        self.delete_user_func_canvas.create_text(285,40,text = "Enter the Name you want to remove!",fill = "#FFFFFF",font = ('Ericsson Hilda',19,'bold'))
+        self.delete_user_func_canvas.create_window(200,80,window = self.user_delete_entry)
+        self.delete_user_func_canvas.create_window(400,79,window =self.user_delete_submit)
+
+    # Method for destruction of the add_user_window
+    def delete_user_quit(self,event):
+        self.delete_user_win.destroy()    
+        self.sender_win.destroy()
+        self.get_sender_name(self.acceptable_change_responsible)
+
+    # Method for updation of the change responsible text
+    def change_responsible_text_editor(self,event,task):
+        file_read_for_change_responsible = open("./change_responsible.txt")
+        
+        change_responsible_lines = file_read_for_change_responsible.readlines()
+
+        for i in range(0,len(change_responsible_lines)):
+            change_responsible_lines[i] = change_responsible_lines[i].strip()
+        
+        match task:
+            case 'add':
+                self.user_add_entry_var = str(self.user_add_entry.get()).strip()
+                if(len(self.user_add_entry_var) == 0):
+                    messagebox.showerror("  Empty Field!","Kindly enter name you want to add, not empty space!")
+                    self.user_add_entry.delete(0,END)
+                else:
+                    change_responsible_lines.insert(-1,self.user_add_entry_var)
+            case 'delete':
+                self.user_delete_entry_var = str(self.user_delete_entry.get()).strip()
+                if((len(self.user_delete_entry_var) == 0) or (self.user_delete_entry_var.strip().upper() == "NO") or (self.user_delete_entry_var.strip().upper() == "SELECT YOUR NAME!")):
+                    messagebox.showerror("  Empty Field!","Kindly enter name you want to remove, not empty space or 'NO'!")
+                    self.user_delete_entry.delete(0,END)
+                else:
+                    if(self.user_delete_entry_var.strip() in change_responsible_lines):
+                        change_responsible_lines.remove(self.user_delete_entry_var)
+                    else:
+                        messagebox.showerror("  Name Not found!","The Name that has been entered is not present in the acceptable change responsible list, Kindly Check!")
+                        self.user_delete_entry.delete(0,END)
+
+            case _:
+                pass
+
+        file_read_for_change_responsible.close()
+        file_write_for_change_responsible = open("./change_responsible.txt","w")
+        text_to_be_entered = ""
+        for i in range(0,len(change_responsible_lines)):
+            text_to_be_entered = f"{text_to_be_entered}{change_responsible_lines[i]}\n"
+        file_write_for_change_responsible.write(text_to_be_entered)
+        file_write_for_change_responsible.close()
+
+        change_responsible_text_file_lines = open("./change_responsible.txt","r")
+    
+        # List of all the users.
+        self.acceptable_change_responsible = change_responsible_text_file_lines.readlines()
+        
+        for i in range(0,len(self.acceptable_change_responsible)):
+            self.acceptable_change_responsible[i] = self.acceptable_change_responsible[i].strip()
+
+        change_responsible_text_file_lines.close()
+
+        match task:
+            case 'add':
+                messagebox.showinfo("   Task Successful","User Name successfully added!")
+                self.add_user_quit(1)
+            case 'delete':
+                messagebox.showinfo("   Task Successful","User Name successfully removed!")
+                self.delete_user_quit(1)
 
     # Method(Function) for updating the GUI Components (GIF Frame and the Background Image).
     def update(self, ind):
@@ -1477,7 +1605,8 @@ def main():
 
     # Handling any other Exception.
     except Exception as e:
-        messagebox.showerror("  Exception Occured", e)
+        import traceback
+        messagebox.showerror("  Exception Occured", f"{traceback.format_exc()}\n\n{e}")
 
     root.mainloop()
 
