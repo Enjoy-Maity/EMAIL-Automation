@@ -203,8 +203,16 @@ def p_one_p_three_appender(sender,workbook):
     # print(planning_sheet)
     if(len(planning_sheet) > 0):
         # Concatenating the email package and the remaining rows from planning sheet with planning status 'Discussed'
+        try:
+            email_package['Execution Date'] = pd.to_datetime(email_package['Execution Date'], format="%d-%b-%Y")
+        except:
+            try:
+                email_package['Execution Date'] = pd.to_datetime(email_package['Execution Date'], format="%m/%d/%Y")
+            
+            except Exception as e:
+                import traceback
+                messagebox.showerror("  Exception Occurred!",f"{traceback.format_exc()}\n\n{e}")
 
-        email_package['Execution Date'] = pd.to_datetime(email_package['Execution Date'], format="%d-%b-%Y")
         email_package['Execution Date'] = email_package['Execution Date'].dt.strftime("%m/%d/%Y")
         email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
