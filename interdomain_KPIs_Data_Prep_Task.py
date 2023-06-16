@@ -70,104 +70,104 @@ def sheet_cleaner(workbook):
 #########################  P1 P3 appender  ##########################
 #####################################################################
 
-def p1_sheet_finder_and_loader(workbook_path):
-    outlook = win32.Dispatch("Outlook.Application")
-    mapi = outlook.GetNamespace("MAPI")
-    inbox = mapi.GetDefaultFolder(6)
+# def p1_sheet_finder_and_loader(workbook_path):
+#     outlook = win32.Dispatch("Outlook.Application")
+#     mapi = outlook.GetNamespace("MAPI")
+#     inbox = mapi.GetDefaultFolder(6)
 
-    messages = inbox.Items
-    messages.Sort("[ReceivedTime]",True)
+#     messages = inbox.Items
+#     messages.Sort("[ReceivedTime]",True)
 
-    subject_line_we_are_looking_for = "MPBN Planning Automation Tracker P1_Sheet"
-    subject_line_we_are_looking_for = subject_line_we_are_looking_for.lower()
+#     subject_line_we_are_looking_for = "MPBN Planning Automation Tracker P1_Sheet"
+#     subject_line_we_are_looking_for = subject_line_we_are_looking_for.lower()
 
-    last_date_for_mail_check = datetime.now() - timedelta(days = 3)
-    last_date_for_mail_check = last_date_for_mail_check.replace(hour=0,minute=0,second=0)
+#     last_date_for_mail_check = datetime.now() - timedelta(days = 3)
+#     last_date_for_mail_check = last_date_for_mail_check.replace(hour=0,minute=0,second=0)
 
-    temp_flag = 0
+#     temp_flag = 0
     
-    for message in messages:
-        try:
-            dt = message.ReceivedTime
-            year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
-            dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
+#     for message in messages:
+#         try:
+#             dt = message.ReceivedTime
+#             year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+#             dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
 
-            if(dt>=last_date_for_mail_check):
-                mail_Subject = message.Subject
+#             if(dt>=last_date_for_mail_check):
+#                 mail_Subject = message.Subject
 
-                if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
-                    temp_flag = 1
-                    attachment = message.Attachements.Item(1)
-                    attachment.SaveAsFile(workbook_path)
-                    break
-        except:
-            continue
+#                 if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
+#                     temp_flag = 1
+#                     attachment = message.Attachements.Item(1)
+#                     attachment.SaveAsFile(workbook_path)
+#                     break
+#         except:
+#             continue
     
-    if(temp_flag == 0):
-        folders = len(inbox.Folders)
-        if(folders > 0):
-            for i in range(folders):
-                folder_messages = inbox.Folders[i].Items
-                folder_messages.Sort("[ReceivedTime]",True)
+#     if(temp_flag == 0):
+#         folders = len(inbox.Folders)
+#         if(folders > 0):
+#             for i in range(folders):
+#                 folder_messages = inbox.Folders[i].Items
+#                 folder_messages.Sort("[ReceivedTime]",True)
 
-                for message in folder_messages:
-                    try:
-                        dt = message.ReceivedTime
-                        year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
-                        dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
+#                 for message in folder_messages:
+#                     try:
+#                         dt = message.ReceivedTime
+#                         year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+#                         dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
 
-                        if(dt>=last_date_for_mail_check):
-                            mail_Subject = message.Subject
+#                         if(dt>=last_date_for_mail_check):
+#                             mail_Subject = message.Subject
 
-                            if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
-                                temp_flag = 1
-                                attachment = message.Attachements.Item(1)
-                                attachment.SaveAsFile(workbook_path)
-                                break
-                    except:
-                        continue
+#                             if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
+#                                 temp_flag = 1
+#                                 attachment = message.Attachements.Item(1)
+#                                 attachment.SaveAsFile(workbook_path)
+#                                 break
+#                     except:
+#                         continue
                 
-                if(temp_flag == 1):
-                    break
+#                 if(temp_flag == 1):
+#                     break
         
-    if(temp_flag == 0):
-        folders = len(inbox.Folders)
-        if(folders > 0):
-            for i in range(folders):
-                sub_folders = len(inbox.Folders[i].Folders)
+#     if(temp_flag == 0):
+#         folders = len(inbox.Folders)
+#         if(folders > 0):
+#             for i in range(folders):
+#                 sub_folders = len(inbox.Folders[i].Folders)
 
-                if(sub_folders > 0):
-                    for j in range(sub_folders):
-                        sub_folder_messages = inbox.Folders[i].Folders[j].Items
+#                 if(sub_folders > 0):
+#                     for j in range(sub_folders):
+#                         sub_folder_messages = inbox.Folders[i].Folders[j].Items
 
-                        sub_folder_messages.Sort("[ReceivedTime]",True)
+#                         sub_folder_messages.Sort("[ReceivedTime]",True)
 
-                        for message in sub_folder_messages:
-                            try:
-                                dt = message.ReceivedTime
-                                year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
-                                dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
+#                         for message in sub_folder_messages:
+#                             try:
+#                                 dt = message.ReceivedTime
+#                                 year,month,day,hour,minute,second = dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+#                                 dt = datetime(year=year,month=month,day=day,hour=hour,minute=minute,second=second)
 
-                                if(dt>=last_date_for_mail_check):
-                                    mail_Subject = message.Subject
+#                                 if(dt>=last_date_for_mail_check):
+#                                     mail_Subject = message.Subject
 
-                                    if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
-                                        temp_flag = 1
-                                        attachment = message.Attachements.Item(1)
-                                        attachment.SaveAsFile(workbook_path)
-                                        break
-                            except:
-                                continue
+#                                     if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
+#                                         temp_flag = 1
+#                                         attachment = message.Attachements.Item(1)
+#                                         attachment.SaveAsFile(workbook_path)
+#                                         break
+#                             except:
+#                                 continue
                         
-                        if(temp_flag == 1):
-                            break
+#                         if(temp_flag == 1):
+#                             break
                 
-                if(temp_flag == 1):
-                    break
-    objects = dir()
-    for object in objects:
-        if not object.startswith("__"):
-            del object
+#                 if(temp_flag == 1):
+#                     break
+#     objects = dir()
+#     for object in objects:
+#         if not object.startswith("__"):
+#             del object
 
 def p1_mailer(workbook_path,sender):
     outlook = win32.Dispatch("Outlook.Application")
@@ -177,14 +177,15 @@ def p1_mailer(workbook_path,sender):
                         <body>\
                                 <div>\
                                     <p>Hi Team,</p>\
-                                    <br><br><p>Kindly find the updated MPBN Planning Automation Tracker File</p>\
+                                    <p>Kindly find the updated MPBN Planning Automation Tracker File</p>\
                                     </div>\
-                                        <br><br><br><div>\
+                                        <br><div>\
                                             Regards,<br>{sender}<br>SRF MPBN | SDU Bharti<br>Ericsson India Global Services Pvt. Ltd.<br>\
                                             </div>\
                             </body>\
                     </html>"
     mail.To = "PDLPBNSRFP@pdl.internal.ericsson.com;"
+    mail.Subject = f"MPBN Planning Automation Tracker P1_sheet: {datetime.today().__format__('%d-%b-%Y')}"
     # mail.CC = ""
     mail.Save()
     mail.Display()
@@ -212,6 +213,8 @@ def p_one_p_three_appender(sender,workbook):
             except Exception as e:
                 import traceback
                 messagebox.showerror("  Exception Occurred!",f"{traceback.format_exc()}\n\n{e}")
+                flag = "Unsuccessful"
+                return flag
 
         email_package['Execution Date'] = email_package['Execution Date'].dt.strftime("%m/%d/%Y")
         email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
@@ -254,14 +257,22 @@ def p_one_p_three_appender(sender,workbook):
         # If the File does not exists then in that case the file is created
 
         if (Path(p1_workbook_file).exists() == False):
-            p1_sheet_finder_and_loader(p1_workbook_file)
+            neo_response = messagebox.askokcancel("   P1 workbook doesn't exist!", f"'MPBN Planning Automation Tracker P1 Sheet ' doesn't exist. Download the same from outlook (latest mail) and then press ok!")
+            
+            if(not neo_response):
+                messagebox.showwarning("    User Selected 'Cancel'!","You selected 'Cancel', so, dropping the work here!")
+                flag = "Unsuccessful"
+                return flag
+            # p1_sheet_finder_and_loader(p1_workbook_file)
         
         else:
-            response = messagebox.askyesno("P1 workbook already exists!",f"MPBN Planning Automation Tracker P1.xlsx already exists, do you want to use the existing file (click 'yes') or download the file from outlook (click 'no')?")
+            response = messagebox.askyesno("P1 workbook already exists!",f"'MPBN Planning Automation Tracker P1' already exists.Hope you have downloaded the same from latest mail. If yes then (click 'Yes') or (click 'No') if you want to drop this task?")
 
             if(not response):
-                os.remove(p1_workbook_file)
-                p1_sheet_finder_and_loader(p1_workbook_file)
+                # os.remove(p1_workbook_file)
+                # p1_sheet_finder_and_loader(p1_workbook_file)
+                flag = "Unsuccessful"
+                return flag
         
         # Loading the workbook to find the number of rows occupied in the worksheet to continue the S.NO series in that worksheet.
         p1_workbook = load_workbook(p1_workbook_file)
