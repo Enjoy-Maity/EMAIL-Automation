@@ -200,9 +200,12 @@ def p_one_p_three_appender(sender,workbook):
     planning_sheet = planning_sheet[planning_sheet['Planning Status'] == 'Discussed']
     planning_sheet['Execution Date'] = pd.to_datetime(planning_sheet['Execution Date'], format="%d-%b-%Y")
     planning_sheet['Execution Date'] = planning_sheet['Execution Date'].dt.strftime("%m/%d/%Y")
-
+    # print(planning_sheet)
     if(len(planning_sheet) > 0):
         # Concatenating the email package and the remaining rows from planning sheet with planning status 'Discussed'
+
+        email_package['Execution Date'] = pd.to_datetime(email_package['Execution Date'], format="%d-%b-%Y")
+        email_package['Execution Date'] = email_package['Execution Date'].dt.strftime("%m/%d/%Y")
         email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
     # Getting the unique technical validator.
@@ -235,7 +238,6 @@ def p_one_p_three_appender(sender,workbook):
         p1_sheet_name = 'MPBN Activity List'
         p1_dataframe = email_package
         
-        del email_package
 
         p1_dataframe.drop("S.NO",axis = "columns",inplace = True)
         p1_columns = p1_dataframe.columns.to_list()
@@ -270,7 +272,7 @@ def p_one_p_three_appender(sender,workbook):
         #Converting the execution date column values in the email_package to datetime datatype to execute the further operations
         p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format= "%m/%d/%Y")
         p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
-
+        
         # Getting the unique Execution Date from the Execution Date Column of the MPBN Planning Automation Tracker
         p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
                 
@@ -941,16 +943,16 @@ def paco_cscore(sender,workbook):   #type:ignore
         flag = "Unsuccessful"
     
     #Handling Attribute Error 
-    except AttributeError as e:
-        messagebox.showerror("  AttributeError Exception Occured",e)
+    # except AttributeError as e:
+    #     messagebox.showerror("  AttributeError Exception Occured",e)
 
-        # Deleting all the variables before returning the value for "Unsuccessful"
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+    #     # Deleting all the variables before returning the value for "Unsuccessful"
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
         
-        flag = "Unsuccessful"
+    #     flag = "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -1003,4 +1005,4 @@ def paco_cscore(sender,workbook):   #type:ignore
         # print(flag)
         return flag
 
-# paco_cscore("Manoj Kumar",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+# paco_cscore("Kartar Singh",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
