@@ -917,7 +917,10 @@ def paco_cscore(sender,workbook):   #type:ignore
 
                 # Message for the case when there's no Interdomain data present(pre-defined interdomains i.e. CS-Core, PS-Core, RAN, VAS, aren't present in the 
                 # 'Domain Kpi' column of the sheet)
-                messagebox.showerror("  No Interdomain Data Present!","Kindly Check the 'Domain kpi' column of the Planning Status Sheet for the required Domains, i.e, CS-Core(CS,Core), PS-Core(Paco), RAN, VAS! and then retry!")
+                response = messagebox.askokcancel("  No Interdomain Data Present!","No Interdomain detected in the 'Domain kpi' column of the uploaded planning sheet, Kindly check! if this is ok, Press Ok!")
+
+                if(response):
+                    flag = p_one_p_three_appender(sender,workbook)
 
                 objects = dir()
                 for object in objects:
