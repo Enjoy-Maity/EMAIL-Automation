@@ -74,6 +74,19 @@ def styling(workbook,sheetname):
         if not object.startswith("__"):
             del object
 
+# removing existing data validation
+def removeExistingCellDataValidation(worksheet, cell):
+    toRemove = []
+
+    # Append all validation rules for cell to be removed.
+    for validation in worksheet.data_validations.dataValidation:
+        if validation.__contains__(cell):
+            toRemove.append(validation)
+
+    # Process all data validation rules set for removal.
+    for rmValidation in toRemove:
+        worksheet.data_validations.dataValidation.remove(rmValidation)
+
 # Adding Data Validation
 def validation_adder(workbook,worksheet):
     wb                          = load_workbook(workbook)
@@ -84,13 +97,17 @@ def validation_adder(workbook,worksheet):
     workbk                      = pd.ExcelFile(workbook)
     mail_id_sheet               = pd.read_excel(workbk,"Mail Id")
 
-    # Getting th unique change responsible from the mail id sheet
-    unique_change_responsible   = list(mail_id_sheet['Change Responsible'].unique())
+    for i in range(2,maxrows+1):
+        removeExistingCellDataValidation(ws,ws[f'K{i}'])
 
-    # Removing the Nan value if there's any such value in the unique change responsible list.
-    for i in unique_change_responsible:
-        if (str(i).upper().strip() == 'NAN'):
-            unique_change_responsible.remove(i)
+    # Getting th unique change responsible from the mail id sheet
+    unique_change_responsible   = list(mail_id_sheet['Change Responsible'].dropna().unique())
+    unique_change_responsible.sort()
+
+    # # Removing the Nan value if there's any such value in the unique change responsible list.
+    # for i in unique_change_responsible:
+    #     if (str(i).upper().strip() == 'NAN'):
+    #         unique_change_responsible.remove(i)
 
     unique_change_responsible   = f"{', '.join(unique_change_responsible)}"
     unique_change_responsible   = f'"{unique_change_responsible}"'
@@ -111,6 +128,7 @@ def validation_adder(workbook,worksheet):
     # Setting the rows for the rules.
     range_setter_var_change_responsible    = f'K2:K{maxrows}'
     
+
     # Adding the ranges to the rules.
     rule1.add(range_setter_var_change_responsible)
     
@@ -118,6 +136,7 @@ def validation_adder(workbook,worksheet):
     # Saving the Workbook
     wb.save(workbook)
     wb.close()
+    workbk.close()
     del wb
 
     objects = dir()
@@ -1059,4 +1078,4 @@ def email_package_sheet_creater(workbook):
         gc.collect()
         return flag
 
-# email_package_sheet_creater(r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+# email_package_sheet_creater(r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet-1.xlsx")
