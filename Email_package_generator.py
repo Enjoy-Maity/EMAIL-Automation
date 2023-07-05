@@ -3,7 +3,7 @@ from tkinter import messagebox                                      # Importing 
 from openpyxl import load_workbook                                  # Importing load_workbook class from the openpyxl to load existing excel workbook.
 from openpyxl.styles import Font,Border,Side,PatternFill,Alignment  # Importing classes from openpyxl to style the excel workbooks.
 from openpyxl import Workbook                                       # Importing Workbook to Create Workbook using openpyxl.
-from openpyxl.utils import get_column_letter                        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
+from openpyxl.utils import get_column_letter,quote_sheetname        # Importing the get_column_letter from openpyxl to convert the column numbers to alphabet letter used in the excel sheet.
 from datetime import datetime, timedelta                            # Importing the datetime and timedelta from datetime module, to filter out the excel sheet basd on today's maintenance date.
 from openpyxl.worksheet.datavalidation import DataValidation        # Importing DataValidation from the openpyxl module to add data validation onto fields in email-package
 
@@ -103,17 +103,20 @@ def validation_adder(workbook,worksheet):
     # Getting th unique change responsible from the mail id sheet
     unique_change_responsible   = list(mail_id_sheet['Change Responsible'].dropna().unique())
     unique_change_responsible.sort()
+    len_of_list_of_unique_change_responsible = len(unique_change_responsible)
 
     # # Removing the Nan value if there's any such value in the unique change responsible list.
     # for i in unique_change_responsible:
     #     if (str(i).upper().strip() == 'NAN'):
     #         unique_change_responsible.remove(i)
 
-    unique_change_responsible   = f"{', '.join(unique_change_responsible)}"
-    unique_change_responsible   = f'"{unique_change_responsible}"'
+    # unique_change_responsible   = f"{', '.join(unique_change_responsible)}"
+    # unique_change_responsible   = f'"{unique_change_responsible}"'
+    # print(len(unique_change_responsible))
+    
 
     # Rules for data validation with their error message, title and prompt message, title.
-    rule1               = DataValidation(type = "list", formula1= unique_change_responsible, allow_blank = True)
+    rule1               = DataValidation(type = "list", formula1=f"{quote_sheetname('Mail Id')}!$F$2:$F${len_of_list_of_unique_change_responsible+1}", allow_blank = True)
     rule1.error         = "Your Entry is Invalid!"
     rule1.errorTitle    = "Invalid Entry!"
 
