@@ -123,7 +123,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
             del object
 
 # Method(Function) for creating email package workbook and mail draft.
-def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
+def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
     workbook = rf"{folder}\\MPBN_Email_Package_{execution_date}.xlsx"
     # global workbook3; workbook3 = workbook
@@ -157,6 +157,7 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     new_workbook = pd.ExcelFile(workbook)
     writer = pd.ExcelWriter(new_workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
     worksheet.to_excel(writer,"Email-Package",index = False)
+    mail_id_sheet.to_excel(writer,"Circle Mail Id",index= False)
     writer.close()
     del writer
 
@@ -221,14 +222,19 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
         wb=pd.ExcelFile(workbook)
         ws=wb.sheet_names
         worksheet=''
+        mail_id_sheet = ''
 
         # Finding the Email package worksheet.
         if('Email-Package' in ws):
             worksheet='Email-Package'
         
+        if('Mail Id' in ws):
+            mail_id_sheet = 'Mail Id'
+        
 
         if (len(worksheet) == 0):
             # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            del mail_id_sheet
             del worksheet
             del wb
             # Deleting all the variables before returning the value "Unsuccessful"
@@ -238,11 +244,26 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                     del object
 
             flag = 'Unsuccessful'
-            raise CustomWarning((' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!'))
+            raise CustomWarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+        
+        if (len(mail_id_sheet) == 0):
+            # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            del mail_id_sheet
+            del worksheet
+            del wb
+            # Deleting all the variables before returning the value "Unsuccessful"
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
+
+            flag = 'Unsuccessful'
+            raise CustomWarning(' Mail Id Worksheet not Present','Kindly Check the selected input workbook for Mail Id sheet!')
         
         else:
         # Reading relevant sheet.
             worksheet=pd.read_excel(wb,worksheet)
+            mail_id_sheet= pd.read_excel(wb,mail_id_sheet)
 
             # Checking Condition for the data pertaining to today's maintenance date being non-existent.
             if (len(worksheet) == 0):
@@ -511,7 +532,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             evening_message_workbook_message.fillna(" ",inplace = True)
 
             # Calling the Email Package Workbook generator and mail drafter.
-            email_package_workbook_generator(sender,worksheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
+            email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
 
             # Deleting all the local variables 
