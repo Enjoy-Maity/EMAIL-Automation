@@ -31,6 +31,15 @@ class CustomException(Exception):
         # Displaying the message with the custom exception title passed to the object of the class for the CustomException.
         messagebox.showerror(self.title, self.message)
 
+# Method for hiding sheet
+def sheet_hider(workbook,worksheet):
+    wb = load_workbook(workbook)
+    ws = wb[worksheet]
+    ws.sheet_state = "hidden"
+    wb.save(workbook)
+    wb.close()
+
+
 # Creating method for styling the worksheet.
 def styling(workbook,sheetname):
     wb  =  load_workbook(workbook)                          # loading the workbook.
@@ -162,6 +171,8 @@ def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execu
     del writer
 
     styling(workbook, "Email-Package")
+    styling(workbook,"Circle Mail Id")
+    sheet_hider(workbook,"Circle Mail Id")
 
     # Creating the Html Body for the Body
     html_body = "<html>\
