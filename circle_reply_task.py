@@ -123,8 +123,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
         circle_mail_not_found = []
         new_unique_circles = unique_circles
-        # print(unique_circles)
-        #print("Entering the test for mail")
+        # #print(unique_circles)
+        ##print("Entering the test for mail")
 
         # Iterating through the unique circles for checking if the mails for the circle are found or not.
         # for cir in unique_circles:
@@ -138,19 +138,19 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
         #     for message in messages:
         #         try:
-        #             # print("\n\nChecking inbox mails")
-        #             # print("Hello")
-        #             # print(str(message.ReceivedTime))
+        #             # #print("\n\nChecking inbox mails")
+        #             # #print("Hello")
+        #             # #print(str(message.ReceivedTime))
 
         #             dt = message.ReceivedTime
         #             year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
         #             dt = datetime(year,month,day,hour,minute)
-        #             # print(dt >= today)
+        #             # #print(dt >= today)
 
         #             if(dt >= today):
-        #                 # print(message.Subject.lower().__contains__(subject_we_are_looking_for.lower()))
+        #                 # #print(message.Subject.lower().__contains__(subject_we_are_looking_for.lower()))
         #                 if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
-        #                     # print(f"\n\ntest:{cir}\n\n")
+        #                     # #print(f"\n\ntest:{cir}\n\n")
         #                     flag_variable = 1
         #                     break
         #             else:
@@ -169,18 +169,18 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         
         #                 # Filtering messages from the messages.
         #                 messages.Sort("[ReceivedTime]",True)
-        #                 # print(f"\n\nChecking {inbox.Folders[i].Name} inside inbox")
+        #                 # #print(f"\n\nChecking {inbox.Folders[i].Name} inside inbox")
         #                 for message in messages:
         #                     try:
-        #                         # print(message.ReceivedTime)
+        #                         # #print(message.ReceivedTime)
         #                         dt = message.ReceivedTime
         #                         year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
         #                         dt = datetime(year,month,day,hour,minute)
-        #                         # print(dt >= today)
+        #                         # #print(dt >= today)
         #                         if(dt >= today):
-        #                             # print(message.Subject.lower().__contains__(subject_we_are_looking_for.lower()))
+        #                             # #print(message.Subject.lower().__contains__(subject_we_are_looking_for.lower()))
         #                             if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
-        #                                 # print(f"\n\ntest:{cir}\n\n")
+        #                                 # #print(f"\n\ntest:{cir}\n\n")
         #                                 flag_variable = 1
         #                                 break
         #                         else:
@@ -209,15 +209,15 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     
         #                             for message in messages:
         #                                 try:
-        #                                     #print("\n\nChecking {inbox.Folders[i].Folders[sub_folder]}inside folder {inbox.Folders[i].Name} ")
-        #                                     #print(message.ReceivedTime)
+        #                                     ##print("\n\nChecking {inbox.Folders[i].Folders[sub_folder]}inside folder {inbox.Folders[i].Name} ")
+        #                                     ##print(message.ReceivedTime)
         #                                     dt = message.ReceivedTime
         #                                     year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
         #                                     dt = datetime(year,month,day,hour,minute)
-        #                                     #print(dt >= today)
+        #                                     ##print(dt >= today)
         #                                     if(dt >= today):
         #                                         if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
-        #                                             #print(f"test:{cir}")
+        #                                             ##print(f"test:{cir}")
         #                                             flag_variable = 1
         #                                             break
         #                                     else:
@@ -236,8 +236,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         unique_circles_len = len(unique_circles)
         while(l < unique_circles_len):
             cir = unique_circles[l]
-            print(cir)
-            print(today_maintenance_date.strftime('%d-%m-%Y'))
+            #print(cir)
+            #print(today_maintenance_date.strftime('%d-%m-%Y'))
             subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
             
             # Creating a flag variable for searching the mail.
@@ -253,9 +253,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                   day=day,
                                   hour=hour,
                                   minute=minute)
-                    # print(today)
+                    # #print(today)
                     if(dt >= today):
-                        print(inbox_messages[i].Subject.lower().__contains__(subject_we_are_looking_for.lower()))
+                        # #print(inbox_messages[i].Subject.lower().__contains__(subject_we_are_looking_for.lower()))
                         if(inbox_messages[i].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                             flag_variable = 1
                             break
@@ -272,6 +272,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 sub_folders_of_inbox = len(inbox.Folders)
                 i = 0
                 while(i < sub_folders_of_inbox):
+                    #print(inbox.Folders[i])
                     sub_folders_of_inbox_messages = inbox.Folders[i].Items
                     sub_folders_of_inbox_messages.Sort("[ReceivedTime]", True)
                     sub_folders_of_inbox_messages_len = len(sub_folders_of_inbox_messages)
@@ -288,6 +289,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                           minute=minute)
                             if(dt >= today):
                                 if(sub_folders_of_inbox_messages[j].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
+                                    #print(sub_folders_of_inbox_messages[j].Subject)
                                     flag_variable = 1
                                     break
                                 else:
@@ -298,6 +300,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         except:
                             j+=1
                             continue
+                
+                    if(flag_variable == 0):
+                        i+=1
+                        continue
+                    
+                    if(flag_variable == 1):
+                        break
             
             if(flag_variable == 0):
                 sub_folders_of_inbox = len(inbox.Folders)
@@ -324,6 +333,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     
                                     if(dt >= today):
                                         if(sub_sub_folders_of_inbox_messages[k].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
+                                            #print(sub_sub_folders_of_inbox_messages[k].Subject)
                                             flag_variable = 1
                                             break
                                         
@@ -352,8 +362,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     if(flag_variable == 1):
                         break
 
-            print(cir)
-            print(flag_variable)
+            #print(cir)
+            #print(flag_variable)
             if (flag_variable == 0):
                 new_unique_circles = np.delete(new_unique_circles,np.where(new_unique_circles == cir))
                 circle_mail_not_found.append(cir)
@@ -361,7 +371,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             l+=1
             continue
 
-        print(new_unique_circles)
+        #print(new_unique_circles)
         # Iterating through the unique circles for replying to circles.
         # for cir in new_unique_circles:
         l = 0
@@ -418,7 +428,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             #             dt = message.ReceivedTime
             #             year,month,day,hour,minute = dt.year,dt.month,dt.day,dt.hour,dt.minute
             #             dt = datetime(year,month,day,hour,minute)
-            #             # print(dt >= today)
+            #             # #print(dt >= today)
             #             if(dt >= today):
             #                 if(message.Subject.lower().__contains__(subject_we_are_looking_for.lower())):
             #                     flag_variable = 1
@@ -517,7 +527,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             
             #             if(flag_variable == 1):
             #                 break
-            print(cir)
+            #print(cir)
             i = 0
             while(i < inbox_messages_len):
                 try:
@@ -551,7 +561,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 i = 0
                 while(i < sub_folders_of_inbox):
                     sub_folders_of_inbox_messages = inbox.Folders[i].Items
-                    print(f"inside_mail draft {inbox.Folders[i].Name}")
+                    #print(f"inside_mail draft {inbox.Folders[i].Name}")
                     sub_folders_of_inbox_messages.Sort("[ReceivedTime]", True)
                     sub_folders_of_inbox_messages_len = len(sub_folders_of_inbox_messages)
 
@@ -567,9 +577,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                           minute=minute)
                             if(dt >= today):
                                 if(sub_folders_of_inbox_messages[j].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
-                                    print(sub_folders_of_inbox_messages[j].Subject)
+                                    #print(sub_folders_of_inbox_messages[j].Subject)
                                     flag_variable = 1
-                                    mail_drafter_func(message=inbox_messages[i],
+                                    mail_drafter_func(message=sub_folders_of_inbox_messages[j],
                                               mail_body=mail_body,
                                               dataframe=dataframe,
                                               sender=sender,
@@ -617,7 +627,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                     if(dt >= today):
                                         if(sub_sub_folders_of_inbox_messages[k].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                                             flag_variable = 1
-                                            mail_drafter_func(message=inbox_messages[i],
+                                            mail_drafter_func(message=sub_sub_folders_of_inbox_messages[k],
                                               mail_body=mail_body,
                                               dataframe=dataframe,
                                               sender=sender,
@@ -652,8 +662,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             l += 1
             continue
 
-        # print("\n\n\n")
-        # print(len(circle_mail_not_found))
+        # #print("\n\n\n")
+        # #print(len(circle_mail_not_found))
 
         if(len(circle_mail_not_found) == 0):
             messagebox.showinfo("   Mails Drafted",f"Change Responsible Mails for all mentioned {len(new_unique_circles)} circles have been drafted!")
@@ -769,11 +779,11 @@ def circle_reply_task(sender, workbook):
                 # Creating a variable to get today's maintenance date
                 today_maintenance_date = datetime.now() + timedelta(1)
                 
-                #print("Function called")
+                ##print("Function called")
                 # Calling the Method (function) for replying the mail.
-                # print("Hello")
+                # #print("Hello")
                 temp_flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
-                #print(flag)
+                ##print(flag)
                 
                 del mail_id_sheet
                 del required_worksheet
