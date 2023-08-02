@@ -65,12 +65,12 @@ def email_parser(body):
 
     return result
     
-def mail_drafter_func(message,mail_body,dataframe,sender):
+def mail_drafter_func(message,mail_body,dataframe,to,sender):
     mail_to_be_drafted  = message.ReplyAll()
     result              = email_parser(mail_to_be_drafted.Body)
     Body                = mail_body.format(dataframe.to_html(index=False),sender)
     mail_to_be_drafted.HTMLBody = Body + mail_to_be_drafted.HTMLBody
-    mail_to_be_drafted.To = f"{';'.join(result[0])}"
+    mail_to_be_drafted.To = f"{';'.join(to)};{';'.join(result[0])}"
     mail_to_be_drafted.CC = f"{';'.join(result[1])}"
     mail_to_be_drafted.Save()
     mail_to_be_drafted.Display()
@@ -112,7 +112,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         today       = datetime.now()
 
         # Formatting today's date so that we can compare it with the received date and time of the messages in the inbox
-        today       = today.replace(hour = 7,minute=0,second = 0)
+        today       = today.replace(hour = 5,minute=0,second = 0)
         year,month,day,hour,minute = today.year,today.month,today.day,today.hour,today.minute
 
         today = datetime(year=year,month=month,day=day,hour=hour,minute=minute)
@@ -123,7 +123,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
         circle_mail_not_found = []
         new_unique_circles = unique_circles
-        
+        # print(unique_circles)
         #print("Entering the test for mail")
 
         # Iterating through the unique circles for checking if the mails for the circle are found or not.
@@ -236,7 +236,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         unique_circles_len = len(unique_circles)
         while(l < unique_circles_len):
             cir = unique_circles[l]
-            subject_we_are_looking_for = f"Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
+            print(cir)
+            print(today_maintenance_date.strftime('%d-%m-%Y'))
+            subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
             
             # Creating a flag variable for searching the mail.
             flag_variable = 0
@@ -251,7 +253,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                   day=day,
                                   hour=hour,
                                   minute=minute)
+                    # print(today)
                     if(dt >= today):
+                        print(inbox_messages[i].Subject.lower().__contains__(subject_we_are_looking_for.lower()))
                         if(inbox_messages[i].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
                             flag_variable = 1
                             break
@@ -348,7 +352,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     if(flag_variable == 1):
                         break
 
-
+            print(cir)
+            print(flag_variable)
             if (flag_variable == 0):
                 new_unique_circles = np.delete(new_unique_circles,np.where(new_unique_circles == cir))
                 circle_mail_not_found.append(cir)
@@ -356,7 +361,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
             l+=1
             continue
 
-        
+        print(new_unique_circles)
         # Iterating through the unique circles for replying to circles.
         # for cir in new_unique_circles:
         l = 0
@@ -512,6 +517,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             
             #             if(flag_variable == 1):
             #                 break
+            print(cir)
             i = 0
             while(i < inbox_messages_len):
                 try:
@@ -528,7 +534,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                             mail_drafter_func(message=inbox_messages[i],
                                               mail_body=mail_body,
                                               dataframe=dataframe,
-                                              sender=sender)
+                                              sender=sender,
+                                              to=to)
                             break
                         else:
                             i+=1
@@ -544,6 +551,7 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                 i = 0
                 while(i < sub_folders_of_inbox):
                     sub_folders_of_inbox_messages = inbox.Folders[i].Items
+                    print(f"inside_mail draft {inbox.Folders[i].Name}")
                     sub_folders_of_inbox_messages.Sort("[ReceivedTime]", True)
                     sub_folders_of_inbox_messages_len = len(sub_folders_of_inbox_messages)
 
@@ -559,11 +567,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                           minute=minute)
                             if(dt >= today):
                                 if(sub_folders_of_inbox_messages[j].Subject.lower().__contains__(subject_we_are_looking_for.lower())):
+                                    print(sub_folders_of_inbox_messages[j].Subject)
                                     flag_variable = 1
                                     mail_drafter_func(message=inbox_messages[i],
                                               mail_body=mail_body,
                                               dataframe=dataframe,
-                                              sender=sender)
+                                              sender=sender,
+                                              to=to)
                                     break
                                 else:
                                     j+=1
@@ -573,6 +583,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                         except:
                             j+=1
                             continue
+                    
+                    if(flag_variable == 0):
+                        i+=1
+                        continue
+                    
+                    if(flag_variable == 1):
+                        break
             
             if(flag_variable == 0):
                 sub_folders_of_inbox = len(inbox.Folders)
@@ -603,7 +620,8 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                                             mail_drafter_func(message=inbox_messages[i],
                                               mail_body=mail_body,
                                               dataframe=dataframe,
-                                              sender=sender)
+                                              sender=sender,
+                                              to=to)
                                             break
                                         
                                         else:
@@ -630,6 +648,9 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
                     
                     if(flag_variable == 1):
                         break
+            
+            l += 1
+            continue
 
         # print("\n\n\n")
         # print(len(circle_mail_not_found))
@@ -750,6 +771,7 @@ def circle_reply_task(sender, workbook):
                 
                 #print("Function called")
                 # Calling the Method (function) for replying the mail.
+                # print("Hello")
                 temp_flag = mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,unique_circles,dictionary_for_change_responsible_to_mail_id)
                 #print(flag)
                 
@@ -833,4 +855,4 @@ def circle_reply_task(sender, workbook):
         gc.collect()
         return flag
 
-# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet.xlsx")
+# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet-1.xlsx")
