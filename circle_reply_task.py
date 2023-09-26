@@ -35,23 +35,37 @@ def email_parser(body):
         new_body_list[i] = new_body_list[i].strip()
 
         if (new_body_list[i].startswith("From:")):
+            # print(new_body_list[i])
             from_mail = new_body_list[i].split(":")[1].split("<")[1].strip(">")
+            # print("\n",from_mail)
 
         if (new_body_list[i].startswith("To")):
+            # print(new_body_list[i])
             to = new_body_list[i].split(":")[1].split(">;")
+            # print(to)
 
         if (new_body_list[i].startswith("Cc")):
+            # print(new_body_list[i],end='\n\n')
             cc = new_body_list[i].split(":")[1].split(">;")
+            
         
         if(new_body_list[i].startswith("Subject")):
             break
 
     for i in range(0,len(to)):
-        to[i] = to[i].split("<")[1]
+        if(str(to[i]).__contains__("<")):
+            to[i] = to[i].split("<")[1]
+        
+        if(str(to[i]).endswith(">")):
+            to[i] = to[i].strip(">")
 
     for i in range(0,len(cc)):
-        cc[i] = cc[i].split("<")[1]
+        if(str(cc[i]).__contains__("<")):
+            cc[i] = cc[i].split("<")[1]
 
+        if(str(cc[i]).endswith(">")):
+            cc[i] = cc[i].strip(">")
+        
     to.append(from_mail)
     to = airtel_remover(to)
     cc = airtel_remover(cc)
@@ -65,9 +79,19 @@ def email_parser(body):
 
     return result
     
+i  = 1
 def mail_drafter_func(message,mail_body,dataframe,to,sender):
     mail_to_be_drafted  = message.ReplyAll()
+    global i;
+    from pathlib import Path
+    Path(r'C:\Users\emaienj\Downloads\Daily Work\Message Bodies').mkdir(parents=True,exist_ok=True)
+    f = open(rf'C:\Users\emaienj\Downloads\Daily Work\Message Bodies\message{i}.txt','w')
+    f.write(mail_to_be_drafted.Body)
+    i += 1
+    f.close()
     result              = email_parser(mail_to_be_drafted.Body)
+    # result              = email_parser(message.Body)
+    # print(message.Subject)
     Body                = mail_body.format(dataframe.to_html(index=False),sender)
     mail_to_be_drafted.HTMLBody = Body + mail_to_be_drafted.HTMLBody
     mail_to_be_drafted.To = f"{';'.join(to)};{';'.join(result[0])}"
@@ -234,11 +258,12 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
 
         l = 0
         unique_circles_len = len(unique_circles)
+        # print(unique_circles)
         while(l < unique_circles_len):
             cir = unique_circles[l]
             #print(cir)
             #print(today_maintenance_date.strftime('%d-%m-%Y'))
-            subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
+            subject_we_are_looking_for = f"Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
             
             # Creating a flag variable for searching the mail.
             flag_variable = 0
@@ -374,12 +399,13 @@ def mail_checker_and_sender(today_maintenance_date,sender,required_worksheet,uni
         #print(new_unique_circles)
         # Iterating through the unique circles for replying to circles.
         # for cir in new_unique_circles:
+        # print(new_unique_circles)
         l = 0
         while(l < len(new_unique_circles)):
             cir = new_unique_circles[l]
 
             # Making the subject for finding in the inbox
-            subject_we_are_looking_for = f"RE: Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
+            subject_we_are_looking_for = f"Connected End Nodes and their services on MPBN devices: {cir}_{today_maintenance_date.strftime('%d-%m-%Y')}"
 
             # Creating a flag variable for searching the mail.
             flag_variable = 0
@@ -865,4 +891,4 @@ def circle_reply_task(sender, workbook):
         gc.collect()
         return flag
 
-# circle_reply_task("Manoj Kumar",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet-1.xlsx")
+circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\Daily Work\MPBN_Email_Package_27th Sep 2023.xlsx")
