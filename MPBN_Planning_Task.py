@@ -1333,7 +1333,7 @@ class App(tk.Tk):
 
                     # Calling the required method from the module with sufficient arguments to do the task and getting the return value from the metod in a flag variable.
                     self.evening_mail_task_status_flag = evening_mail_task.evening_task(
-                        self.sender, self.night_shift_lead, self.buffer_auditor_trainer, self.resource_on_automation, self.file_browser_file)
+                        self.sender, self.night_shift_lead, self.buffer_auditor_trainer, self.resource_on_automation, self.file_browser_file, self.acceptable_change_responsible)
 
                     # Checking the flag variable for setting the label for the task along with it's suitable color.
                     if (self.evening_mail_task_status_flag == 'Successful'):

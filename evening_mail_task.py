@@ -228,7 +228,7 @@ def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execu
 
 
 # Method(Function) for creating the evening message text.
-def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
+def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook,acceptable_change_responsible):
     try:
         wb=pd.ExcelFile(workbook)
         ws=wb.sheet_names
@@ -255,7 +255,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                     del object
 
             flag = 'Unsuccessful'
-            raise CustomWarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            raise CustomWarning(' Email-Package Worksheet not Present',"Kindly Click the Button for 'Email Package Preparation' First!")
         
         if (len(mail_id_sheet) == 0):
             # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
@@ -288,7 +288,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                         del object
 
                 flag = 'Unsuccessful'
-                raise CustomWarning((' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!'))
+                raise CustomWarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
             
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
             total_no_of_resource = 16           
@@ -430,7 +430,25 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     {}
             """
             # Adding all the other relevant data to the message text by formatting it.
-            message = message.format(execution_date,maintenance_window,total_no_of_crs,critical,major,critical,delhi_critical,major,delhi_major,len(resources_occupied_in_night_activities),resource_on_leave,night_shift_lead,buffer_auditor_trainer,resource_on_automation,total_no_of_crs,manual,enable,create,partially_automation,sender)
+            message = message.format(execution_date,
+                                     maintenance_window,
+                                     total_no_of_crs,
+                                     critical,
+                                     major,
+                                     critical,
+                                     delhi_critical,
+                                     major,
+                                     delhi_major,
+                                     len(resources_occupied_in_night_activities),
+                                     resource_on_leave,night_shift_lead,
+                                     buffer_auditor_trainer,
+                                     resource_on_automation,
+                                     total_no_of_crs,
+                                     manual,
+                                     enable,
+                                     create,
+                                     partially_automation,
+                                     sender)
             
             # Creating the file path where the text file for the message is being saved.
             file_path = workbook.split("/")
@@ -545,14 +563,25 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             # Calling the Email Package Workbook generator and mail drafter.
             email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
+            response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","Please, ensure to download latest team availability tracker!")
+
+            if(response.lower() == 'ok'):
+                import attendance
+                flag = attendance.main_function(workbook=workbook,
+                                                night_shift_lead = night_shift_lead,
+                                                buffer_auditor_trainer = buffer_auditor_trainer,
+                                                resource_on_automation = resource_on_automation,
+                                                acceptable_change_responsible = acceptable_change_responsible)
+            else:
+                flag = "Unsuccessful"
 
             # Deleting all the local variables 
             objects = dir()
             for object in objects:
                 if not object.startswith("__"):
                     del object
-
-            flag = 'Successful'
+            
+            # flag = 'Successful'
 
     # Handling Exceptions 
     except CustomException:
