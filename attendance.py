@@ -9,6 +9,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font,Side,Border,PatternFill,Alignment
 from Custom_Warning import CustomWarning
 import os
+import traceback
 
 flag = ''
 
@@ -44,10 +45,11 @@ def styler(workbook_path, sheetname):
     yellowish_color_for_columns = 'FFE699'
     bluish_color_for_columns    = 'BDD7EE'
     col_widths  = []
-    print("line 46 hello")
+    # print("line 47 hello")
+    
     if(sheetname == 'Summary'):
         BDD7EE_bluish_color_columns = ['A','B','C','D']
-        print("inside Summary styling, line 49")
+        # print("inside Summary styling, line 49")
         # Iterating through the row values to find max lenth of strings in each column, going row-wise
         for row_values in worksheet.iter_rows(values_only= True):
             for j,value in enumerate(row_values):
@@ -99,10 +101,42 @@ def styler(workbook_path, sheetname):
                                      bottom = Side(border_style = 'medium',color = '000000'),
                                      left = Side(border_style = 'medium',color = '000000'),
                                      right = Side(border_style = 'medium',color = '000000'))
+        
+        # coloring different availability percentages with different color
+        red    = 'FF0000'
+        orange = 'FF9933'
+        green  = '00FF00'
+        i = 1
+        while(((5*i)+1) <= worksheet.max_row):
+            index= ((5*i)+1)
+            j = 5
+            while(j <= worksheet.max_column):
+                column_letter = get_column_letter(j)
+                value = worksheet[f"{column_letter}{index}"].value
+                value = float(value.split("%")[0])
+
+                if(value == 100.00):
+                    worksheet[f"{column_letter}{index}"].font = Font(color='000000')
+                    worksheet[f"{column_letter}{index}"].fill = PatternFill(start_color= green,
+                                                                            end_color=green,
+                                                                            fill_type= 'solid')
+                
+                if((value >= 90.00) and (value <= 95.00)):
+                    worksheet[f"{column_letter}{index}"].font = Font(color='000000')
+                    worksheet[f"{column_letter}{index}"].fill = PatternFill(start_color= orange,
+                                                                            end_color=orange,
+                                                                            fill_type= 'solid')
+                if(value < 90.00):
+                    worksheet[f"{column_letter}{index}"].font = Font(color='FFFFFF',bold=True)
+                    worksheet[f"{column_letter}{index}"].fill = PatternFill(start_color= red,
+                                                                            end_color=red,
+                                                                            fill_type= 'solid')
+                j+=1
+            i+=1
 
 
     if(sheetname == 'Team Availability'):
-        BDD7EE_bluish_color_columns = ['A','B','C','D','E']
+        BDD7EE_bluish_color_columns = ['A','B','C','D','E','F']
         
         # Iterating through the row values to find max lenth of strings in each column, going row-wise
         for row_values in worksheet.iter_rows(values_only= True):
@@ -113,7 +147,7 @@ def styler(workbook_path, sheetname):
                         col_widths[j] = len(value)
                 else:
                     col_widths.insert(j,len(value))
-        print(col_widths,'line 113')
+        # print(col_widths,'line 116')
         # Standardising the length of each column in the sheet.
         i = 0
         while(i < len(col_widths)):
@@ -133,7 +167,7 @@ def styler(workbook_path, sheetname):
                 color_fill      = PatternFill(start_color = bluish_color_for_columns,
                                               end_color=bluish_color_for_columns,
                                               fill_type= 'solid')
-                print('inside blue_ columns line 132')
+                # print('inside blue_ columns line 136')
             
             else:
                 color_fill      = PatternFill(start_color = yellowish_color_for_columns,
@@ -155,6 +189,21 @@ def styler(workbook_path, sheetname):
                                      bottom = Side(border_style = 'medium',color = '000000'),
                                      left = Side(border_style = 'medium',color = '000000'),
                                      right = Side(border_style = 'medium',color = '000000'))
+        
+        # Coloring the cells with value as 'Not Available' red
+        red = 'FF0000'
+        i = 2
+        while(i <= worksheet.max_row):
+            j = 6
+            while(j <= worksheet.max_column):
+                column_letter = get_column_letter(j)
+                if(str(worksheet[f'{column_letter}{i}'].value) == 'Not Available'):
+                    worksheet[f'{column_letter}{i}'].font = Font(color= 'FFFFFF', bold=True)
+                    worksheet[f'{column_letter}{i}'].fill = PatternFill(start_color= red,
+                                                                        end_color= red,
+                                                                        fill_type= 'solid')
+                j+=1
+            i+=1
     
     # Saving the workbook
     workbook.save(workbook_path)
@@ -175,7 +224,7 @@ def not_available_writer(**kwargs):
         team_availability_sheet.loc[index,remaining_change_responsible_that_are_absent[i]] = 'Not Available'
         i += 1
     
-    print(team_availability_sheet,'\ninside not available writer \n\n')
+    # print(team_availability_sheet,'\ninside not available writer \n\n')
     return team_availability_sheet
 
 def available_writer(array_of_resources_involved, team_availability_sheet,index):
@@ -183,7 +232,7 @@ def available_writer(array_of_resources_involved, team_availability_sheet,index)
     while(i < array_of_resources_involved.size):
         team_availability_sheet.loc[index,array_of_resources_involved[i]] = 'Available'
         i += 1
-    print(team_availability_sheet,'\ninside available writer\n\n')
+    # print(team_availability_sheet,'\ninside available writer\n\n')
     return team_availability_sheet
 
 def empty_space_writer(remaining_change_responsible, team_availability_sheet,index):
@@ -191,7 +240,7 @@ def empty_space_writer(remaining_change_responsible, team_availability_sheet,ind
     while(i < remaining_change_responsible.size):
         team_availability_sheet.loc[index,remaining_change_responsible[i]] = ''
         i+=1
-    print(team_availability_sheet,"\ninside empty space writer\n\n")
+    # print(team_availability_sheet,"\ninside empty space writer\n\n")
     return team_availability_sheet
 
 def data_filler(**kwargs):
@@ -207,7 +256,26 @@ def data_filler(**kwargs):
 
     # Getting the names that are not present in the email-package and other resources not assigned
     remaining_change_responsible = np.setdiff1d(acceptable_change_responsible,array_of_resources_involved)
-    print(remaining_change_responsible)
+
+    # Checking that the names in remainin_change_responsible are really on leave or not
+    if(day_type == 'Normal'):
+        new_remaining_change_responsible_list = []
+        if(remaining_change_responsible.size > 0):
+            loop_index = 0
+            while(loop_index < remaining_change_responsible.size):
+                response_for_confirmation = messagebox.askyesno("    Resource Availability Confirmation", f"Please confirm if {remaining_change_responsible[loop_index]} is on leave today?")
+                
+                if(not response_for_confirmation):
+                    new_remaining_change_responsible_list.append(remaining_change_responsible[loop_index])
+                
+                loop_index+=1
+        
+        new_remaining_change_responsible_list = np.array(new_remaining_change_responsible_list)
+        remaining_change_responsible = np.setdiff1d(remaining_change_responsible,new_remaining_change_responsible_list)
+
+        array_of_resources_involved = np.append(array_of_resources_involved,new_remaining_change_responsible_list)
+
+    # print(remaining_change_responsible)
     # Getting the dataframes
     team_availability_sheet = kwargs['team_availability_sheet']
     summary_sheet = kwargs['summary_sheet']
@@ -219,19 +287,23 @@ def data_filler(**kwargs):
     team_availability_sheet.loc[index,'Date'] = datetime.now().strftime("%d-%b-%y")
     team_availability_sheet.loc[index,'Day'] = day
     team_availability_sheet.loc[index,'Day Type'] = day_type
+    team_availability_sheet.loc[index,'Leave Count'] = ''
     # print(team_availability_sheet.columns)
-    print(team_availability_sheet, "line 213")
+    # print(team_availability_sheet, "line 223")
     # print(f"{day_type=}")
     if(day_type == 'Normal'):
         if(remaining_change_responsible.size > 0):
             team_availability_sheet = not_available_writer(remaining_change_responsible = remaining_change_responsible,
                                                            team_availability_sheet = team_availability_sheet,
                                                            index = index)
+            
+        team_availability_sheet.loc[index,'Leave Count'] = remaining_change_responsible.size
+
         if(array_of_resources_involved.size > 0):
             team_availability_sheet = available_writer(array_of_resources_involved = array_of_resources_involved,
                                                       team_availability_sheet = team_availability_sheet,
                                                       index=index)
-        print("hello line 227")
+        # print("hello line 287")
     if(day_type == 'Weekend'):
         if(remaining_change_responsible.size > 0):
             team_availability_sheet = empty_space_writer(remaining_change_responsible=remaining_change_responsible,
@@ -245,15 +317,19 @@ def data_filler(**kwargs):
         
     if(day_type == 'Holiday Support'):
         if(remaining_change_responsible.size > 0):
+            # print('inside Holiday Support line 301')
             team_availability_sheet = empty_space_writer(remaining_change_responsible=remaining_change_responsible,
                                                          team_availability_sheet=team_availability_sheet,
                                                          index=index)
-        
+            # print('line 305')
         if(array_of_resources_involved.size > 0):
             team_availability_sheet = available_writer(array_of_resources_involved= array_of_resources_involved,
                                                        team_availability_sheet=team_availability_sheet,
                                                        index=index)
-    print(team_availability_sheet,'line 246')
+    # print(team_availability_sheet,'line 246')
+
+    team_availability_sheet['Date'] = pd.to_datetime(team_availability_sheet['Date'],errors='ignore')
+    team_availability_sheet['Date'] = team_availability_sheet['Date'].dt.strftime("%d-%b-%y")
     path = kwargs['path']
     writer = pd.ExcelWriter(path=path,
                             engine='openpyxl',
@@ -276,11 +352,15 @@ def data_filler(**kwargs):
     normal_working_days_dataframe = availability_sheet[availability_sheet['Day Type'] == 'Normal']
     weekend_working_days_dataframe = availability_sheet[availability_sheet['Day Type'] == 'Weekend']
     holiday_working_days_dataframe = availability_sheet[availability_sheet['Day Type'] == 'Holiday Support']
+    total_leave_counts         = normal_working_days_dataframe['Leave Count'].sum()
+
+    # print(holiday_working_days_dataframe,'line 281 ')
 
     # Getting the length of the respective dataframes
     total_normal_working_days = len(normal_working_days_dataframe)
     total_weekend_working_days = len(weekend_working_days_dataframe)
     total_holiday_working_days = len(holiday_working_days_dataframe)
+    
 
     # Checking if the month name is present in the summary sheet
     month_name_present_in_summary_sheet = False
@@ -293,47 +373,102 @@ def data_filler(**kwargs):
     if(not month_name_present_in_summary_sheet):
         summary_sheet.loc[index,'S No']                    = index+1
         summary_sheet.loc[index,'Month']                   = month
-        summary_sheet.loc[index,'Total Day Count'] = total_normal_working_days
+        summary_sheet.loc[index,'Total Day Count']         = total_normal_working_days
         summary_sheet.loc[index,'Day Type']                = 'Normal'
         
         summary_sheet.loc[index+1,'S No']                    = index+2
         summary_sheet.loc[index+1,'Month']                   = month
-        summary_sheet.loc[index+1,'Total Day Count'] = total_weekend_working_days
+        summary_sheet.loc[index+1,'Total Day Count']         = total_weekend_working_days
         summary_sheet.loc[index+1,'Day Type']                = 'Weekend'
         
         summary_sheet.loc[index+2,'S No']                    = index+3
         summary_sheet.loc[index+2,'Month']                   = month
-        summary_sheet.loc[index+2,'Total Day Count'] = total_holiday_working_days
+        summary_sheet.loc[index+2,'Total Day Count']         = total_holiday_working_days
         summary_sheet.loc[index+2,'Day Type']                = 'Holiday Support'
         
         summary_sheet.loc[index+3,'S No']                    = index+4
         summary_sheet.loc[index+3,'Month']                   = month
-        summary_sheet.loc[index+3,'Total Day Count'] = total_normal_working_days
-        summary_sheet.loc[index+3,'Day Type']                = 'Availability'
+        summary_sheet.loc[index+3,'Total Day Count']         = total_leave_counts
+        summary_sheet.loc[index+3,'Day Type']                = 'Leave Count'
+        
+        summary_sheet.loc[index+4,'S No']                    = index+5
+        summary_sheet.loc[index+4,'Month']                   = month
+        summary_sheet.loc[index+4,'Total Day Count']         = total_normal_working_days
+        summary_sheet.loc[index+4,'Day Type']                = 'Availability'
+    
+    if(month_name_present_in_summary_sheet):
+        loop_index = 0
+        while(loop_index < len(summary_sheet)):
+            if(summary_sheet.iloc[loop_index]['Month'] == month):
+                break
+            else:
+                loop_index+=1
+        index = loop_index
+
+        summary_sheet.loc[index,'S No']                    = index+1
+        summary_sheet.loc[index,'Month']                   = month
+        summary_sheet.loc[index,'Total Day Count']         = total_normal_working_days
+        summary_sheet.loc[index,'Day Type']                = 'Normal'
+        
+        summary_sheet.loc[index+1,'S No']                    = index+2
+        summary_sheet.loc[index+1,'Month']                   = month
+        summary_sheet.loc[index+1,'Total Day Count']         = total_weekend_working_days
+        summary_sheet.loc[index+1,'Day Type']                = 'Weekend'
+        
+        summary_sheet.loc[index+2,'S No']                    = index+3
+        summary_sheet.loc[index+2,'Month']                   = month
+        summary_sheet.loc[index+2,'Total Day Count']         = total_holiday_working_days
+        summary_sheet.loc[index+2,'Day Type']                = 'Holiday Support'
+        
+        summary_sheet.loc[index+3,'S No']                    = index+4
+        summary_sheet.loc[index+3,'Month']                   = month
+        summary_sheet.loc[index+3,'Total Day Count']         = total_leave_counts
+        summary_sheet.loc[index+3,'Day Type']                = 'Leave Count'
+        
+        summary_sheet.loc[index+4,'S No']                    = index+5
+        summary_sheet.loc[index+4,'Month']                   = month
+        summary_sheet.loc[index+4,'Total Day Count']         = total_normal_working_days
+        summary_sheet.loc[index+4,'Day Type']                = 'Availability'
 
     # fixing the indices for different month rows
     # length_of_summary_sheet     = len(summary_sheet)
     normal_day_row_index            = index
     weekend_day_row_index           = index+1
     holiday_day_row_index           = index+2
-    availability_row_index          = index+3
+    leave_count_row_index           = index+3
+    availability_row_index          = index+4
+
 
     # Starting the loop for adding the data in summary sheet
     i = 0
     while(i < acceptable_change_responsible.size):
         change_responsible_selected = acceptable_change_responsible[i]
+        # print(change_responsible_selected)
         summary_sheet.loc[normal_day_row_index,change_responsible_selected]     = len(normal_working_days_dataframe[normal_working_days_dataframe[change_responsible_selected] == 'Available'])
+        # print(f"{summary_sheet.iloc[normal_day_row_index][change_responsible_selected]=}")
         summary_sheet.loc[weekend_day_row_index,change_responsible_selected]    = len(weekend_working_days_dataframe[weekend_working_days_dataframe[change_responsible_selected] == 'Available'])
+        # print(f"{summary_sheet.iloc[weekend_day_row_index][change_responsible_selected]=}")
         summary_sheet.loc[holiday_day_row_index,change_responsible_selected]    = len(holiday_working_days_dataframe[holiday_working_days_dataframe[change_responsible_selected] == 'Available'])
+        # print(f"{summary_sheet.iloc[holiday_day_row_index][change_responsible_selected]=}")
 
-        percentage = (summary_sheet.iloc[normal_day_row_index][change_responsible_selected]/total_normal_working_days)*100
-        summary_sheet.loc[availability_row_index,change_responsible_selected]   = f"{percentage}%"
+        summary_sheet.loc[leave_count_row_index,change_responsible_selected]    = len(normal_working_days_dataframe[normal_working_days_dataframe[change_responsible_selected] == 'Not Available'])
+        # print(summary_sheet.iloc[normal_day_row_index][change_responsible_selected])
+        # print(total_normal_working_days)
+
+        if(total_normal_working_days > 0):
+            percentage = (summary_sheet.iloc[normal_day_row_index][change_responsible_selected]/total_normal_working_days)*100
+            # print(percentage)
+        else:
+            percentage = 0.0
+        summary_sheet.loc[availability_row_index,change_responsible_selected]   = f"{round(percentage,2)}%"
+        # print(f"{summary_sheet.iloc[availability_row_index][change_responsible_selected]=}")
         i+=1
     
     writer = pd.ExcelWriter(path=path,
                             engine='openpyxl',
                             mode = 'a',
                             if_sheet_exists='replace')
+    # print(summary_sheet,'line 338')
     summary_sheet.to_excel(writer,
                 sheet_name = 'Summary',
                 index=False)
@@ -362,7 +497,7 @@ def attendance_workbook_creater(**kwargs):
             del workbook_to_be_created[selected_sheet]
         i+=1
 
-    columns_for_team_availability = ['S No','Month','Date','Day','Day Type']
+    columns_for_team_availability = ['S No','Month','Date','Day','Day Type','Leave Count']
     columns_for_team_availability.extend(kwargs['acceptable_change_responsible'])
 
 
@@ -523,14 +658,17 @@ def main_function(workbook,**kwargs):
         messagebox.showinfo("    Mail Drafted!","Mail for Attendance Workbook communication successfully drafted!")
 
         attendance_workbook_reader.close()
-        email_package_reader.close()
+        del email_package_reader
         
     except CustomException:
         flag = 'Unsuccessful'
     
     except CustomWarning:
         flag = 'Successful'
-
+    
+    except Exception as error:
+        messagebox.showerror("    Exception Occurred!",f"{traceback.format_exc()}\n\n{error}")
+    
     finally:
         return flag
 
