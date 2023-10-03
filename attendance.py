@@ -615,32 +615,39 @@ def main_function(workbook,**kwargs):
         current_month = str(datetime.now().__format__("%b'%y"))
         day = str(datetime.now().__format__('%A'))
 
-        # if(len(team_availability_sheet) > 0):
-        #     if((day == 'Monday') and (team_availability_sheet.iloc[len(team_availability_sheet) - 1]['Day'] == 'Friday')):
-        #         index = len(team_availability_sheet)
-        #         team_availability_sheet.loc[index,'S No'] = index+1
-        #         team_availability_sheet.loc[index,'Month'] = str((datetime.now() - timedelta(days = 2)).__format__("%b'%y"))
-        #         team_availability_sheet.loc[index,'Date'] = str((datetime.now() - timedelta(days =2)).__format__('%d-%b-%y'))
-        #         team_availability_sheet.loc[index,'Day'] = str((datetime.now() - timedelta(days =2)).__format__('%A'))
-        #         team_availability_sheet.loc[index,'Day Type'] = 'Weekend'
-        #         irregular_columns = {'S No','Month','Date','Day','Day Type'}
-        #         columns = set(team_availability_sheet.colums.to_list())
-        #         remaining_columns = (columns - irregular_columns)
+        if(len(team_availability_sheet) > 0):
+            if((day == 'Monday') and (team_availability_sheet.iloc[len(team_availability_sheet) - 1]['Day'] == 'Friday')):
+                team_availability_sheet['Date'] = pd.to_datetime(team_availability_sheet['Date'],dayfirst=True,format='%d-%b-%y')
+                if(not (datetime.now() - timedelta(days =2)).replace(hour = 0, minute = 0,second = 0,microsecond =0) in team_availability_sheet['Date'].unique()):
+                    index = len(team_availability_sheet)
+                    team_availability_sheet.loc[index,'S No'] = index+1
+                    team_availability_sheet.loc[index,'Month'] = str((datetime.now() - timedelta(days = 2)).__format__("%b'%y"))
+                    team_availability_sheet['Date'] = team_availability_sheet['Date'].dt.strftime('%d-%b-%y')
+                    team_availability_sheet.loc[index,'Date'] = str((datetime.now() - timedelta(days =2)).__format__('%d-%b-%y'))
+                    team_availability_sheet.loc[index,'Day'] = str((datetime.now() - timedelta(days =2)).__format__('%A'))
+                    team_availability_sheet.loc[index,'Day Type'] = 'Weekend'
+                    irregular_columns = {'S No','Month','Date','Day','Day Type'}
+                    columns = set(team_availability_sheet.columns.to_list())
+                    remaining_columns = (columns - irregular_columns)
+                    
+                    for i in remaining_columns:
+                        team_availability_sheet.loc[index,i] = 'Weekend'
+
+                team_availability_sheet['Date'] = pd.to_datetime(team_availability_sheet['Date'],dayfirst=True,format='%d-%b-%y')
+                if(not (datetime.now() - timedelta(days =1)).replace(hour = 0, minute = 0,second = 0,microsecond =0) in team_availability_sheet['Date'].unique()):
+                    index = len(team_availability_sheet)
+                    team_availability_sheet.loc[index,'S No'] = index+1
+                    team_availability_sheet.loc[index,'Month'] = str((datetime.now() - timedelta(days = 1)).__format__("%b'%y"))
+                    team_availability_sheet['Date'] = team_availability_sheet['Date'].dt.strftime('%d-%b-%y')
+                    team_availability_sheet.loc[index,'Date'] = str((datetime.now() - timedelta(days =1)).__format__('%d-%b-%y'))
+                    team_availability_sheet.loc[index,'Day'] = str((datetime.now() - timedelta(days =1)).__format__('%A'))
+                    team_availability_sheet.loc[index,'Day Type'] = 'Weekend'
+
+                    for i in remaining_columns:
+                        team_availability_sheet.loc[index,i] = 'Weekend'
                 
-        #         for i in remaining_columns:
-        #             team_availability_sheet.loc[index,i] = 'Weekend'
-
-
-        #         index = len(team_availability_sheet)
-        #         team_availability_sheet.loc[index,'S No'] = index+1
-        #         team_availability_sheet.loc[index,'Month'] = str((datetime.now() - timedelta(days = 1)).__format__("%b'%y"))
-        #         team_availability_sheet.loc[index,'Date'] = str((datetime.now() - timedelta(days =1)).__format__('%d-%b-%y'))
-        #         team_availability_sheet.loc[index,'Day'] = str((datetime.now() - timedelta(days =1)).__format__('%A'))
-        #         team_availability_sheet.loc[index,'Day Type'] = 'Weekend'
-
-        #         for i in remaining_columns:
-        #             team_availability_sheet.loc[index,i] = 'Weekend'
-            
+                else:
+                    team_availability_sheet['Date'] = team_availability_sheet['Date'].dt.strftime('%d-%b-%y')
         
         # print("Hello, line 450")
         data_filler(current_month=current_month,
@@ -672,26 +679,26 @@ def main_function(workbook,**kwargs):
     finally:
         return flag
 
-main_function(workbook= r"C:/Users/emaienj/Downloads/Daily Work/MPBN_Email_Package_28th Sep 2023.xlsx",
-              night_shift_lead = "Aswini Kumar Behera",
-              buffer_auditor_trainer = "NA",
-              resource_on_automation = "NA",
-              acceptable_change_responsible = ["Arka Maiti",
-                                               "Rupesh Mudgil",
-                                               "Karan Loomba",
-                                               "Manoj Kumar",
-                                               "Bharat Ji",
-                                               "Sachin Sharma",
-                                               "Pulluru Sreeramulu",
-                                               "Paras",
-                                               "Ajay Kumar",
-                                               "Abhishek Srivastava",
-                                               "Kaushal Kumar",
-                                               "Aswini Kumar Behera",
-                                               "Amit Tandon",
-                                               "Kartar Singh",
-                                               "Enjoy Maity",
-                                               "Ashwani Kumar I",
-                                               "Afsar Azizi",
-                                               "Subham Chitranshi"],
-              sender = "Manoj Kumar")
+# main_function(workbook= r"C:/Users/emaienj/Downloads/Daily Work/MPBN_Email_Package_28th Sep 2023.xlsx",
+#               night_shift_lead = "Aswini Kumar Behera",
+#               buffer_auditor_trainer = "NA",
+#               resource_on_automation = "NA",
+#               acceptable_change_responsible = ["Arka Maiti",
+#                                                "Rupesh Mudgil",
+#                                                "Karan Loomba",
+#                                                "Manoj Kumar",
+#                                                "Bharat Ji",
+#                                                "Sachin Sharma",
+#                                                "Pulluru Sreeramulu",
+#                                                "Paras",
+#                                                "Ajay Kumar",
+#                                                "Abhishek Srivastava",
+#                                                "Kaushal Kumar",
+#                                                "Aswini Kumar Behera",
+#                                                "Amit Tandon",
+#                                                "Kartar Singh",
+#                                                "Enjoy Maity",
+#                                                "Ashwani Kumar I",
+#                                                "Afsar Azizi",
+#                                                "Subham Chitranshi"],
+#               sender = "Manoj Kumar")
