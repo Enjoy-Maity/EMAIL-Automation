@@ -444,10 +444,13 @@ def data_filler(**kwargs):
     while(i < acceptable_change_responsible.size):
         change_responsible_selected = acceptable_change_responsible[i]
         # print(change_responsible_selected)
+        
         summary_sheet.loc[normal_day_row_index,change_responsible_selected]     = len(normal_working_days_dataframe[normal_working_days_dataframe[change_responsible_selected] == 'Available'])
         # print(f"{summary_sheet.iloc[normal_day_row_index][change_responsible_selected]=}")
+        
         summary_sheet.loc[weekend_day_row_index,change_responsible_selected]    = len(weekend_working_days_dataframe[weekend_working_days_dataframe[change_responsible_selected] == 'Available'])
         # print(f"{summary_sheet.iloc[weekend_day_row_index][change_responsible_selected]=}")
+        
         summary_sheet.loc[holiday_day_row_index,change_responsible_selected]    = len(holiday_working_days_dataframe[holiday_working_days_dataframe[change_responsible_selected] == 'Available'])
         # print(f"{summary_sheet.iloc[holiday_day_row_index][change_responsible_selected]=}")
 
@@ -455,13 +458,16 @@ def data_filler(**kwargs):
         # print(summary_sheet.iloc[normal_day_row_index][change_responsible_selected])
         # print(total_normal_working_days)
 
-        if(total_normal_working_days > 0):
+        if((total_normal_working_days > 0) and (summary_sheet.iloc[normal_day_row_index][change_responsible_selected] != np.nan)):
             percentage = (summary_sheet.iloc[normal_day_row_index][change_responsible_selected]/total_normal_working_days)*100
+            summary_sheet.loc[availability_row_index,change_responsible_selected]   = f"{round(percentage,2)}%"
             # print(percentage)
+        
         else:
             percentage = 0.0
-        summary_sheet.loc[availability_row_index,change_responsible_selected]   = f"{round(percentage,2)}%"
+            summary_sheet.loc[availability_row_index,change_responsible_selected]   = f"{round(percentage,2)}%"
         # print(f"{summary_sheet.iloc[availability_row_index][change_responsible_selected]=}")
+        
         i+=1
     
     writer = pd.ExcelWriter(path=path,
@@ -542,12 +548,30 @@ def main_function(workbook,**kwargs):
         resource_on_automation = kwargs['resource_on_automation']
         acceptable_change_responsible = kwargs['acceptable_change_responsible']
         
-        array_of_unique_change_responsible = email_package_reader['Change Responsible'].dropna().unique()
         array_of_unique_technical_validator = email_package_reader['Technical Validator'].dropna().unique()
-        
+
         # deleting the entry for Karan Loomba
         if(not 'Karan Loomba' in array_of_unique_technical_validator):
             acceptable_change_responsible.remove('Karan Loomba')
+
+        acceptable_change_responsible = np.array(acceptable_change_responsible)
+
+        if(str(resource_on_automation).__contains__(',')):
+            resource_on_automation = resource_on_automation.split(',')
+            resource_on_automation = [resource.strip() for resource in resource_on_automation]
+
+        if(str(buffer_auditor_trainer).__contains__(',')):
+            buffer_auditor_trainer = buffer_auditor_trainer(',')
+            buffer_auditor_trainer = [resource_on_automation.strip() for resource in buffer_auditor_trainer]
+        
+        array_of_unique_change_responsible = email_package_reader['Change Responsible'].dropna().unique()
+        
+        strings_to_be_deleted = ['Select Your Name!','No']
+        mask = np.where(~np.in1d(acceptable_change_responsible,strings_to_be_deleted))
+        print(mask)
+        acceptable_change_responsible = acceptable_change_responsible[mask]
+        print(acceptable_change_responsible)
+        
 
         array_of_resources_involved = np.append(array_of_unique_change_responsible,array_of_unique_technical_validator)
 
@@ -555,10 +579,13 @@ def main_function(workbook,**kwargs):
         if(night_shift_lead.upper().strip() != 'NA'):
             array_of_resources_involved = np.append(array_of_resources_involved,np.array([night_shift_lead]))
         
-        if(buffer_auditor_trainer.upper().strip() != 'NA'):
+        if((buffer_auditor_trainer.upper().strip() != 'NA')):
             array_of_resources_involved = np.append(array_of_resources_involved,np.array([buffer_auditor_trainer]))
         
-        if(resource_on_automation.upper().strip() != 'NA'):
+        if((not isinstance(resource_on_automation,list)) and (resource_on_automation.upper().strip() != 'NA')):
+            array_of_resources_involved = np.append(array_of_resources_involved,np.array([resource_on_automation]))
+        
+        if(isinstance(resource_on_automation,list)):
             array_of_resources_involved = np.append(array_of_resources_involved,np.array([resource_on_automation]))
         
         if(not kwargs['sender'] in array_of_resources_involved):
@@ -679,26 +706,28 @@ def main_function(workbook,**kwargs):
     finally:
         return flag
 
-# main_function(workbook= r"C:/Users/emaienj/Downloads/Daily Work/MPBN_Email_Package_28th Sep 2023.xlsx",
-#               night_shift_lead = "Aswini Kumar Behera",
-#               buffer_auditor_trainer = "NA",
-#               resource_on_automation = "NA",
-#               acceptable_change_responsible = ["Arka Maiti",
-#                                                "Rupesh Mudgil",
-#                                                "Karan Loomba",
-#                                                "Manoj Kumar",
-#                                                "Bharat Ji",
-#                                                "Sachin Sharma",
-#                                                "Pulluru Sreeramulu",
-#                                                "Paras",
-#                                                "Ajay Kumar",
-#                                                "Abhishek Srivastava",
-#                                                "Kaushal Kumar",
-#                                                "Aswini Kumar Behera",
-#                                                "Amit Tandon",
-#                                                "Kartar Singh",
-#                                                "Enjoy Maity",
-#                                                "Ashwani Kumar I",
-#                                                "Afsar Azizi",
-#                                                "Subham Chitranshi"],
-#               sender = "Manoj Kumar")
+main_function(workbook= r"C:/Users/emaienj/Downloads/Daily Work/MPBN_Email_Package_28th Sep 2023.xlsx",
+              night_shift_lead = "Aswini Kumar Behera",
+              buffer_auditor_trainer = "NA",
+              resource_on_automation = "NA",
+              acceptable_change_responsible = ["Select Your Name!",
+                                               "Arka Maiti",
+                                               "Rupesh Mudgil",
+                                               "Karan Loomba",
+                                               "Manoj Kumar",
+                                               "Bharat Ji",
+                                               "Sachin Sharma",
+                                               "Pulluru Sreeramulu",
+                                               "Paras",
+                                               "Ajay Kumar",
+                                               "Abhishek Srivastava",
+                                               "Kaushal Kumar",
+                                               "Aswini Kumar Behera",
+                                               "Amit Tandon",
+                                               "Kartar Singh",
+                                               "Enjoy Maity",
+                                               "Ashwani Kumar I",
+                                               "Afsar Azizi",
+                                               "Subham Chitranshi",
+                                               "No"],
+              sender = "Manoj Kumar")
