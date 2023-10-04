@@ -891,4 +891,4 @@ def circle_reply_task(sender, workbook):
         gc.collect()
         return flag
 
-circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\Daily Work\MPBN_Email_Package_27th Sep 2023.xlsx")
+# circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\Daily Work\MPBN_Email_Package_27th Sep 2023.xlsx")
