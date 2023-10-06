@@ -290,6 +290,17 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 flag = 'Unsuccessful'
                 raise CustomWarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
             
+            strings_to_be_deleted = ['Select Your Name!','No']
+            array_of_unique_change_responsible = worksheet.dropna().unique()
+            new_acceptable_change_responsible = np.array(acceptable_change_responsible)
+            new_acceptable_change_responsible = np.setdiff1d(new_acceptable_change_responsible,strings_to_be_deleted)
+            masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible = np.isin(array_of_unique_change_responsible,
+                                                                                                           new_acceptable_change_responsible,
+                                                                                                           assume_unique=True)
+            if(False in masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible):
+                raise CustomException("    Executor Name Missing!",
+                                  f"{', '.join(np.setdiff1d(array_of_unique_change_responsible,acceptable_change_responsible))} executors are not present in your uploaded Change Responsible list text file, Please Check!")
+            
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
             total_no_of_resource = 16           
             
@@ -563,7 +574,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             # Calling the Email Package Workbook generator and mail drafter.
             email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
-            response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","Please, ensure to download latest team availability tracker!")
+            response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","We are going to update SRF_MPBN_Team_Availability tracker. So, Please ensure to download latest tracker before proceeding!")
 
             if(response.lower() == 'ok'):
                 import attendance
