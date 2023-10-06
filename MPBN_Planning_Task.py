@@ -177,7 +177,7 @@ class App(tk.Tk):
 
             # Creating button for the Evening message task
             self.evening_task_btn = ttk.Button(
-                self.main_win, text=" Email Package & Evening Message ", command=lambda: self.evening_task_func(1))
+                self.main_win, text=" Email Package & Team Availability  ", command=lambda: self.evening_task_func(1))
 
             # Creating button for the Executor Mail communication task
             self.executor_mail_communication_btn = ttk.Button(
@@ -1156,35 +1156,35 @@ class App(tk.Tk):
 
                         else:
                             # Creating a variable to check whether the email package is created or not.
-                            self.interdomain_kpis_data_prep_creation_status_flag = 0
                             self.workbook = pd.ExcelFile(self.file_browser_file)
                             self.worksheet_names = self.workbook.sheet_names
 
+                            self.email_package_prep_creation_status_flag = 0
                             # Finding the Email Package from the workbook and reading it in pandas.
-                            for sheet in self.worksheet_names:
-                                if (sheet == 'Email-Package'):
-                                    self.worksheet = pd.read_excel(
-                                        self.workbook, sheet)
-                                    self.worksheet['Execution Date'] = pd.to_datetime(self.worksheet['Execution Date'], format = "%m/%d/%Y")
-                                    self.worksheet['Execution Date'] =  self.worksheet['Execution Date'].dt.strftime("%m/%d/%Y")
-                                    
-                                    # Getting Today's maintenance date.
-                                    tomorrow = datetime.now() + timedelta(1)
-                                    tomorrow = tomorrow.strftime("%m/%d/%Y")
-                                    self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
-                                    
-                                    # If there's data present in the worksheet then changing the value of the email package sheet creation status.
-                                    if (len(self.worksheet) > 0):
-                                        self.interdomain_kpis_data_prep_creation_status_flag = 1
-                                        break
+                            # for sheet in self.worksheet_names:
+                            sheet = 'Email-Package'
+                            if (sheet in self.worksheet_names):
+                                self.worksheet = pd.read_excel(
+                                    self.workbook, sheet)
+                                self.worksheet['Execution Date'] = pd.to_datetime(self.worksheet['Execution Date'], format = "%m/%d/%Y")
+                                self.worksheet['Execution Date'] =  self.worksheet['Execution Date'].dt.strftime("%m/%d/%Y")
+                                
+                                # Getting Today's maintenance date.
+                                tomorrow = datetime.now() + timedelta(1)
+                                tomorrow = tomorrow.strftime("%m/%d/%Y")
+                                self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
+                                
+                                # If there's data present in the worksheet then changing the value of the email package sheet creation status.
+                                if (len(self.worksheet) > 0):
+                                    self.email_package_prep_creation_status_flag = 1
 
-                            if (self.interdomain_kpis_data_prep_creation_status_flag == 0):
+                            if (self.email_package_prep_creation_status_flag == 0):
                                 self.task_running = 0
                                 self.task_module_running = ""
 
                                 # Raising the custom made exception for the case when the email package sheet is not created or empty.
                                 raise CustomException(
-                                    'Kindly Click the Button for Interdomain Kpi Data Prep First!', 'Email-Package Worksheet Empty')
+                                    'Kindly Click the Button for Email-Package Preparation Data Prep First!', 'Email-Package Worksheet Empty')
 
                             else:
                                 '''
@@ -1334,6 +1334,8 @@ class App(tk.Tk):
                     # Calling the required method from the module with sufficient arguments to do the task and getting the return value from the metod in a flag variable.
                     self.evening_mail_task_status_flag = evening_mail_task.evening_task(
                         self.sender, self.night_shift_lead, self.buffer_auditor_trainer, self.resource_on_automation, self.file_browser_file, self.acceptable_change_responsible)
+                    
+                    # print(self.evening_mail_task_status_flag)
 
                     # Checking the flag variable for setting the label for the task along with it's suitable color.
                     if (self.evening_mail_task_status_flag == 'Successful'):
