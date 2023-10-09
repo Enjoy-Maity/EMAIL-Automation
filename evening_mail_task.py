@@ -291,7 +291,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 raise CustomWarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
             
             strings_to_be_deleted = ['Select Your Name!','No']
-            array_of_unique_change_responsible = worksheet.dropna().unique()
+            array_of_unique_change_responsible = worksheet['Change Responsible'].dropna().unique()
             new_acceptable_change_responsible = np.array(acceptable_change_responsible)
             new_acceptable_change_responsible = np.setdiff1d(new_acceptable_change_responsible,strings_to_be_deleted)
             masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible = np.isin(array_of_unique_change_responsible,
