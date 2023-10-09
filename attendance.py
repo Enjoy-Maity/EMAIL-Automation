@@ -217,6 +217,7 @@ def styler(workbook_path, sheetname):
             if(day_type_value == 'Weekend'):
                 j = 1
                 while(j<=worksheet.max_column):
+                    column_letter = get_column_letter(j)
                     worksheet[f'{column_letter}{i}'].fill = PatternFill(start_color= orange,
                                                                         end_color= orange,
                                                                         fill_type= 'solid')
