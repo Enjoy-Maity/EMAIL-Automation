@@ -81,14 +81,11 @@ def sheet_cleaner(workbook):
 #     subject_line_we_are_looking_for = "MPBN Planning Automation Tracker P1_Sheet"
 #     subject_line_we_are_looking_for = subject_line_we_are_looking_for.lower()
 
-#     if(datetime.today().weekday() == 0):
-#         last_date_for_mail_check = datetime.now() - timedelta(days = 3)
-#         last_date_for_mail_check = last_date_for_mail_check.replace(hour=0,minute=0,second=0)
-#     else:
-#         pass
+#     last_date_for_mail_check = datetime.now() - timedelta(days = 3)
+#     last_date_for_mail_check = last_date_for_mail_check.replace(hour=0,minute=0,second=0)
 
 #     temp_flag = 0
-#     print("inside inbox ",end = "\n\n")
+    
 #     for message in messages:
 #         try:
 #             dt = message.ReceivedTime
@@ -97,11 +94,10 @@ def sheet_cleaner(workbook):
 
 #             if(dt>=last_date_for_mail_check):
 #                 mail_Subject = message.Subject
-                
+
 #                 if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
-#                     # print("Inside inbox ",mail_Subject,"\ndt =",dt,end="\n\n")
 #                     temp_flag = 1
-#                     attachment = message.Attachments.Item(1)
+#                     attachment = message.Attachements.Item(1)
 #                     attachment.SaveAsFile(workbook_path)
 #                     break
 #         except:
@@ -110,8 +106,7 @@ def sheet_cleaner(workbook):
 #     if(temp_flag == 0):
 #         folders = len(inbox.Folders)
 #         if(folders > 0):
-#             for i in range(0,folders):
-#                 print(f"inside {inbox.Folders[i].Name} ",end = "\n\n")
+#             for i in range(folders):
 #                 folder_messages = inbox.Folders[i].Items
 #                 folder_messages.Sort("[ReceivedTime]",True)
 
@@ -123,11 +118,10 @@ def sheet_cleaner(workbook):
 
 #                         if(dt>=last_date_for_mail_check):
 #                             mail_Subject = message.Subject
-                            
-#                             if(mail_Subject.strip().lower() == subject_line_we_are_looking_for.strip()):
-#                                 # print(f"Inside {inbox.Folders[i].Name} ",mail_Subject,"\ndt =",dt,end="\n\n")
+
+#                             if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
 #                                 temp_flag = 1
-#                                 attachment = message.Attachments.Item(1)
+#                                 attachment = message.Attachements.Item(1)
 #                                 attachment.SaveAsFile(workbook_path)
 #                                 break
 #                     except:
@@ -159,7 +153,7 @@ def sheet_cleaner(workbook):
 
 #                                     if(mail_Subject.strip().lower() == subject_line_we_are_looking_for):
 #                                         temp_flag = 1
-#                                         attachment = message.Attachments.Item(1)
+#                                         attachment = message.Attachements.Item(1)
 #                                         attachment.SaveAsFile(workbook_path)
 #                                         break
 #                             except:
@@ -191,7 +185,7 @@ def p1_mailer(workbook_path,sender):
                             </body>\
                     </html>"
     mail.To = "PDLPBNSRFP@pdl.internal.ericsson.com;"
-    mail.Subject = f"MPBN Planning Automation Tracker P1_Sheet :{datetime.today().__format__('%d/%m/%Y')}"
+    mail.Subject = f"MPBN Planning Automation Tracker P1_sheet: {datetime.today().__format__('%d-%b-%Y')}"
     # mail.CC = ""
     mail.Save()
     mail.Display()
@@ -207,9 +201,22 @@ def p_one_p_three_appender(sender,workbook):
     planning_sheet = planning_sheet[planning_sheet['Planning Status'] == 'Discussed']
     planning_sheet['Execution Date'] = pd.to_datetime(planning_sheet['Execution Date'], format="%d-%b-%Y")
     planning_sheet['Execution Date'] = planning_sheet['Execution Date'].dt.strftime("%m/%d/%Y")
-
+    # print(planning_sheet)
     if(len(planning_sheet) > 0):
         # Concatenating the email package and the remaining rows from planning sheet with planning status 'Discussed'
+        try:
+            email_package['Execution Date'] = pd.to_datetime(email_package['Execution Date'], format="%d-%b-%Y")
+        except:
+            try:
+                email_package['Execution Date'] = pd.to_datetime(email_package['Execution Date'], format="%m/%d/%Y")
+            
+            except Exception as e:
+                import traceback
+                messagebox.showerror("  Exception Occurred!",f"{traceback.format_exc()}\n\n{e}")
+                flag = "Unsuccessful"
+                return flag
+
+        email_package['Execution Date'] = email_package['Execution Date'].dt.strftime("%m/%d/%Y")
         email_package = pd.concat([email_package,planning_sheet],ignore_index=True)
     
     # Getting the unique technical validator.
@@ -241,6 +248,7 @@ def p_one_p_three_appender(sender,workbook):
         p1_workbook_file = os.path.join(os.path.dirname(workbook),"MPBN Planning Automation Tracker P1.xlsx")
         p1_sheet_name = 'MPBN Activity List'
         p1_dataframe = email_package
+        
 
         p1_dataframe.drop("S.NO",axis = "columns",inplace = True)
         p1_columns = p1_dataframe.columns.to_list()
@@ -249,7 +257,7 @@ def p_one_p_three_appender(sender,workbook):
         # If the File does not exists then in that case the file is created
 
         if (Path(p1_workbook_file).exists() == False):
-            neo_response = messagebox.askokcancel("   P1 workbook doesn't exist!", f"'MPBN Planning Automation Tracker P1.xlsx' doesn't exist. Download the same from outlook (latest mail) inside '{os.path.dirname(p1_workbook_file)}' and then press ok!")
+            neo_response = messagebox.askokcancel("   P1 workbook doesn't exist!", f"'MPBN Planning Automation Tracker P1 Sheet ' doesn't exist. Download the same from outlook (latest mail) and then press ok!")
             
             if(not neo_response):
                 messagebox.showwarning("    User Selected 'Cancel'!","You selected 'Cancel', so, dropping the work here!")
@@ -285,9 +293,6 @@ def p_one_p_three_appender(sender,workbook):
         p1_file_read['Execution Date'] = pd.to_datetime(p1_file_read['Execution Date'],format= "%m/%d/%Y")
         p1_file_read['Execution Date'] = p1_file_read['Execution Date'].dt.strftime("%m/%d/%Y")
         
-        # for i in range(len(p1_file_read)):
-        #     p1_file_read.loc[i,'Execution Date'] = p1_file_read.loc[i,'Execution Date'].strftime("%m/%d/%Y")
-
         # Getting the unique Execution Date from the Execution Date Column of the MPBN Planning Automation Tracker
         p1_file_read_unique_execution_date = list(p1_file_read['Execution Date'].unique())
         # print(p1_file_read_unique_execution_date)
@@ -919,7 +924,10 @@ def paco_cscore(sender,workbook):   #type:ignore
 
                 # Message for the case when there's no Interdomain data present(pre-defined interdomains i.e. CS-Core, PS-Core, RAN, VAS, aren't present in the 
                 # 'Domain Kpi' column of the sheet)
-                messagebox.showerror("  No Interdomain Data Present!","Kindly Check the 'Domain kpi' column of the Planning Status Sheet for the required Domains, i.e, CS-Core(CS,Core), PS-Core(Paco), RAN, VAS! and then retry!")
+                response = messagebox.askokcancel("  No Interdomain Data Present!","No Interdomain detected in the 'Domain kpi' column of the uploaded planning sheet, Kindly check! if this is ok, Press Ok!")
+
+                if(response):
+                    flag = p_one_p_three_appender(sender,workbook)
 
                 objects = dir()
                 for object in objects:
@@ -964,16 +972,16 @@ def paco_cscore(sender,workbook):   #type:ignore
         flag = "Unsuccessful"
     
     #Handling Attribute Error 
-    except AttributeError as e:
-        messagebox.showerror("  AttributeError Exception Occured",e)
+    # except AttributeError as e:
+    #     messagebox.showerror("  AttributeError Exception Occured",e)
 
-        # Deleting all the variables before returning the value for "Unsuccessful"
-        objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+    #     # Deleting all the variables before returning the value for "Unsuccessful"
+    #     objects = dir()
+    #     for object in objects:
+    #         if not object.startswith("__"):
+    #             del object
         
-        flag = "Unsuccessful"
+    #     flag = "Unsuccessful"
     
     # Handling Exception for permission error for opening/editing Workbook.
     except PermissionError as e:
@@ -1026,4 +1034,4 @@ def paco_cscore(sender,workbook):   #type:ignore
         # print(flag)
         return flag
 
-# paco_cscore("Sachin Sharma",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet1.xlsx")
+# paco_cscore("Kartar Singh",r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")

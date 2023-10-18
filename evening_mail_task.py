@@ -31,6 +31,15 @@ class CustomException(Exception):
         # Displaying the message with the custom exception title passed to the object of the class for the CustomException.
         messagebox.showerror(self.title, self.message)
 
+# Method for hiding sheet
+def sheet_hider(workbook,worksheet):
+    wb = load_workbook(workbook)
+    ws = wb[worksheet]
+    ws.sheet_state = "hidden"
+    wb.save(workbook)
+    wb.close()
+
+
 # Creating method for styling the worksheet.
 def styling(workbook,sheetname):
     wb  =  load_workbook(workbook)                          # loading the workbook.
@@ -87,7 +96,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
     mail_draft          = win32.Dispatch('Outlook.Application')
     mail_draft          = mail_draft.CreateItem(0)
     mail_draft.To       = 'PDLMPBNSRF@pdl.internal.ericsson.com;'
-    mail_draft.CC       = 'rohit.mahajan@ericsson.com;karan.k.loomba@ericsson.com;PDLPBNSRFP@pdl.internal.ericsson.com'
+    mail_draft.CC       = 'rohit.mahajan@ericsson.com;karan.k.loomba@ericsson.com;PDLPBNSRFP@pdl.internal.ericsson.com;vishal.kumar.garg@ericsson.com'
     # mail_draft.To       = 'enjoy.maity@ericsson.com;'
     # mail_draft.CC       = 'enjoy.maity@ericsson.com'
     mail_draft.Subject  = f"MPBN CRs For Tonight Maintenance Window - {execution_date} {maintenance_window}"
@@ -123,7 +132,7 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
             del object
 
 # Method(Function) for creating email package workbook and mail draft.
-def email_package_workbook_generator(sender,worksheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
+def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execution_date,evening_message_workbook_message,maintenance_window):
     # Creating Workbook File Path 
     workbook = rf"{folder}\\MPBN_Email_Package_{execution_date}.xlsx"
     # global workbook3; workbook3 = workbook
@@ -157,10 +166,13 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
     new_workbook = pd.ExcelFile(workbook)
     writer = pd.ExcelWriter(new_workbook,engine = 'openpyxl', mode = 'a', if_sheet_exists = 'replace')
     worksheet.to_excel(writer,"Email-Package",index = False)
+    mail_id_sheet.to_excel(writer,"Circle Mail Id",index= False)
     writer.close()
     del writer
 
     styling(workbook, "Email-Package")
+    styling(workbook,"Circle Mail Id")
+    sheet_hider(workbook,"Circle Mail Id")
 
     # Creating the Html Body for the Body
     html_body = "<html>\
@@ -216,19 +228,24 @@ def email_package_workbook_generator(sender,worksheet,folder,execution_date,even
 
 
 # Method(Function) for creating the evening message text.
-def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook):
+def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook,acceptable_change_responsible):
     try:
         wb=pd.ExcelFile(workbook)
         ws=wb.sheet_names
         worksheet=''
+        mail_id_sheet = ''
 
         # Finding the Email package worksheet.
         if('Email-Package' in ws):
             worksheet='Email-Package'
         
+        if('Mail Id' in ws):
+            mail_id_sheet = 'Mail Id'
+        
 
         if (len(worksheet) == 0):
             # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            del mail_id_sheet
             del worksheet
             del wb
             # Deleting all the variables before returning the value "Unsuccessful"
@@ -238,11 +255,26 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                     del object
 
             flag = 'Unsuccessful'
-            raise CustomWarning((' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!'))
+            raise CustomWarning(' Email-Package Worksheet not Present',"Kindly Click the Button for 'Email Package Preparation' First!")
+        
+        if (len(mail_id_sheet) == 0):
+            # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            del mail_id_sheet
+            del worksheet
+            del wb
+            # Deleting all the variables before returning the value "Unsuccessful"
+            objects = dir()
+            for object in objects:
+                if not object.startswith("__"):
+                    del object
+
+            flag = 'Unsuccessful'
+            raise CustomWarning(' Mail Id Worksheet not Present','Kindly Check the selected input workbook for Mail Id sheet!')
         
         else:
         # Reading relevant sheet.
             worksheet=pd.read_excel(wb,worksheet)
+            mail_id_sheet= pd.read_excel(wb,mail_id_sheet)
 
             # Checking Condition for the data pertaining to today's maintenance date being non-existent.
             if (len(worksheet) == 0):
@@ -256,7 +288,18 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                         del object
 
                 flag = 'Unsuccessful'
-                raise CustomWarning((' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!'))
+                raise CustomWarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            
+            strings_to_be_deleted = ['Select Your Name!','No']
+            array_of_unique_change_responsible = worksheet['Change Responsible'].dropna().unique()
+            new_acceptable_change_responsible = np.array(acceptable_change_responsible)
+            new_acceptable_change_responsible = np.setdiff1d(new_acceptable_change_responsible,strings_to_be_deleted)
+            masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible = np.isin(array_of_unique_change_responsible,
+                                                                                                           new_acceptable_change_responsible,
+                                                                                                           assume_unique=True)
+            if(False in masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible):
+                raise CustomException("    Executor Name Missing!",
+                                  f"{', '.join(np.setdiff1d(array_of_unique_change_responsible,acceptable_change_responsible))} executors are not present in your uploaded Change Responsible list text file, Please Check!")
             
             total_no_of_crs=len(worksheet)      # getting the total number of Crs
             total_no_of_resource = 16           
@@ -398,7 +441,25 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
     {}
             """
             # Adding all the other relevant data to the message text by formatting it.
-            message = message.format(execution_date,maintenance_window,total_no_of_crs,critical,major,critical,delhi_critical,major,delhi_major,len(resources_occupied_in_night_activities),resource_on_leave,night_shift_lead,buffer_auditor_trainer,resource_on_automation,total_no_of_crs,manual,enable,create,partially_automation,sender)
+            message = message.format(execution_date,
+                                     maintenance_window,
+                                     total_no_of_crs,
+                                     critical,
+                                     major,
+                                     critical,
+                                     delhi_critical,
+                                     major,
+                                     delhi_major,
+                                     len(resources_occupied_in_night_activities),
+                                     resource_on_leave,night_shift_lead,
+                                     buffer_auditor_trainer,
+                                     resource_on_automation,
+                                     total_no_of_crs,
+                                     manual,
+                                     enable,
+                                     create,
+                                     partially_automation,
+                                     sender)
             
             # Creating the file path where the text file for the message is being saved.
             file_path = workbook.split("/")
@@ -511,16 +572,28 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             evening_message_workbook_message.fillna(" ",inplace = True)
 
             # Calling the Email Package Workbook generator and mail drafter.
-            email_package_workbook_generator(sender,worksheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
+            email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
+            response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","We are going to update SRF_MPBN_Team_Availability tracker. So, Please ensure to download latest tracker before proceeding!")
+
+            if(response.lower() == 'ok'):
+                import attendance
+                flag = attendance.main_function(workbook=workbook,
+                                                night_shift_lead = night_shift_lead,
+                                                buffer_auditor_trainer = buffer_auditor_trainer,
+                                                resource_on_automation = resource_on_automation,
+                                                acceptable_change_responsible = acceptable_change_responsible,
+                                                sender = sender)
+            else:
+                flag = "Unsuccessful"
 
             # Deleting all the local variables 
             objects = dir()
             for object in objects:
                 if not object.startswith("__"):
                     del object
-
-            flag = 'Successful'
+            
+            # flag = 'Successful'
 
     # Handling Exceptions 
     except CustomException:
@@ -566,4 +639,4 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
     
 
-# evening_task('Manoj Kumar','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet.xlsx")
+# evening_task('Manoj Kumar','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet-1.xlsx")
