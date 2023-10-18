@@ -268,6 +268,7 @@ class App(tk.Tk):
         self.change_responsible_list_file_win_file_browser = filedialog.askopenfilename(initialdir= "C:\\",title="  Choose the Text File",filetypes=(("Text (.txt)","*.txt"), ("All Files", "*.*")))
         
         self.change_responsible_list_file_entry.insert(0,self.change_responsible_list_file_win_file_browser)
+        
     
     # Method (Function) for submitting the file and do the manipulations for getting the drop down list
     def change_responsible_list_file_win_submit(self,event):
@@ -1436,7 +1437,7 @@ class App(tk.Tk):
                         self.executor_mail_communication_status_flag = circle_reply_task.circle_reply_task(
                             self.sender, self.file_browser_file)
                         
-                        print(self.executor_mail_communication_status_flag)
+                        # print(self.executor_mail_communication_status_flag)
 
                         # Checking if the status of the task is successful or not.
                         if (self.executor_mail_communication_status_flag == "Successful"):
