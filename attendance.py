@@ -47,13 +47,14 @@ def styler(workbook_path, sheetname):
     red    = 'FF0000'
     orange = 'FF9933'
     green  = '00FF00'
+    yellow = 'FFFF66'
     col_widths  = []
     # print("line 47 hello")
     
     if(sheetname == 'Summary'):
         BDD7EE_bluish_color_columns = ['A','B','C','D']
         # print("inside Summary styling, line 49")
-        # Iterating through the row values to find max lenth of strings in each column, going row-wise
+        # Iterating through the row values to find max length of strings in each column, going row-wise
         for row_values in worksheet.iter_rows(values_only= True):
             for j,value in enumerate(row_values):
                 value = str(value)
@@ -222,6 +223,15 @@ def styler(workbook_path, sheetname):
                                                                         end_color= orange,
                                                                         fill_type= 'solid')
                     j+=1
+            
+            if(day_type_value == 'Holiday Support'):
+                j = 1
+                while(j<=worksheet.max_column):
+                    column_letter = get_column_letter(j)
+                    worksheet[f'{column_letter}{i}'].fill = PatternFill(start_color= yellow,
+                                                                        end_color= yellow,
+                                                                        fill_type= 'solid')
+                    j+=1
             i+=1
         
     
@@ -274,7 +284,7 @@ def data_filler(**kwargs):
     
     # Changing the acceptable_change_responsible list into a numpy array
     acceptable_change_responsible = np.array(acceptable_change_responsible)
-
+    acceptable_change_responsible = np.append(acceptable_change_responsible,['Karan Loomba'])
     new_change_responsible_added    = np.setdiff1d(acceptable_change_responsible,team_availability_sheet_required_columns_for_change_responsible_lists)
     change_responsible_exited       = np.setdiff1d(team_availability_sheet_required_columns_for_change_responsible_lists,acceptable_change_responsible)
 
@@ -490,6 +500,7 @@ def data_filler(**kwargs):
 
 
     # Starting the loop for adding the data in summary sheet
+    
     i = 0
     while(i < acceptable_change_responsible.size):
         change_responsible_selected = acceptable_change_responsible[i]
@@ -500,7 +511,7 @@ def data_filler(**kwargs):
         
         if(change_responsible_selected in new_change_responsible_added):
             sum = len(normal_working_days_dataframe[normal_working_days_dataframe[change_responsible_selected] == 'Available']) + len(normal_working_days_dataframe[normal_working_days_dataframe[change_responsible_selected] == 'Not in Team'])
-            summary_sheet.loc[normal_day_row_index,change_responsible_selected]     = sum
+            summary_sheet.loc[normal_day_row_index,change_responsible_selected]     = normal_working_days_dataframe[normal_working_days_dataframe[change_responsible_selected] == 'Available']
         
         summary_sheet.loc[weekend_day_row_index,change_responsible_selected]    = len(weekend_working_days_dataframe[weekend_working_days_dataframe[change_responsible_selected] == 'Available'])
         # print(f"{summary_sheet.iloc[weekend_day_row_index][change_responsible_selected]=}")
@@ -513,7 +524,7 @@ def data_filler(**kwargs):
         # print(total_normal_working_days)
 
         if((total_normal_working_days > 0) and (summary_sheet.iloc[normal_day_row_index][change_responsible_selected] != np.nan)):
-            percentage = (summary_sheet.iloc[normal_day_row_index][change_responsible_selected]/total_normal_working_days)*100
+            percentage = (sum/total_normal_working_days)*100
             summary_sheet.loc[availability_row_index,change_responsible_selected]   = f"{round(percentage,2)}%"
             # print(percentage)
         
