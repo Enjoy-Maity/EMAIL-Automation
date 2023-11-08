@@ -12,6 +12,8 @@
 2. **Datetime**
 3. **Sys**
 4. **Subprocess**
+5. **os**
+6. **pathlib**
 
 # Requirements for different tasks:
 
