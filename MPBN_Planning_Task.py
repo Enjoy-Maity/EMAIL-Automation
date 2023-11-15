@@ -15,6 +15,29 @@ import interdomain_KPIs_Mail_Comm_Task          # Importing the interdomain kpi 
 import evening_mail_task                        # Importing evening mail task module.
 import circle_reply_task                        # Importing circle reply task module.
 from datetime import datetime, timedelta        # Importing datetime and timedelta module to get today's maintenance date
+from pathlib import Path
+import logging
+import os
+
+
+logging_file_path = "C:/Ericsson_Application_Logs/MPBN Planning Task Logs/"
+Path(log_file_path).mkdir(parents=True, exist_ok = True)
+
+log_file = os.path.join(log_file_path,"MPBN_Planning_Task.logs")
+today = datetime.now()
+if(os.path.exists(log_file)):
+    log_file_create_time = datetime.fromtimestamp(os.path.getctime(log_file))
+    if(log_file_create_time < (today - timedelta(days =1))):
+        os.remove(log_file)
+
+logging.basicConfig(filename = log_file,
+                    filemode = "a",
+                    format = f"[ {'%(asctime)s'} ]: <<{'%(levelname)s'}>>: ({'%(module)s'}): {'%(message)s'}",
+                    datefmt = '%d-%b-%Y %I:%M:%S %p',
+                    encoding = "UTF-8",
+                    level = logging.DEBUG)
+
+logging.captureWarnings(capture = True)
 
 # Creating EmptyString Exception Class inheriting the Default Exception for raising and handling custom made empty string exception.
 class EmptyString(Exception):
@@ -611,6 +634,7 @@ class App(tk.Tk):
 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
+                    logging.error(f"ExceptionOccured (planning_sheet_creation_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
                     messagebox.showerror(" Exception Occured", error)
                     self.planning_sheet_creater_task_color_get.set(self.color[0])
                     self.planning_sheet_creater_task_status_checker_flag = 0
@@ -622,6 +646,7 @@ class App(tk.Tk):
                 self.task_running = 0
                 self.task_module_running = ""
                 # Raising the Custom warning in case the task is already successfuly completed.
+                logging.debug("User ran the task 'planning_sheet_creation_task_func' when it is completed successfully earlier")
                 raise CustomWarning("  Planning Sheet Creation Task Already Successfully Completed!", " Task Already Done")
         else:
             messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
@@ -659,6 +684,7 @@ class App(tk.Tk):
                 self.task_running = 0
                 self.task_module_running = ""
                 # Raising the Custom warning in case the task is already successfuly completed.
+                logging.debug("User ran the task 'circle_email_automation_task' when it is completed successfully earlier")
                 raise CustomWarning("  Circle Automation Task Already Successfully Completed!", " Task Already Done")
 
         else:
@@ -719,6 +745,7 @@ class App(tk.Tk):
 
         # Handling any other Exception and setting the label to unsuccessful along with it's color.
         except Exception as error:
+            logging.error(f"ExceptionOccured (circle_email_automation_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
             messagebox.showerror(" Exception Occured", error)
             self.circle_email_automation_task_color_get.set(self.color[0])
             self.circle_email_automation_status_checker_flag = 0
@@ -790,6 +817,7 @@ class App(tk.Tk):
 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
+                    logging.error(f"ExceptionOccured (email_package_prep_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
                     messagebox.showerror(" Exception Occured", error)
                     self.email_package_prep_color_get.set(self.color[0])
                     self.email_package_prep_task_status_checker_flag = 0
@@ -801,6 +829,7 @@ class App(tk.Tk):
                 self.task_running = 0
                 self.task_module_running = ""
                 # Raising the Custom warning in case the task is already successfuly completed.
+                logging.debug("User ran the task 'email_package_prep_func' when it is completed successfully earlier")
                 raise CustomWarning("  Email-Package Preparation Task Already Successfully Completed!", " Task Already Done")
         
         else:
@@ -874,6 +903,7 @@ class App(tk.Tk):
                 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
+                    logging.error(f"ExceptionOccured (interdomain_kpis_data_prep_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
                     messagebox.showerror(" Exception Occured", error)
                     self.interdomain_kpis_data_prep_color_get.set(self.color[0])
                     self.interdomain_kpis_data_prep_status_checker_flag = 0
@@ -885,6 +915,7 @@ class App(tk.Tk):
                 self.task_running = 0
                 self.task_module_running = ""
                 # Raising the Custom warning in case the task is already successfuly completed.
+                logging.debug("User ran the task 'interdomain_kpis_data_prep_func' when it is completed successfully earlier")
                 raise CustomWarning(
                     " Interdomain KPIs Data Prep Task Already Successfully Completed", " Task Already Done")
 
@@ -1003,6 +1034,7 @@ class App(tk.Tk):
                 self.task_running = 0
                 self.task_module_running = ""
                 self.interdomain_kpis_mail_communication_status_checker_flag = 0
+                logging.debug("User ran the task 'interdomain_kpis_mail_communication_func' when it is completed successfully earlier")
                 raise CustomWarning(
                     " Interdomain KPIs mail Communication Task Already Successfully Completed!", " Task Already Done")
         
@@ -1114,6 +1146,7 @@ class App(tk.Tk):
 
         # Handling Custom made exceptions and other exceptions that are not handled by the custom made exceptions.
         except FileNotSelected:
+            
             self.interdomain_kpis_mail_communication_color_get.set(
                 self.color[0])
             self.interdomain_kpis_mail_communication_status.set(
@@ -1122,6 +1155,7 @@ class App(tk.Tk):
             self.task_module_running = ""
 
         except RegionHandlerException:
+            logging.error(f"RegionHandlerException (interdomain kpis mail starter func) =====> \n\n{traceback.format_exc()}")
             self.new_empty_string_list = []
             self.new_integer_string_list = []
             self.north_and_west_region_entry.focus_force()
@@ -1133,6 +1167,7 @@ class App(tk.Tk):
             self.task_module_running = ""
 
         except Exception as error:
+            logging.error(f"ExceptionOccured (interdomain_kpis_mail_starter_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
             messagebox.showerror(" Exception Occured", error)
             self.interdomain_kpis_mail_communication_color_get.set(
                 self.color[0])
@@ -1152,6 +1187,7 @@ class App(tk.Tk):
 
                         if (len(self.file_browser_file) == 0):
                             # Raising the Exception for file not being selected
+                            logging.debug("Raising exception for File not selected from evening task func")
                             raise FileNotSelected(
                                 " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
 
@@ -1174,6 +1210,7 @@ class App(tk.Tk):
                                 tomorrow = datetime.now() + timedelta(1)
                                 tomorrow = tomorrow.strftime("%m/%d/%Y")
                                 self.worksheet = self.worksheet[self.worksheet['Execution Date'] == tomorrow]
+                                logging.info(f"Filtered the worksheet according to execution date =======>\n{self.worksheet}")
                                 
                                 # If there's data present in the worksheet then changing the value of the email package sheet creation status.
                                 if (len(self.worksheet) > 0):
@@ -1184,6 +1221,7 @@ class App(tk.Tk):
                                 self.task_module_running = ""
 
                                 # Raising the custom made exception for the case when the email package sheet is not created or empty.
+                                logging.debug(f"Raising the Custom Exception from evening task func")
                                 raise CustomException(
                                     'Kindly Click the Button for Email-Package Preparation Data Prep First!', 'Email-Package Worksheet Empty')
 
@@ -1271,6 +1309,7 @@ class App(tk.Tk):
                 
                     #  Handling Exceptions for the task.
                     except FileNotSelected:
+                        logging.error(f"FileNotSelected (evening_task_func) =====> \n\n{traceback.format_exc()}")
                         self.evening_task_color_get.set(self.color[0])
                         self.evening_task_status_checker_flag = 0
                         self.evening_task_status.set(' Unsuccessful ')
@@ -1278,6 +1317,7 @@ class App(tk.Tk):
                         self.task_module_running = ""
                     
                     except Exception as error:
+                        logging.error(f"ExceptionOccured (evening_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
                         messagebox.showerror(" Exception Occured", error)
                         self.evening_task_color_get.set(self.color[0])
                         self.evening_task_status_checker_flag = 0
@@ -1290,9 +1330,11 @@ class App(tk.Tk):
                     self.task_module_running = ""
 
                     # Raising custom made exception for the condition when the task has already been done.
+                    logging.debug("User ran the task 'evening_task_func' when it is completed successfully earlier")
                     raise CustomWarning(
                         "Evening Task Already Successfully Completed!", " Task Already Done")
         else:
+            logging.debug("User clicked the task button while another task was running")
             messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for quitting the evening message task while destroying the child GUI Window.
@@ -1392,7 +1434,8 @@ class App(tk.Tk):
                     f"Please Enter Valid Names, Empty Strings and Numbers are not allowed\n Empty Field/Fields: {','.join(self.empty_string_list)}\nField/Fields with Numbers: {','.join(self.integer_string_list)}")
 
         # Handling the Evening Task Exception 
-        except EveningTaskException:
+        except EveningTaskException as e:
+            logging.error(f"EveningTaskException(planning_sheet_creation_task_func) =====> {traceback.format_exc()}\n\n{e}")
             self.empty_string_list = []
             self.integer_string_list = []
             self.evening_task_color_get.set(self.color[0])
@@ -1404,6 +1447,7 @@ class App(tk.Tk):
 
         # Handling any other Exception and setting the label to unsuccessful along with it's color.
         except Exception as error:
+            logging.error(f"ExceptionOccured (planning_sheet_creation_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
             messagebox.showerror(" Exception Occured", error)
             self.evening_task_color_get.set(self.color[0])
             self.evening_task_status_checker_flag = 0
@@ -1467,7 +1511,9 @@ class App(tk.Tk):
                         
 
                 # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
-                except FileNotSelected:
+                except FileNotSelected as e:
+                    logging.error(f"FileNotSelected(executor_mail_communication) =====> \n\n{traceback.format_exc()}\n\n{e}")
+                    messagebox.showerror("File Not Selected", "Kindly Select the file to be uploaded via 'Browse' button")
                     self.executor_mail_communication_color_get.set(self.color[0])
                     self.executor_mail_communication_status_checker_flag = 0
                     self.executor_mail_communication_status.set(" Unsuccessful ")
@@ -1477,7 +1523,8 @@ class App(tk.Tk):
 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
-                    messagebox.showerror(" Exception Occured", f"{traceback.format_exc()}\n\n{error}")
+                    logging.error(f"Exception occurred(executor_mail_communication) =====>\n\n{traceback.format_exc()}\n\n{error}")
+                    messagebox.showerror(" Exception Occured", error)
                     self.executor_mail_communication_color_get.set(self.color[0])
                     self.executor_mail_communication_status_checker_flag = 0
                     self.executor_mail_communication_status.set(" Unsuccessful ")
@@ -1489,9 +1536,11 @@ class App(tk.Tk):
                 self.task_running = 0
                 self.task_module_running = ""
                 # Raising the Custom warning in case the task is already successfuly completed.
+                logging.debug("User ran the task 'executor_mail_communication' when it is completed successfully earlier")
                 raise CustomWarning("  Executor Mail Communication Task Already Successfully Completed!", " Task Already Done")
 
         else:
+            logging.debug("User clicked the task button while another task was running")
             messagebox.showwarning("    Another task is running!",f"{self.task_module_running} is already running, Please Wait Patiently!")
 
     # Method(Function) for submitting the User Name.
@@ -1547,19 +1596,22 @@ def main():
     # Handling exceptions for empty string entry.
     except EmptyString as e:
         current_file = __file__  # gets the value of current running file
+        logging.error(f"EmptyStringError =====> \n\n{traceback.format_exc()}")
         subprocess.run(["python", current_file])
         sys.exit(0)
 
     # Handling exceptions for Inputs containing Integer value
     except ContainsInteger:
         current_file = __file__  # gets the value of current running file
+        logging.error(f"ContainsIntegerError =====> \n\n{traceback.format_exc()}")
         subprocess.run(["python", current_file])
         sys.exit(0)
 
     # Handling any other Exception.
     except Exception as e:
         import traceback
-        messagebox.showerror("  Exception Occured", f"{traceback.format_exc()}\n\n{e}")
+        logging.error(f"Exception Occured =====> \n{traceback.format_exc()}\n\n{e}")
+        messagebox.showerror("  Exception Occured", f"{e}")
 
     root.mainloop()
 
