@@ -20,7 +20,7 @@ import logging
 import os
 
 
-logging_file_path = "C:/Ericsson_Application_Logs/MPBN Planning Task Logs/"
+log_file_path = "C:/Ericsson_Application_Logs/MPBN Planning Task Logs/"
 Path(log_file_path).mkdir(parents=True, exist_ok = True)
 
 log_file = os.path.join(log_file_path,"MPBN_Planning_Task.logs")

@@ -1,17 +1,20 @@
+import os
 import sys                                  # Importing the sys to run cmd commands from the script itself.
 import logging                              # Importing the logging module for creating logs.
 import traceback
+from pathlib import Path
 from datetime import datetime,timedelta     # Importing datetime and timedelta to get today's maintenance date based on system's current date and time settings.
 import pandas as pd                         # Importing Pandas to manipulate the data from the excel sheet.
 import win32com.client as win32             # Importing the win32com.client module to create Microsoft Office Suite COM object for sending mails.
 from tkinter import *                       # Importing all the classes from tkinter GUI Module of python.
 from tkinter import messagebox              # Importing Messagebox from tkinter for displaying messages.
 from Custom_Warning import CustomWarning
+import pywintypes
 
 logging_file_path = "C:/Ericsson_Application_Logs/MPBN Planning Task Logs/"
-Path(log_file_path).mkdir(parents=True, exist_ok = True)
+Path(logging_file_path).mkdir(parents=True, exist_ok = True)
 
-log_file = os.path.join(log_file_path,"MPBN_Planning_Task.logs")
+log_file = os.path.join(logging_file_path,"MPBN_Planning_Task.logs")
 today = datetime.now()
 
 logging.basicConfig(filename = log_file,
@@ -411,7 +414,8 @@ def fetch_details(sender:str, workbook:str)->str:
                                                     <p>2)  Design Maker & Checker confirmation mail need to be shared for all planned activity on Core/STP/DRA/PACO/HLR/IN connected MPBN nodes.</p>\
                                                     <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA). Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR/IN connected MPBN nodes.</p>\
                                                     <p>4)  Is redundancy working or all parameters ensured in shared plan for SAPC integration/reachability related activity on MPBN nodes (Yes/No, Applicable only in case of SAPC integration)?</p>\
-                                                    <p>5)  Is there any impact on 5G services/ KPI related to IN/Core/PACO/RAN?<br><br></p>\
+                                                    <p>5)  Is there any impact on 5G services/ KPI related to IN/Core/PACO/RAN?</p>\
+                                                    <p>6)  Please confirm Integration/Expansion/Reachability activity will not impact running services (Yes/No)<br><br></p>\
                                                 </div>\
                                                 <div>\
                                                     <p>{}</p>\

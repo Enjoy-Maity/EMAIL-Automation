@@ -451,7 +451,8 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                                      major,
                                      delhi_major,
                                      len(resources_occupied_in_night_activities),
-                                     resource_on_leave,night_shift_lead,
+                                     resource_on_leave,
+                                     night_shift_lead,
                                      buffer_auditor_trainer,
                                      resource_on_automation,
                                      total_no_of_crs,
@@ -550,7 +551,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 # Reading the required sheet.
                 ws = wb["evening_message"]
                 
-                ws['B1'].value = 11
+                ws['B1'].value = 19
                 ws['B2'].value = 3
                 ws['B3'].value = 0
                 ws['B4'].value = resource_on_leave
@@ -592,8 +593,19 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             for object in objects:
                 if not object.startswith("__"):
                     del object
-            
-            # flag = 'Successful'
+
+            dictionary_to_be_sent = {"Resources on leaves" : resource_on_leave,
+                                     "Resources on comp-off": 0,
+                                     "Domain":"SRF MPBN",
+                                     "Night executors count": resources_occupied_in_night_activities,
+                                     "Total Picked CR": total_no_of_crs,
+                                     "Total Planned CR": total_no_of_crs,
+                                     "Day Planners count": 3}
+
+            from dashboard import main_dashboard_func
+            flag = main_dashboard_func(workbook=workbook,
+                                       sender=sender,
+                                       dictionary_for_mail=dictionary_to_be_sent)
 
     # Handling Exceptions 
     except CustomException:
