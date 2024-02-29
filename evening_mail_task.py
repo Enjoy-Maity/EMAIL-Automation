@@ -575,37 +575,46 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             # Calling the Email Package Workbook generator and mail drafter.
             email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
 
-            response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","We are going to update SRF_MPBN_Team_Availability tracker. So, Please ensure to download latest tracker before proceeding!")
+            # Asking for response to call the attendance tracker.
+            # response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","We are going to update SRF_MPBN_Team_Availability tracker. So, Please ensure to download latest tracker before proceeding!")
 
-            if(response.lower() == 'ok'):
-                import attendance
-                flag = attendance.main_function(workbook=workbook,
-                                                night_shift_lead = night_shift_lead,
-                                                buffer_auditor_trainer = buffer_auditor_trainer,
-                                                resource_on_automation = resource_on_automation,
-                                                acceptable_change_responsible = acceptable_change_responsible,
-                                                sender = sender)
+            # if(response.lower() == 'ok'):
+            #     import attendance
+            #     flag = attendance.main_function(workbook=workbook,
+            #                                     night_shift_lead = night_shift_lead,
+            #                                     buffer_auditor_trainer = buffer_auditor_trainer,
+            #                                     resource_on_automation = resource_on_automation,
+            #                                     acceptable_change_responsible = acceptable_change_responsible,
+            #                                     sender = sender)
+            # else:
+            #     flag = "Unsuccessful"
+
+            # Asking for response to send the dashboard mail.
+            response = messagebox.showinfo("    SRF-Dashboard mail generator", "Do you want to create the Dashboard Mail?")
+
+            if response.lower() == 'ok':
+
+                dictionary_to_be_sent = {"Resources on leaves" : resource_on_leave,
+                                        "Resources on comp-off": 0,
+                                        "Domain":"SRF MPBN",
+                                        "Night executors count": resources_occupied_in_night_activities,
+                                        "Total Picked CR": total_no_of_crs,
+                                        "Total Planned CR": total_no_of_crs,
+                                        "Day Planners count": 3}
+
+                from dashboard import main_dashboard_func
+                flag = main_dashboard_func(workbook=workbook,
+                                        sender=sender,
+                                        dictionary_for_mail=dictionary_to_be_sent)
+
             else:
-                flag = "Unsuccessful"
+                flag = 'Unsuccessful'
 
             # Deleting all the local variables 
             objects = dir()
             for object in objects:
                 if not object.startswith("__"):
                     del object
-
-            dictionary_to_be_sent = {"Resources on leaves" : resource_on_leave,
-                                     "Resources on comp-off": 0,
-                                     "Domain":"SRF MPBN",
-                                     "Night executors count": resources_occupied_in_night_activities,
-                                     "Total Picked CR": total_no_of_crs,
-                                     "Total Planned CR": total_no_of_crs,
-                                     "Day Planners count": 3}
-
-            from dashboard import main_dashboard_func
-            flag = main_dashboard_func(workbook=workbook,
-                                       sender=sender,
-                                       dictionary_for_mail=dictionary_to_be_sent)
 
     # Handling Exceptions 
     except CustomException:

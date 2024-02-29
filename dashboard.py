@@ -375,6 +375,14 @@ def main_dashboard_func(workbook, sender, dictionary_for_mail):
 
     try:
         if os.path.exists(path_for_srf_mpbn_fni_tracker_dashboard_file):
+            if os.path.exists(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx')):
+                os.remove(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx'))
+
+            wkbk = load_workbook(path_for_srf_mpbn_fni_tracker_dashboard_file)
+            wkbk.save(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx'))
+            wkbk.close()
+            del wkbk
+
             os.remove(path_for_srf_mpbn_fni_tracker_dashboard_file)
 
         global dictionary; dictionary = dictionary_for_mail
