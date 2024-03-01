@@ -1,6 +1,6 @@
 import os
 import sys                                  # Importing the sys to run cmd commands from the script itself.
-import logging                              # Importing the logging module for creating logs.
+# import #logging                              # Importing the #logging module for creating logs.
 import traceback
 from pathlib import Path
 from datetime import datetime,timedelta     # Importing datetime and timedelta to get today's maintenance date based on system's current date and time settings.
@@ -11,18 +11,18 @@ from tkinter import messagebox              # Importing Messagebox from tkinter 
 from Custom_Warning import CustomWarning
 import pywintypes
 
-logging_file_path = "C:/Ericsson_Application_Logs/MPBN Planning Task Logs/"
-Path(logging_file_path).mkdir(parents=True, exist_ok = True)
+# #logging_file_path = "C:/Ericsson_Application_Logs/MPBN Planning Task Logs/"
+# Path(#logging_file_path).mkdir(parents=True, exist_ok = True)
 
-log_file = os.path.join(logging_file_path,"MPBN_Planning_Task.logs")
+# log_file = os.path.join(#logging_file_path,"MPBN_Planning_Task.logs")
 today = datetime.now()
 
-logging.basicConfig(filename = log_file,
-                    filemode = "a",
-                    format = f"[ {'%(asctime)s'} ]: <<{'%(levelname)s'}>>: ('MPBN_Planning_Task'/{'%(module)s'}): {'%(message)s'}",
-                    datefmt = '%d-%b-%Y %I:%M:%S %p',
-                    encoding = "UTF-8",
-                    level = logging.DEBUG)
+# #logging.basicConfig(filename = log_file,
+#                     filemode = "a",
+#                     format = f"[ {'%(asctime)s'} ]: <<{'%(levelname)s'}>>: ('MPBN_Planning_Task'/{'%(module)s'}): {'%(message)s'}",
+#                     datefmt = '%d-%b-%Y %I:%M:%S %p',
+#                     encoding = "UTF-8",
+#                     level = #logging.DEBUG)
 
 flag  = ""
 workbook1 = ""
@@ -61,7 +61,7 @@ def sendmail(dataframe:pd.DataFrame, to:str, cc:str, body:str, subject:str, send
         # Creating the COM object of Microsoft Office Suite (Outlook) for sending mail.
         outlook_mailer=win32.Dispatch('Outlook.Application')
         msg=outlook_mailer.CreateItem(0)            # Creating Mail for sending.
-        logging.info("Created the outlook mail item")
+        #logging.info("Created the outlook mail item")
 
         html_body=body                              # Assigning the Mail Body
         msg.Subject=subject                         # Assigning the Subject Line for mail through the COM Object
@@ -94,7 +94,7 @@ def sendmail(dataframe:pd.DataFrame, to:str, cc:str, body:str, subject:str, send
         error_description = error.excepinfo[2]
 
         if(error_description.__contains__("Outlook does not recognize one or more names.")):
-            logging.debug(f"Found Error in Email-ID :{to}")
+            #logging.debug(f"Found Error in Email-ID :{to}")
             messagebox.showerror("Exception Occurred",f"")
             pass
 
@@ -123,7 +123,7 @@ def fetch_details(sender:str, workbook:str)->str:
     try:
         #user=subprocess.getoutput("echo %username%") # finding the Username of the user where the directory of the file is located 
         #workbook=r"C:\Daily\MPBN Daily Planning Sheet.xlsx" # system path from where the program will take the input
-        logging.debug()
+        #logging.debug()
 
         # Checking if any path for the workbook is selected or not.
         global workbook1;workbook1 = workbook
@@ -492,8 +492,8 @@ def fetch_details(sender:str, workbook:str)->str:
         flag = "Unsuccessful"
     
     finally:
-        logging.info(f"Returning \'{flag}\' as status to the main GUI")
-        logging.shutdown()
+        #logging.info(f"Returning \'{flag}\' as status to the main GUI")
+        #logging.shutdown()
         return flag
     
 #fetch_details("Enjoy Maity",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx")

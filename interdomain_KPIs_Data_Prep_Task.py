@@ -299,7 +299,11 @@ def p_one_p_three_appender(sender,workbook):
                 
         # Assigning a Variable to get the today's maintenance date to check whether today's maintenance date's data is present in the MPBN Planning Automation Tracker
         todays_maintenance_date = email_package.iloc[1]['Execution Date']
-        todays_maintenance_date = todays_maintenance_date.strftime("%m/%d/%Y")
+
+        if isinstance(todays_maintenance_date, datetime):
+            todays_maintenance_date = todays_maintenance_date.strftime("%m/%d/%Y")
+    
+        # todays_maintenance_date = todays_maintenance_date.strftime("%m/%d/%Y")
         # print(todays_maintenance_date)
 
         ''' 

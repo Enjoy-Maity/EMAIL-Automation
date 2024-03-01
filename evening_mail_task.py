@@ -597,7 +597,7 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 dictionary_to_be_sent = {"Resources on leaves" : resource_on_leave,
                                         "Resources on comp-off": 0,
                                         "Domain":"SRF MPBN",
-                                        "Night executors count": resources_occupied_in_night_activities,
+                                        "Night executors count": resources_occupied_in_night_activities.size,
                                         "Total Picked CR": total_no_of_crs,
                                         "Total Planned CR": total_no_of_crs,
                                         "Day Planners count": 3}
