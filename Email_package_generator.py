@@ -242,10 +242,10 @@ def email_package_sheet_creater(workbook):
                     # Raising the Exception for rows with no planning status.
                     raise CustomException(" Input Missing!",f"Planning Status Input is Missing for the below S.NO:\n{', '.join(str(num) for num in input_error)}")
                 
-                if ("PLANNED" in planned_status_unique_values):
+                if ("PLANNED" in planned_status_unique_values) or ("SWAPPED" in planned_status_unique_values):
                     # Filtering the rows with planned crs
                     daily_plan_sheet['Planning Status'] = daily_plan_sheet['Planning Status'].str.strip()
-                    daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper() == 'PLANNED']
+                    daily_plan_sheet = daily_plan_sheet[daily_plan_sheet['Planning Status'].str.upper().str.contains('PLANNED|SWAPPED')]
 
                 else:
                     del daily_plan_sheet
@@ -1081,4 +1081,4 @@ def email_package_sheet_creater(workbook):
         gc.collect()
         return flag
 
-# email_package_sheet_creater(r"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet-1.xlsx")
+# email_package_sheet_creater(r"C:\Users\emaienj\Downloads\New_folder_(3)\MPBN Daily Planning Sheet.xlsx")

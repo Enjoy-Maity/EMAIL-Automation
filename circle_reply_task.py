@@ -798,9 +798,11 @@ def circle_reply_task(sender, workbook):
             else:
                 # Getting Unique Circles from the required sheet in a list.
                 unique_circles = required_worksheet['Circle'].unique()
+                # print("Unique Circles: ",unique_circles)
 
                 # Creating dictionary for change_responsible to mail ID
                 dictionary_for_change_responsible_to_mail_id = dict(zip(mail_id_sheet['Change Responsible'],mail_id_sheet['Mail ID']))
+                # print('\n'.join([f'{key}: {value}' for key, value in dictionary_for_change_responsible_to_mail_id.items()]))
 
                 # Creating a variable to get today's maintenance date
                 today_maintenance_date = datetime.now() + timedelta(1)
@@ -891,4 +893,4 @@ def circle_reply_task(sender, workbook):
         gc.collect()
         return flag
 
-# circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\Daily Work\MPBN_Email_Package_27th Sep 2023.xlsx")
+# circle_reply_task("Arka Maiti",r"C:\Users\emaienj\Downloads\New_testing_of_day\MPBN Daily Planning Sheet.xlsx")

@@ -1,3 +1,5 @@
+import gc
+import os
 from subprocess import Popen                                        # Importing for opening applications like notebook through cmd line command.
 import pandas as pd                                                 # Importing for reading Excel Sheet data and Manipulating it.
 from tkinter import messagebox                                      # Impoprting for showing messages.
@@ -91,6 +93,8 @@ def styling(workbook,sheetname):
         if not object.startswith("__"):
             del object
 
+
+
 # Method(Function) for Drafting Mail.
 def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_date,email_package_workbook,maintenance_window):
     mail_draft          = win32.Dispatch('Outlook.Application')
@@ -100,6 +104,8 @@ def mail_drafter(dataframe,dataframe_for_top_table,html_body,sender,execution_da
     # mail_draft.To       = 'enjoy.maity@ericsson.com;'
     # mail_draft.CC       = 'enjoy.maity@ericsson.com'
     mail_draft.Subject  = f"MPBN CRs For Tonight Maintenance Window - {execution_date} {maintenance_window}"
+
+    dataframe = dataframe.fillna(" ")
 
     dataframe = dataframe.style.set_table_styles([
         {'selector':'th','props':'border:1px solid black; border-collapse : collapse; color:white;padding: 10px; background-color:rgb(0, 51, 204);text-align:center;'},
@@ -212,8 +218,13 @@ def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execu
                            'CR Belongs to Same Activity of Previous CR- Yes/NO',
                            'Change Responsible',
                            'Activity Checker']]
-    
+    # if isinstance(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")], datetime):
+    print(type(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")]))
+    if isinstance(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")], datetime):
+        # worksheet["Execution Date"] = pd.to_datetime(worksheet["Execution Date"])
+        worksheet["Execution Date"] = worksheet["Execution Date"].dt.strftime('%d-%m-%Y')
     worksheet.reset_index(drop = True, inplace = True)
+    print(worksheet.to_markdown())
 
     # Calling the Mail Drafter Method for drafting the mail but not send it.
     mail_drafter(worksheet,evening_message_workbook_message,html_body,sender,execution_date,workbook,maintenance_window)
@@ -227,54 +238,105 @@ def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execu
             del object
 
 
-# Method(Function) for creating the evening message text.
-def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook,acceptable_change_responsible):
+def suffix_adder(exec_date):
+    month_dictionary = {
+        '01': 'Jan',
+        '02': 'Feb',
+        '03': 'Mar',
+        '04': 'Apr',
+        '05': 'May',
+        '06': 'Jun',
+        '07': 'Jul',
+        '08': 'Aug',
+        '09': 'Sep',
+        '10': 'Oct',
+        '11': 'Nov',
+        '12': 'Dec'
+    }
+    suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
+    day = ''
+    if (3 < int(exec_date[1]) < 21) or (23 < int(exec_date[1]) < 31):
+        day = f'{int(exec_date[1]):02d}th'
+    else:
+        day = f'{int(exec_date[1]):02d}{suffixes[int(exec_date[1]) % 10]}'
+
+    execution_date = f'{day} {month_dictionary[exec_date[0]]} {exec_date[2]}'
+
+    return execution_date
+
+
+
+#Method(Function) for doing the necessary calculations
+def calculations(**kwargs):
+    if 'sender' in kwargs:
+        sender = kwargs['sender']
+
+    if 'night_shift_lead' in kwargs:
+        night_shift_lead = kwargs['night_shift_lead']
+
+    if 'buffer_auditor_trainer' in kwargs:
+        buffer_auditor_trainer = kwargs['buffer_auditor_trainer']
+
+    if 'resource_on_automation' in kwargs:
+        resource_on_automation = kwargs['resource_on_automation']
+
+    if 'workbook' in kwargs:
+        workbook = kwargs['workbook']
+
+    if 'acceptable_change_responsible' in kwargs:
+        acceptable_change_responsible = kwargs['acceptable_change_responsible']
+    result = []
+    result_dictionary = dict()
+    temp_flag = ''
+
     try:
-        wb=pd.ExcelFile(workbook)
-        ws=wb.sheet_names
-        worksheet=''
+        wb = pd.ExcelFile(workbook)
+        ws = wb.sheet_names
+        worksheet = ''
         mail_id_sheet = ''
 
         # Finding the Email package worksheet.
-        if('Email-Package' in ws):
-            worksheet='Email-Package'
-        
-        if('Mail Id' in ws):
+        if ('Email-Package' in ws):
+            worksheet = 'Email-Package'
+
+        if ('Mail Id' in ws):
             mail_id_sheet = 'Mail Id'
-        
 
         if (len(worksheet) == 0):
             # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            wb.close()
             del mail_id_sheet
             del worksheet
             del wb
             # Deleting all the variables before returning the value "Unsuccessful"
             objects = dir()
-            for object in objects:
-                if not object.startswith("__"):
-                    del object
+            for object_ in objects:
+                if not object_.startswith("__"):
+                    del object_
 
-            flag = 'Unsuccessful'
-            raise CustomWarning(' Email-Package Worksheet not Present',"Kindly Click the Button for 'Email Package Preparation' First!")
-        
+            temp_flag = 'Unsuccessful'
+            raise CustomWarning(' Email-Package Worksheet not Present', "Kindly Click the Button for 'Email Package Preparation' First!")
+
         if (len(mail_id_sheet) == 0):
             # messagebox.showwarning(' Email-Package Worksheet not Present','Kindly Click the Button for Interdomain Kpi Data Prep First!')
+            wb.close()
             del mail_id_sheet
             del worksheet
             del wb
             # Deleting all the variables before returning the value "Unsuccessful"
             objects = dir()
-            for object in objects:
-                if not object.startswith("__"):
-                    del object
+            for object_ in objects:
+                if not object_.startswith("__"):
+                    del object_
 
-            flag = 'Unsuccessful'
-            raise CustomWarning(' Mail Id Worksheet not Present','Kindly Check the selected input workbook for Mail Id sheet!')
-        
+            temp_flag = 'Unsuccessful'
+            raise CustomWarning(' Mail Id Worksheet not Present', 'Kindly Check the selected input workbook for Mail Id sheet!')
+
         else:
-        # Reading relevant sheet.
-            worksheet=pd.read_excel(wb,worksheet)
-            mail_id_sheet= pd.read_excel(wb,mail_id_sheet)
+            # Reading relevant sheet.
+            worksheet = pd.read_excel(wb, worksheet)
+            mail_id_sheet = pd.read_excel(wb, mail_id_sheet)
+            array_of_team_members = mail_id_sheet['Change Responsible'].dropna().unique()
 
             # Checking Condition for the data pertaining to today's maintenance date being non-existent.
             if (len(worksheet) == 0):
@@ -283,32 +345,32 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
                 del wb
                 # Deleting all the variables before returning the value "Unsuccessful"
                 objects = dir()
-                for object in objects:
-                    if not object.startswith("__"):
-                        del object
+                for object_ in objects:
+                    if not object_.startswith("__"):
+                        del object_
 
-                flag = 'Unsuccessful'
-                raise CustomWarning(' Email-Package Worksheet Empty','Kindly Click the Button for Interdomain Kpi Data Prep First!')
-            
-            strings_to_be_deleted = ['Select Your Name!','No']
+                temp_flag = 'Unsuccessful'
+                raise CustomWarning(' Email-Package Worksheet Empty', 'Kindly Click the Button for Interdomain Kpi Data Prep First!')
+
+            strings_to_be_deleted = ['Select Your Name!', 'No']
             array_of_unique_change_responsible = worksheet['Change Responsible'].dropna().unique()
             new_acceptable_change_responsible = np.array(acceptable_change_responsible)
-            new_acceptable_change_responsible = np.setdiff1d(new_acceptable_change_responsible,strings_to_be_deleted)
+            new_acceptable_change_responsible = np.setdiff1d(new_acceptable_change_responsible, strings_to_be_deleted)
             masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible = np.isin(array_of_unique_change_responsible,
-                                                                                                           new_acceptable_change_responsible,
-                                                                                                           assume_unique=True)
-            if(False in masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible):
+                                                                                                               new_acceptable_change_responsible,
+                                                                                                               assume_unique=True)
+            if (False in masks_for_checks_in_acceptable_change_responsible_and_array_of_unique_change_responsible):
                 raise CustomException("    Executor Name Missing!",
-                                  f"{', '.join(np.setdiff1d(array_of_unique_change_responsible,acceptable_change_responsible))} executors are not present in your uploaded Change Responsible list text file, Please Check!")
-            
-            total_no_of_crs=len(worksheet)      # getting the total number of Crs
-            total_no_of_resource = 16           
-            
-            # Initializing the variables for counting number of CRs with Critical, Major Risk levels for all the circles along with Delhi's seperate 
+                                      f"{', '.join(np.setdiff1d(array_of_unique_change_responsible, acceptable_change_responsible))} executors are not present in your uploaded Change Responsible list text file, Please Check!")
+
+            total_no_of_crs = len(worksheet)  # getting the total number of Crs
+            total_no_of_resource = array_of_team_members.size
+
+            # Initializing the variables for counting number of CRs with Critical, Major Risk levels for all the circles along with Delhi's seperate
             # count of Risk levels.
-            critical = 0                        # Risk Level 1
+            critical = 0  # Risk Level 1
             delhi_critical = 0
-            major = 0                           # Risk Level 2 
+            major = 0  # Risk Level 2
             delhi_major = 0
 
             # Initializing the variables for counting the manual, create, enable and partially automated CR's.
@@ -317,312 +379,523 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
             enable = 0
             partially_automation = 0
 
-            # Getting the maintenance windo from the excel sheet.
-            maintenance_window = f"({worksheet.at[0,'Maintenance Window']})"
-            
-            # Creating a dictionary to give the subscipt of the month name based on the month number.
+            # Getting the maintenance window from the excel sheet.
+            maintenance_window = f"({worksheet.at[0, 'Maintenance Window']})"
+
+            # Creating a dictionary to give the subscript of the month name based on the month number.
             month_dictionary = {
-                '01' : 'Jan',
-                '02' : 'Feb',
-                '03' : 'Mar',
-                '04' : 'Apr',
-                '05' : 'May',
-                '06' : 'Jun',
-                '07' : 'Jul',
-                '08' : 'Aug',
-                '09' : 'Sep',
-                '10' : 'Oct',
-                '11' : 'Nov',
-                '12' : 'Dec'
+                '01': 'Jan',
+                '02': 'Feb',
+                '03': 'Mar',
+                '04': 'Apr',
+                '05': 'May',
+                '06': 'Jun',
+                '07': 'Jul',
+                '08': 'Aug',
+                '09': 'Sep',
+                '10': 'Oct',
+                '11': 'Nov',
+                '12': 'Dec'
             }
 
             # Splitting the date to format it to be sent through the message.
             worksheet['Execution Date'] = pd.to_datetime(worksheet['Execution Date'])
             worksheet['Execution Date'] = worksheet['Execution Date'].dt.strftime('%m/%d/%Y')
-            exec_date = worksheet.at[0,'Execution Date']
+            exec_date = worksheet.at[0, 'Execution Date']
             exec_date = exec_date.strip().split('/')
-            
+
             # Adding suffices to the date.
-            suffixes = { 1: 'st' , 2: 'nd' , 3: 'rd'}
-            day = ''    
+            suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
+            day = ''
             if (3 < int(exec_date[1]) < 21) or (23 < int(exec_date[1]) < 31):
                 day = f'{int(exec_date[1]):02d}th'
             else:
-                day = f'{int(exec_date[1]):02d}{suffixes[int(exec_date[1])%10]}'
+                day = f'{int(exec_date[1]):02d}{suffixes[int(exec_date[1]) % 10]}'
 
-            execution_date= f'{day} {month_dictionary[exec_date[0]]} {exec_date[2]}'
+            execution_date = f'{day} {month_dictionary[exec_date[0]]} {exec_date[2]}'
 
-            
             resources_occupied_in_night_activities = worksheet['Change Responsible'].unique()
             resources_occupied_in_night_activities = resources_occupied_in_night_activities.astype(str)
 
-            resources_occupied_in_night_activities = np.delete(resources_occupied_in_night_activities,np.where((resources_occupied_in_night_activities == 'nan')|(resources_occupied_in_night_activities == 'Nan')))
-            
+            resources_occupied_in_night_activities = np.delete(resources_occupied_in_night_activities,
+                                                               np.where((resources_occupied_in_night_activities == 'nan') | (resources_occupied_in_night_activities == 'Nan')))
 
             # Filling the blank fields in the dataframe with 'NA'.
-            worksheet.fillna("TempNA", inplace = True)
+            worksheet.fillna("TempNA", inplace=True)
 
             '''
                 Iterating (Looping) over the dataframe for finding the number of critical and major risk level along with the number of CR's done with 
                 Automation, Partial-Automation and Manually.
             '''
-            for row in range(0,len(worksheet)):
-                if worksheet.at[row,'Risk'].strip() == 'Level 1':
-                    critical+=1
-                    if worksheet.at[row,'Circle'].strip() == 'DL':
-                        delhi_critical+=1
-                    if (worksheet.at[row,'Execution Projection'].strip().upper() == 'MANUAL') or (worksheet.at[row,'Execution Projection'].strip().upper() == 'MANNUAL'):
-                        manual+=1
-                    if (worksheet.at[row,'Execution Projection'].strip().upper() == 'CREATE') or (worksheet.at[row,'Execution Projection'].strip().upper() == 'CRETA'):
-                        create+=1
-                    if (worksheet.at[row,'Execution Projection'].strip().upper() == 'ENABLE'):
-                        enable+=1
-                    if (worksheet.at[row,'Execution Projection'].upper().__contains__('ENABLE')) and (worksheet.at[row,'Execution Projection'].upper().__contains__('MANUAL')):
-                        partially_automation+=1
-                    if (worksheet.at[row,'Execution Projection'].upper().__contains__('CREATE')) and (worksheet.at[row,'Execution Projection'].upper().__contains__('MANUAL')):
-                        partially_automation+=1
-                if worksheet.at[row,'Risk'].strip() == 'Level 2':
-                    major+=1
-                    if worksheet.at[row,'Circle'].strip() == 'DL':
-                        delhi_major+=1
-                    if (worksheet.at[row,'Execution Projection'].strip().upper() == 'MANUAL') or (worksheet.at[row,'Execution Projection'].strip().upper() == 'MANNUAL'):
-                        manual+=1
-                    if (worksheet.at[row,'Execution Projection'].strip().upper() == 'CREATE') or (worksheet.at[row,'Execution Projection'].strip().upper() == 'CRETA'):
-                        create+=1
-                    if (worksheet.at[row,'Execution Projection'].strip().upper() == 'ENABLE'):
-                        enable+=1
-                    if (worksheet.at[row,'Execution Projection'].upper().__contains__('ENABLE')) and (worksheet.at[row,'Execution Projection'].upper().__contains__('MANUAL')):
-                        partially_automation+=1
-                    if (worksheet.at[row,'Execution Projection'].upper().__contains__('CREATE')) and (worksheet.at[row,'Execution Projection'].upper().__contains__('MANUAL')):
-                        partially_automation+=1
+            for row in range(0, len(worksheet)):
+                if worksheet.at[row, 'Risk'].strip() == 'Level 1':
+                    critical += 1
+                    if worksheet.at[row, 'Circle'].strip() == 'DL':
+                        delhi_critical += 1
+                    if (worksheet.at[row, 'Execution Projection'].strip().upper() == 'MANUAL') or (worksheet.at[row, 'Execution Projection'].strip().upper() == 'MANNUAL'):
+                        manual += 1
+                    if (worksheet.at[row, 'Execution Projection'].strip().upper() == 'CREATE') or (worksheet.at[row, 'Execution Projection'].strip().upper() == 'CRETA'):
+                        create += 1
+                    if (worksheet.at[row, 'Execution Projection'].strip().upper() == 'ENABLE'):
+                        enable += 1
+                    if (worksheet.at[row, 'Execution Projection'].upper().__contains__('ENABLE')) and (worksheet.at[row, 'Execution Projection'].upper().__contains__('MANUAL')):
+                        partially_automation += 1
+                    if (worksheet.at[row, 'Execution Projection'].upper().__contains__('CREATE')) and (worksheet.at[row, 'Execution Projection'].upper().__contains__('MANUAL')):
+                        partially_automation += 1
+
+                if worksheet.at[row, 'Risk'].strip() == 'Level 2':
+                    major += 1
+                    if worksheet.at[row, 'Circle'].strip() == 'DL':
+                        delhi_major += 1
+                    if (worksheet.at[row, 'Execution Projection'].strip().upper() == 'MANUAL') or (worksheet.at[row, 'Execution Projection'].strip().upper() == 'MANNUAL'):
+                        manual += 1
+                    if (worksheet.at[row, 'Execution Projection'].strip().upper() == 'CREATE') or (worksheet.at[row, 'Execution Projection'].strip().upper() == 'CRETA'):
+                        create += 1
+                    if (worksheet.at[row, 'Execution Projection'].strip().upper() == 'ENABLE'):
+                        enable += 1
+                    if (worksheet.at[row, 'Execution Projection'].upper().__contains__('ENABLE')) and (worksheet.at[row, 'Execution Projection'].upper().__contains__('MANUAL')):
+                        partially_automation += 1
+                    if (worksheet.at[row, 'Execution Projection'].upper().__contains__('CREATE')) and (worksheet.at[row, 'Execution Projection'].upper().__contains__('MANUAL')):
+                        partially_automation += 1
+
+            total_night_executors = 0
+
+            day_planners_count = 3
+            username = os.popen(cmd='cmd.exe /C "echo %USERNAME%"').read().strip()
+            if Path(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt").exists():
+                with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'r') as f:
+                    day_planners_count = int(f.readline())
+                    f.close()
+                del f
+
+            list_resource_of_buffer_auditor_trainer = buffer_auditor_trainer.split(',')
+            if len(list_resource_of_buffer_auditor_trainer) == 1:
+                if (str(list_resource_of_buffer_auditor_trainer[0]) == '') or (str(list_resource_of_buffer_auditor_trainer[0]) in ('NA', 'N/A', 'na', 'n/a')):
+                    list_resource_of_buffer_auditor_trainer = []
+
+            list_resource_on_automation = resource_on_automation.split(',')
+            if len(list_resource_on_automation) == 1:
+                if (str(list_resource_on_automation[0]) == '') or (str(list_resource_on_automation[0]) in ('NA', 'N/A', 'na', 'n/a')):
+                    list_resource_on_automation = []
 
             # Finding the Number of resources that are on leave.
-            if(night_shift_lead in resources_occupied_in_night_activities):
-                resource_on_leave = total_no_of_resource - (3 + len(resources_occupied_in_night_activities))
-            
-            else:
-                resource_on_leave = total_no_of_resource - (3 + len(resources_occupied_in_night_activities) + 1)
+            if (night_shift_lead in resources_occupied_in_night_activities):
+                resource_on_leave = total_no_of_resource - (day_planners_count +
+                                                            len(resources_occupied_in_night_activities) +
+                                                            len(list_resource_of_buffer_auditor_trainer) +
+                                                            len(list_resource_on_automation))
+                total_night_executors = resources_occupied_in_night_activities.size - 1
 
-            if ((resource_on_leave) < 0):
-                resource_on_leave = 0       # If the value of Number of resources falls below zero and becomes negative, which isn't possible, setting it to zero.
-            
-            # 02d ensures that the integer is printed in double digit format
-            # Creating the message text that is going to be sent via telegram.
-            message = """
-    Dear Sir,
+            if night_shift_lead not in resources_occupied_in_night_activities:
+                resource_on_leave = total_no_of_resource - (day_planners_count +
+                                                            len(resources_occupied_in_night_activities) +
+                                                            len(list_resource_of_buffer_auditor_trainer) +
+                                                            len(list_resource_on_automation) + 1)
+                total_night_executors = resources_occupied_in_night_activities.size
 
-    <<Pre Notification Critical & Major CRs>>
-    Date : {}
-    {}
-    Total : {} ({:02d} Critical {:02d} Major )
-    | Team : MPBN
-    • Bharti-I ->
-    Critical {:02d} ({:02d} Delhi)
-    Major    {:02d} ({:02d} Delhi)
-    Resource's occupied in night activities : {:02d}
-    Resource in Day/Planning :: 3
-    Resource on Comp off/Leave :- {}
-    Night Shift Lead :: {}
-    Resource engaged in CLI Preparation :: N/A
-    Resource on Buffer/Auditor/Training : {}
-    Resource on Automation : {}
-    Rollback CR re-attempt count : 0
-    Partially completed CR re-attempt count : 0
-    Updated automation CR count
-    ======================
-    Total CRs                       :{}
-    CR Planned Manually             :{}
-    CR Planned via Enable Tool      :{}
-    CR Planned via CREATE Tool      :{}
-    CR Planned Partial Automation   :{}
-    ======================
+            if (resource_on_leave < 0):
+                resource_on_leave = 0  # If the value of Number of resources falls below zero and becomes negative, which isn't possible, setting it to zero.
 
-    Regards,
-    {}
-            """
-            # Adding all the other relevant data to the message text by formatting it.
-            message = message.format(execution_date,
-                                     maintenance_window,
-                                     total_no_of_crs,
-                                     critical,
-                                     major,
-                                     critical,
-                                     delhi_critical,
-                                     major,
-                                     delhi_major,
-                                     len(resources_occupied_in_night_activities),
-                                     resource_on_leave,
-                                     night_shift_lead,
-                                     buffer_auditor_trainer,
-                                     resource_on_automation,
-                                     total_no_of_crs,
-                                     manual,
-                                     enable,
-                                     create,
-                                     partially_automation,
-                                     sender)
-            
-            # Creating the file path where the text file for the message is being saved.
-            file_path = workbook.split("/")
-            file_path.remove(file_path[-1])
-            file_path = '\\'.join(file_path)
-            folder    = file_path
-            file_path = rf'{file_path}\\evening message.txt'
-            
-            # Writing the text into the file defined by the file path.
-            with open(file_path,'w') as f:
-                f.write(message)
-                f.close()
-            messagebox.showinfo("   Task Completed Successfully",f"Evening Message generated successfully at {file_path}")
-            del f
-            # Asking for response, whether thr user wants to check the message being created.
-            response = messagebox.askyesno("   Evening Message","Do You want to open the Evening Message text?")
-            
-            # If the response is positive, then the created text message is opened in notebook via the use of Popen from subprocess module.
-            if (response):
-                Popen(['notepad.exe',file_path])
-            
-            else:
-                pass
-            
-            # Setting the folder in the folder path for creation of the email package workbook.
-            temp_folder = rf"{folder}\\temp"
+            wb.close()
+            del wb
 
-            if(Path(temp_folder).exists()):
-                try:
-                    shutil.rmtree(temp_folder)
-                
-                except:
-                    import os
-                    for file in os.listdir(temp_folder):
-                        os.remove(os.path.join("\\",temp_folder,file))
-                    
-                    os.rmdir(temp_folder)
+        result_dictionary ={'resource_on_leave': resource_on_leave,
+                            'critical': critical,
+                            'major': major,
+                            'manual': manual,
+                            'create': create,
+                            'enable': enable,
+                            'partially_automation': partially_automation,
+                            'delhi_critical': delhi_critical,
+                            'delhi_major': delhi_major,
+                            'execution_date': execution_date,
+                            'total_no_of_crs': total_no_of_crs,
+                            'total_night_executors' : total_night_executors,
+                            'total_resources_on_comp_off': 0,
+                            'maintenance_window': maintenance_window,
+                            'total_resources_on_leaves': resource_on_leave,
+                            'resources_occupied_in_night_activities': resources_occupied_in_night_activities
+                            }
+        temp_flag = 'Successful'
 
-            # creating a new temp folder with temp excel file for the data to write into.
-            Path(rf"{folder}\\temp").mkdir(exist_ok=True)
 
-            # Writing into a temp xlsx file named temp.xlsx
-            temp_file_for_the_evening_message = rf"{temp_folder}\\tmp.xlsx"
-            # global workbook2; workbook2 = temp_file_for_the_evening_message
+    # Handling Exceptions
 
-            # Checking if the temp_file_for_evening_message is existent or not
-            if (Path(temp_file_for_the_evening_message).exists() == False):
-                
-                # Creating a openpyxl.Workbook variable for creation and manipulation of the workbook.
-                wb = Workbook()
+    except CustomException:
+        # Deleting all the local variables before returning the value "Unsuccessful"
+        objects = dir()
+        for object_ in objects:
+            if not object_.startswith("__"):
+                del object_
+        temp_flag = "Unsuccessful"
+        result_dictionary = {}
 
-                # Creating sheet for the file named evening message
-                wb.create_sheet("evening_message", index = 0)
-                
-                # Opening the sheet to write into it.
-                ws = wb["evening_message"]
-                
-                # Loading required data and info field.
-                ws['A1'].value = "Resource's occupied in night activities"
-                ws['A2'].value = "Resource in Day/Planning"
-                ws['A3'].value = "Resource on Comp off"
-                ws['A4'].value = "Resource on Leave"
-                ws['A5'].value = "Night Shift Lead "
-                ws['A6'].value = "Resource occupied in 2nd Level Validation/Buffer/Training"
-                ws['A7'].value = "Resource on Training "
-                ws['A8'].value = "Total CR’s"
 
-                ws['B1'].value = 11
-                ws['B2'].value = 3
-                ws['B3'].value = 0
-                ws['B4'].value = resource_on_leave
-                ws['B5'].value = 1
-                ws['B6'].value = 0
-                ws['B7'].value = 0
-                ws['B8'].value = total_no_of_crs
+    except Exception as e:
 
-                ws['C1'].value = " "
-                ws['C5'].value = night_shift_lead
-                # Closing the openpyxl.Workbook variable.
-                wb.save(temp_file_for_the_evening_message)
-                wb.close()
-                del wb
-            
-            else:
-                # Loading the xlsx file in openpyxl module of python
-                wb = load_workbook(temp_file_for_the_evening_message)
+        import traceback
 
-                # Reading the required sheet.
-                ws = wb["evening_message"]
-                
-                ws['B1'].value = 19
-                ws['B2'].value = 3
-                ws['B3'].value = 0
-                ws['B4'].value = resource_on_leave
-                ws['B5'].value = 1
-                ws['B6'].value = 0
-                ws['B7'].value = 0
-                ws['B8'].value = total_no_of_crs
+        messagebox.showerror("  Exception Occured!", f"{traceback.format_exc()}\n{e}")
 
-                ws['C1'].value = " "
-                ws['C5'].value = night_shift_lead
+        # Delelting all the local variables before returning the value "Unsuccessful"
 
-                # Closing and saving the openpyxl.Workbook variable.
-                wb.save(temp_file_for_the_evening_message)
-                wb.close()
-                del wb
-            
-            evening_message_workbook = pd.ExcelFile(temp_file_for_the_evening_message)
-            evening_message_workbook_message = pd.read_excel(evening_message_workbook,'evening_message')
-            evening_message_workbook_message.fillna(" ",inplace = True)
+        objects = dir()
 
-            # Calling the Email Package Workbook generator and mail drafter.
-            email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
+        for object_ in objects:
 
-            # Asking for response to call the attendance tracker.
-            # response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","We are going to update SRF_MPBN_Team_Availability tracker. So, Please ensure to download latest tracker before proceeding!")
+            if not object_.startswith("__"):
+                del object_
+        temp_flag = "Unsuccessful"
+        result_dictionary = {}
 
-            # if(response.lower() == 'ok'):
-            #     import attendance
-            #     flag = attendance.main_function(workbook=workbook,
-            #                                     night_shift_lead = night_shift_lead,
-            #                                     buffer_auditor_trainer = buffer_auditor_trainer,
-            #                                     resource_on_automation = resource_on_automation,
-            #                                     acceptable_change_responsible = acceptable_change_responsible,
-            #                                     sender = sender)
-            # else:
-            #     flag = "Unsuccessful"
+    finally:
+        gc.collect()
+        result = [temp_flag, result_dictionary]
+        return result
 
-            # Asking for response to send the dashboard mail.
-            response = messagebox.showinfo("    SRF-Dashboard mail generator", "Do you want to create the Dashboard Mail?")
 
-            if response.lower() == 'ok':
 
-                dictionary_to_be_sent = {"Resources on leaves" : resource_on_leave,
-                                        "Resources on comp-off": 0,
-                                        "Domain":"SRF MPBN",
-                                        "Night executors count": resources_occupied_in_night_activities.size,
-                                        "Total Picked CR": total_no_of_crs,
-                                        "Total Planned CR": total_no_of_crs,
-                                        "Day Planners count": 3}
+# Method(Function) for creating the evening message text.
+def evening_task (**kwargs):
+    #sender,night_shift_lead,buffer_auditor_trainer,resource_on_automation,workbook,acceptable_change_responsible
+    if 'sender' in kwargs:
+        sender = kwargs['sender']
 
-                from dashboard import main_dashboard_func
-                flag = main_dashboard_func(workbook=workbook,
-                                        sender=sender,
-                                        dictionary_for_mail=dictionary_to_be_sent)
+    if 'night_shift_lead' in kwargs:
+        night_shift_lead = kwargs['night_shift_lead']
 
-            else:
-                flag = 'Unsuccessful'
+    if 'buffer_auditor_trainer' in kwargs:
+        buffer_auditor_trainer = kwargs['buffer_auditor_trainer']
 
-            # Deleting all the local variables 
-            objects = dir()
-            for object in objects:
-                if not object.startswith("__"):
-                    del object
+    if 'resource_on_automation' in kwargs:
+        resource_on_automation = kwargs['resource_on_automation']
+
+    if 'workbook' in kwargs:
+        workbook = kwargs['workbook']
+
+    if 'acceptable_change_responsible' in kwargs:
+        acceptable_change_responsible = kwargs['acceptable_change_responsible']
+
+    if 'resources_occupied_in_night_activities' in kwargs:
+        resources_occupied_in_night_activities = kwargs['resources_occupied_in_night_activities']
+
+    if 'delhi_major' in kwargs:
+        delhi_major = kwargs['delhi_major']
+
+    if 'manual' in kwargs:
+        manual = kwargs['manual']
+
+    if 'create' in kwargs:
+        create = kwargs['create']
+
+    if 'enable' in kwargs:
+        enable = kwargs['enable']
+
+    if 'partially_automation' in kwargs:
+        partially_automation = kwargs['partially_automation']
+
+    if 'total_no_of_crs' in kwargs:
+        total_no_of_crs = kwargs['total_no_of_crs']
+
+    if 'major' in kwargs:
+        major = kwargs['major']
+
+    if 'delhi_critical' in kwargs:
+        delhi_critical = kwargs['delhi_critical']
+
+    if 'maintenance_window' in kwargs:
+        maintenance_window = kwargs['maintenance_window']
+
+    if 'critical' in kwargs:
+        critical = kwargs['critical']
+
+    if 'execution_date' in kwargs:
+        execution_date = kwargs['execution_date']
+
+    if 'resource_on_leave' in kwargs:
+        resource_on_leave = kwargs['resource_on_leave']
+
+    if 'picked_crs' in kwargs:
+        picked_crs = kwargs['picked_crs']
+
+    if 'planned_crs' in kwargs:
+        planned_crs = kwargs['planned_crs']
+
+    if 'resource_on_comp_off' in kwargs:
+        resource_on_comp_off = kwargs['resource_on_comp_off']
+
+    if 'day_planners_count' in kwargs:
+        day_planners_count = kwargs['day_planners_count']
+
+    if 'names_of_resources_on_comp_off' in kwargs:
+        names_of_resources_on_comp_off = kwargs['names_of_resources_on_comp_off']
+
+    if 'names_of_resources_on_leave' in kwargs:
+        names_of_resources_on_leave = kwargs['names_of_resources_on_leave']
+
+    if 'total_night_executors' in kwargs:
+        total_night_executors = kwargs['total_night_executors']
+
+    global flag
+    flag = ''
+    try:
+
+        reader = pd.ExcelFile(workbook, engine='openpyxl')
+
+        worksheet = pd.read_excel(reader, 'Email-Package')
+        mail_id_sheet = pd.read_excel(reader, 'Mail Id')
+
+        reader.close()
+        del reader
+
+        if len(names_of_resources_on_comp_off) > 0:
+            if str(names_of_resources_on_comp_off).__contains__(','):
+                resources_on_comp_off_list = names_of_resources_on_comp_off.split(',')
+
+        # 02d ensures that the integer is printed in double-digit format
+        # Creating the message text that is going to be sent via telegram.
+        message = """
+Dear Sir,
+
+<<Pre Notification Critical & Major CRs>>
+Date : {}
+{}
+Total : {} ({:02d} Critical {:02d} Major )
+| Team : MPBN
+• Bharti-I ->
+Critical {:02d} ({:02d} Delhi)
+Major    {:02d} ({:02d} Delhi)
+Resource's occupied in night activities : {:02d}
+Resource in Day/Planning :: 3
+Resource on Comp off/Leave :- {}
+Night Shift Lead :: {}
+Resource engaged in CLI Preparation :: N/A
+Resource on Buffer/Auditor/Training : {}
+Resource on Automation : {}
+Rollback CR re-attempt count : 0
+Partially completed CR re-attempt count : 0
+Updated automation CR count
+======================
+Total CRs                       :{}
+CR Planned Manually             :{}
+CR Planned via Enable Tool      :{}
+CR Planned via CREATE Tool      :{}
+CR Planned Partial Automation   :{}
+======================
+
+Regards,
+{}
+        """
+        # Adding all the other relevant data to the message text by formatting it.
+        message = message.format(execution_date,
+                                 maintenance_window,
+                                 total_no_of_crs,
+                                 critical,
+                                 major,
+                                 critical,
+                                 delhi_critical,
+                                 major,
+                                 delhi_major,
+                                 total_night_executors,
+                                 resource_on_leave,
+                                 night_shift_lead,
+                                 buffer_auditor_trainer,
+                                 resource_on_automation,
+                                 total_no_of_crs,
+                                 manual,
+                                 enable,
+                                 create,
+                                 partially_automation,
+                                 sender)
+        # if buffer_auditor_trainer is not None:
+        #     if (len(str(buffer_auditor_trainer)) > 0) ((str(buffer_auditor_trainer).strip().upper() != "NA") or (str(buffer_auditor_trainer).strip().upper() != "N/A")):
+        #         if not str(buffer_auditor_trainer).__contains__(','):
+        #             len_of_buffer_auditor_trainer = 1
+        #         if str(buffer_auditor_trainer).__contains__(','):
+        #             len_of_buffer_auditor_trainer = len(buffer_auditor_trainer.split(','))
+
+        # Creating the file path where the text file for the message is being saved.
+        file_path = workbook.split("/")
+        file_path.remove(file_path[-1])
+        file_path = '\\'.join(file_path)
+        folder    = file_path
+        file_path = rf'{file_path}\\evening message.txt'
+
+        # Writing the text into the file defined by the file path.
+        with open(file_path,'w') as f:
+            f.write(message)
+            f.close()
+        messagebox.showinfo("   Task Completed Successfully",f"Evening Message generated successfully at {file_path}")
+        del f
+        # Asking for response, whether thr user wants to check the message being created.
+        response = messagebox.askyesno("   Evening Message","Do You want to open the Evening Message text?")
+
+        # If the response is positive, then the created text message is opened in notebook via the use of Popen from subprocess module.
+        if (response):
+            Popen(['notepad.exe',file_path])
+
+        else:
+            pass
+
+        # Setting the folder in the folder path for creation of the email package workbook.
+        temp_folder = rf"{folder}\\temp"
+
+        if(Path(temp_folder).exists()):
+            try:
+                shutil.rmtree(temp_folder)
+
+            except:
+                import os
+                for file in os.listdir(temp_folder):
+                    os.remove(os.path.join("\\",temp_folder,file))
+
+                os.rmdir(temp_folder)
+
+        # creating a new temp folder with temp excel file for the data to write into.
+        Path(rf"{folder}\\temp").mkdir(exist_ok=True)
+
+        # Writing into a temp xlsx file named temp.xlsx
+        temp_file_for_the_evening_message = rf"{temp_folder}\\tmp.xlsx"
+        # global workbook2; workbook2 = temp_file_for_the_evening_message
+
+        # Checking if the temp_file_for_evening_message is existent or not
+        if (Path(temp_file_for_the_evening_message).exists() == False):
+
+            # Creating a openpyxl.Workbook variable for creation and manipulation of the workbook.
+            wb = Workbook()
+
+            # Creating sheet for the file named evening message
+            wb.create_sheet("evening_message", index = 0)
+
+            # Opening the sheet to write into it.
+            ws = wb["evening_message"]
+
+            # Loading required data and info field.
+            ws['A1'].value = "Resource's occupied in night activities"
+            ws['A2'].value = "Resource in Day/Planning"
+            ws['A3'].value = "Resource on Comp off"
+            ws['A4'].value = "Resource on Leave"
+            ws['A5'].value = "Night Shift Lead "
+            ws['A6'].value = "Resource occupied in 2nd Level Validation/Buffer/Training"
+            ws['A7'].value = "Resource on Training "
+            ws['A8'].value = "Total CR’s"
+
+            ws['B1'].value = total_night_executors
+            ws['B2'].value = day_planners_count
+            ws['B3'].value = resource_on_comp_off
+            ws['B4'].value = resource_on_leave
+            ws['B5'].value = 1
+            ws['B6'].value = 0
+            ws['B7'].value = 0
+            ws['B8'].value = total_no_of_crs
+
+            ws['C1'].value = " "
+            if names_of_resources_on_comp_off is not None:
+                if (len(str(names_of_resources_on_comp_off).strip()) > 0) and (
+                        (str(names_of_resources_on_comp_off).strip().upper() != "NA") or (str(names_of_resources_on_comp_off).strip().upper() != "N/A")):
+                    ws['C3'].value = names_of_resources_on_comp_off
+
+            if names_of_resources_on_leave is not None:
+                if (len(str(names_of_resources_on_leave).strip()) > 0) and (
+                        (str(names_of_resources_on_leave).strip().upper() != "NA") or (str(names_of_resources_on_leave).strip().upper() != "N/A")):
+                    ws['C4'].value = names_of_resources_on_leave
+            ws['C5'].value = night_shift_lead
+
+            # Closing the openpyxl.Workbook variable.
+            wb.save(temp_file_for_the_evening_message)
+            wb.close()
+            del wb
+
+        else:
+            # Loading the xlsx file in openpyxl module of python
+            wb = load_workbook(temp_file_for_the_evening_message)
+
+            # Reading the required sheet.
+            ws = wb["evening_message"]
+
+            ws['B1'].value = total_night_executors
+            ws['B2'].value = day_planners_count
+            ws['B3'].value = resource_on_comp_off
+            ws['B4'].value = resource_on_leave
+            ws['B5'].value = 1
+            ws['B6'].value = 0
+            ws['B7'].value = 0
+            ws['B8'].value = total_no_of_crs
+
+            ws['C1'].value = " "
+
+            if names_of_resources_on_comp_off is not None:
+                if (len(str(names_of_resources_on_comp_off).strip()) > 0) and (
+                        (str(names_of_resources_on_comp_off).strip().upper() != "NA") or (str(names_of_resources_on_comp_off).strip().upper() != "N/A")):
+                    ws['C3'].value = names_of_resources_on_comp_off
+
+            if names_of_resources_on_leave is not None:
+                if (len(str(names_of_resources_on_leave).strip()) > 0) and (
+                        (str(names_of_resources_on_leave).strip().upper() != "NA") or (str(names_of_resources_on_leave).strip().upper() != "N/A")):
+                    ws['C4'].value = names_of_resources_on_leave
+
+            ws['C5'].value = night_shift_lead
+
+            # Closing and saving the openpyxl.Workbook variable.
+            wb.save(temp_file_for_the_evening_message)
+            wb.close()
+            del wb
+
+        evening_message_workbook = pd.ExcelFile(temp_file_for_the_evening_message)
+        evening_message_workbook_message = pd.read_excel(evening_message_workbook,'evening_message')
+        evening_message_workbook_message.fillna(" ",inplace = True)
+
+        # Calling the Email Package Workbook generator and mail drafter.
+        email_package_workbook_generator(sender,worksheet,mail_id_sheet,temp_folder,execution_date,evening_message_workbook_message,maintenance_window)
+
+        # Asking for response to call the attendance tracker.
+        # response = messagebox.showinfo("    SRF MPBN Team Availability Tracker","We are going to update SRF_MPBN_Team_Availability tracker. So, Please ensure to download latest tracker before proceeding!")
+
+        # if(response.lower() == 'ok'):
+        #     import attendance
+        #     flag = attendance.main_function(workbook=workbook,
+        #                                     night_shift_lead = night_shift_lead,
+        #                                     buffer_auditor_trainer = buffer_auditor_trainer,
+        #                                     resource_on_automation = resource_on_automation,
+        #                                     acceptable_change_responsible = acceptable_change_responsible,
+        #                                     sender = sender)
+        # else:
+        #     flag = "Unsuccessful"
+
+        # Asking for response to send the dashboard mail.
+        response = messagebox.showinfo("    SRF-Dashboard mail generator", "Do you want to create the Dashboard Mail?")
+
+        if response.lower() == 'ok':
+
+            dictionary_to_be_sent = {"Resources on leaves" : resource_on_leave,
+                                     "Resources on comp-off": resource_on_comp_off,
+                                     "Domain":"SRF MPBN",
+                                     "Night executors count": resources_occupied_in_night_activities.size,
+                                     "Total Picked CR": picked_crs,
+                                     "Total Planned CR": planned_crs,
+                                     "Day Planners count": day_planners_count}
+
+            from dashboard import main_dashboard_func
+            flag = main_dashboard_func(workbook=workbook,
+                                       sender=sender,
+                                       dictionary_for_mail=dictionary_to_be_sent)
+
+        else:
+            flag = 'Unsuccessful'
+
+        # Deleting all the local variables
+        objects = dir()
+        for object_ in objects:
+            if not object_.startswith("__"):
+                del object_
 
     # Handling Exceptions 
     except CustomException:
         # Delelting all the local variables before returning the value "Unsuccessful"
         objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+        for object_ in objects:
+            if not object_.startswith("__"):
+                del object_
 
         flag = "Unsuccessful"
     
@@ -630,11 +903,11 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
         import traceback
         messagebox.showerror("  Exception Occured!",f"{traceback.format_exc()}\n{e}")
 
-        # Delelting all the local variables before returning the value "Unsuccessful"
+        # Deleting all the local variables before returning the value "Unsuccessful"
         objects = dir()
-        for object in objects:
-            if not object.startswith("__"):
-                del object
+        for object_ in objects:
+            if not object_.startswith("__"):
+                del object_
 
         flag = "Unsuccessful"
     
@@ -660,4 +933,4 @@ def evening_task (sender,night_shift_lead,buffer_auditor_trainer,resource_on_aut
 
     
 
-# evening_task('Manoj Kumar','Sachin Sharma','NA','Kartar Singh',"C:/Users/emaienj/Downloads/MPBN Daily Planning Sheet-1.xlsx")
+# evening_task('Manoj Kumar','Sachin Sharma','NA','Kartar Singh',r"C:\Users\emaienj\Downloads\New_testing_of_day\MPBN Daily Planning Sheet.xlsx")

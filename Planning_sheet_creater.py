@@ -76,7 +76,7 @@ def validation_adder(workbook,worksheet):
     maxrows                     = ws.max_row
 
     # Rule for data validation with their error message, title and prompt message, title.
-    rule1               = DataValidation(type = "list", formula1 = '"Planned, Discussed"',allow_blank = True)
+    rule1               = DataValidation(type = "list", formula1 = '"Planned, Discussed, Swapped"',allow_blank = True)
     rule1.error         = "Your Entry is Invalid!"
     rule1.errorTitle    = "Invalid Entry!"
 
@@ -340,4 +340,4 @@ def planning_sheet_creater(report_path,planning_workbook,sender):
         gc.collect()
         return flag
 
-#planning_sheet_creater(r"C:/Users/emaienj/OneDrive - Ericsson/Documents/Report.csv",r"C:\Users\emaienj\Downloads\MPBN Daily Planning Sheet - Copy.xlsx","Enjoy Maity")
+# planning_sheet_creater(r"C:\Users\emaienj\Downloads\New_folder_(3)\Report.csv",r"C:\Users\emaienj\Downloads\New_folder_(3)\MPBN Daily Planning Sheet.xlsx","Enjoy Maity")

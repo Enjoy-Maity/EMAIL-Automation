@@ -1,5 +1,8 @@
 import pandas as pd
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
+from openpyxl.styles import Alignment, Side, Border
+# from openpyxl.writer import save_workbook
+from openpyxl.utils import get_column_letter
 import os
 import numpy as np
 import win32com.client as win32
@@ -11,9 +14,10 @@ from Custom_Exception import CustomException
 flag = ''
 dictionary = dict()
 
+
 def suffix_adder(date_for_suffix):
     suffix = ''
-    if((int(date_for_suffix.__format__('%d')) <= 10) or (int(date_for_suffix.__format__('%d')) >=20)):
+    if((int(date_for_suffix.__format__('%d')) <= 10) or (int(date_for_suffix.__format__('%d')) >= 20)):
         match int(date_for_suffix.__format__('%d'))%10:
             case 1 : suffix = 'st'
             case 2 : suffix = 'nd'
@@ -170,8 +174,48 @@ def table_creater(dictionary: dict):
     return table
 
 
+def srf_mpbn_dashboard_tracker_file_writer(path: str):
+    global dictionary
 
-def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender):
+    wkbk = load_workbook(path)
+    wkbk.active = wkbk['DASHBOARD']
+    worksheet = wkbk['DASHBOARD']
+
+    alignment_var = Alignment(horizontal = 'center', vertical = 'center')
+    border = Border(left=Side(border_style = 'thin', color = '000000'),
+                    right=Side(border_style = 'thin', color = '000000'),
+                    top=Side(border_style = 'thin', color = '000000'),
+                    bottom=Side(border_style = 'thin', color = '000000'))
+
+    max_row = worksheet.max_row
+    worksheet[f'A{max_row + 1}'] = datetime.now().strftime("%m/%d/%Y")
+    worksheet[f'B{max_row + 1}'] = "SRF MPBN"
+    worksheet[f'C{max_row + 1}'] = str(dictionary['Total Picked CR'])
+    worksheet[f'D{max_row + 1}'] = str(dictionary['Total Planned CR'])
+    worksheet[f'W{max_row + 1}']  = str(dictionary['Night executors count'])
+    worksheet[f'X{max_row + 1}'] = str(dictionary['Day Planners count'])
+    worksheet[f'Y{max_row + 1}'] = str(dictionary['Resources on comp-off'])
+    worksheet[f'Z{max_row + 1}'] = str(dictionary['Resources on leaves'])
+    worksheet[f'AA{max_row + 1}'] = 'NA'
+
+    # # Hiding the unwanted rows
+    # i = 3
+    # while i < max_row:
+    #     worksheet.row_dimensions[i].hidden = True
+    #     i += 1
+
+    # Aligning the table cells and setting the border.
+    i = 1
+    while get_column_letter(i) != "AB":
+        worksheet[get_column_letter(i) + str(max_row + 1)].alignment = alignment_var
+        worksheet[get_column_letter(i) + str(max_row + 1)].border = border
+        i += 1
+
+    wkbk.save(path)
+    wkbk.close()
+    del wkbk
+
+def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender:str):
     outlook = win32.Dispatch('Outlook.Application')
     mapi = outlook.GetNamespace("MAPI")
     inbox = mapi.GetDefaultFolder(6)
@@ -201,6 +245,8 @@ def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender):
                 #print(message.Subject.upper())
                 #print(message.Subject.upper().__contains__(subject_we_are_looking_for.upper()))
                 if message.Subject.upper().__contains__(subject_we_are_looking_for.upper()):
+                    print(f"{dt =}")
+                    print("message found and downloading the file")
                     message_found = True
                     #print("189")
                     attachment = message.Attachments.Item(1)
@@ -323,22 +369,28 @@ def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender):
                 continue
 
     if message_found:
+        srf_mpbn_dashboard_tracker_file_writer(path)
         mail_drafter(message_to_be_used, sender, path)
+
         #print(message_found)
 
 
 def mail_drafter(message: str, sender: str, path: str):
-    result = email_parser(message.ReplyAll().Body)
     global dictionary
-    to = f"{';'.join(result[0])}"
-    #print(f"{to =}")
-    cc = f"{';'.join(result[1])}"
-    #print(f"{cc =}")
-
     date_to_be_added = datetime.now() + timedelta(1)
     date_to_be_added = f"{date_to_be_added.__format__('%d')}{suffix_adder(date_to_be_added)} {date_to_be_added.__format__('%b')} {date_to_be_added.__format__('%Y')}"
     subject = f"RE: SRF MPBN Dashboard Report {date_to_be_added}"
     mail_draft = message.ReplyAll()
+    # with open(r"C:/Users/emaienj/Downloads/New_testing_of_day/mail_body.txt", "w") as f:
+    #     f.write(mail_draft.Body)
+    #     f.close()
+    # del f
+    result = email_parser(mail_draft.Body)
+
+    to = f"{';'.join(result[0])}"
+    # print(f"{to =}")
+    cc = f"{';'.join(result[1])}"
+    # print(f"{cc =}")
     message_to_be_sent = ("<html>" +
                                 "<body>" +
                                       "<div>" +
@@ -367,28 +419,47 @@ def mail_drafter(message: str, sender: str, path: str):
     mail_draft.Display()
 
 
-
 def main_dashboard_func(workbook, sender, dictionary_for_mail):
     global flag
+    flag = ""
     main_folder = os.path.dirname(workbook)
-    path_for_srf_mpbn_fni_tracker_dashboard_file = os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER.xlsx')
+    print(f"{main_folder = }")
+    path_for_srf_mpbn_fni_tracker_dashboard_file = os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER.xlsx')
 
     try:
         if os.path.exists(path_for_srf_mpbn_fni_tracker_dashboard_file):
-            if os.path.exists(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx')):
-                os.remove(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx'))
+            if os.path.exists(os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER_bak.xlsx')):
+                os.remove(os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER_bak.xlsx'))
 
-            wkbk = load_workbook(path_for_srf_mpbn_fni_tracker_dashboard_file)
-            wkbk.save(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx'))
-            wkbk.close()
-            del wkbk
+            # wkbk = load_workbook(path_for_srf_mpbn_fni_tracker_dashboard_file)
+            # wkbk_new = Workbook()
+            # sheetnames = wkbk.sheetnames
+
+            # i = 0
+            # while i < len(sheetnames):
+            #     sheetname = sheetnames[i]
+            #     wkbk_new.create_sheet(title=sheetname)
+            #     worksheet = wkbk_new[sheetname]
+            #     i += 1
+            # wkbk_new.save(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx'))
+            # wkbk_new.close()
+            # del wkbk_new
+            # wkbk.close()
+            # del wkbk
+        # except:
+            import shutil
+            shutil.copy2(src=path_for_srf_mpbn_fni_tracker_dashboard_file,
+                         dst=os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER_bak.xlsx'))
 
             os.remove(path_for_srf_mpbn_fni_tracker_dashboard_file)
 
-        global dictionary; dictionary = dictionary_for_mail
+        global dictionary
+        dictionary = dictionary_for_mail
 
         srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path=path_for_srf_mpbn_fni_tracker_dashboard_file,
                                                                 sender=sender)
+        if flag != "Unsuccessful":
+            flag = "Successful"
 
     except CustomException as e:
         flag = 'Unsuccessful'
@@ -396,18 +467,19 @@ def main_dashboard_func(workbook, sender, dictionary_for_mail):
     except Exception as e:
         flag = "Unsuccessful"
         title =  e.__class__.__name__
+        import traceback
         messagebox.showerror(
             title= title,
-            message= str(e)
+            message= (str(e) + "\n\n" + str(traceback.format_exc()))
         )
 
     finally:
         return flag
 
-# main_dashboard_func(r"C:\\Users\\emaienj\\Downloads\\MPBN_Email_Package_28th Feb 2024.xlsx", "Enjoy Maity",{"Resources on leaves" : 0,
-#                                                                                                             "Resources on comp-off": 0,
-#                                                                                                             "Domain":"SRF MPBN",
-#                                                                                                             "Night executors count": 15,
-#                                                                                                             "Total Picked CR": 29,
-#                                                                                                             "Total Planned CR": 29,
-#                                                                                                             "Day Planners count": 3})
+# main_dashboard_func(r"C:\Users\emaienj\Downloads\New_folder_(3)\MPBN Daily Planning Sheet.xlsx", "Enjoy Maity",{"Resources on leaves" : 0,
+#                                                                                                                                                "Resources on comp-off": 0,
+#                                                                                                                                                "Domain":"SRF MPBN",
+#                                                                                                                                                "Night executors count": 15,
+#                                                                                                                                                "Total Picked CR": 29,
+#                                                                                                                                                "Total Planned CR": 29,
+#                                                                                                                                                "Day Planners count": 3})

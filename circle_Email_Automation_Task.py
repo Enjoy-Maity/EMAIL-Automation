@@ -415,7 +415,7 @@ def fetch_details(sender:str, workbook:str)->str:
                                                     <p>3)  KPI & Tester details need to be shared for all impacted nodes in Level-1 CR’s (SA). Also same details need to be shared for all Level-2 CR’s (NSA) with respect to changes on Core/STP/DRA/PACO/HLR/IN connected MPBN nodes.</p>\
                                                     <p>4)  Is redundancy working or all parameters ensured in shared plan for SAPC integration/reachability related activity on MPBN nodes (Yes/No, Applicable only in case of SAPC integration)?</p>\
                                                     <p>5)  Is there any impact on 5G services/ KPI related to IN/Core/PACO/RAN?</p>\
-                                                    <p>6)  Please confirm Integration/Expansion/Reachability activity will not impact running services (Yes/No)<br><br></p>\
+                                                    <p>6)  Please confirm Integration/Expansion/Reachability activity will impact running services (Yes/No)<br><br></p>\
                                                 </div>\
                                                 <div>\
                                                     <p>{}</p>\

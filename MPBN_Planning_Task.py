@@ -94,6 +94,7 @@ class CustomWarning(Exception):
 class App(tk.Tk):
     # Constructor Method(Function) for the Main GUI Window.
     def __init__(self, main_win):
+        self.evening_mail_task_status_neo_flag = None
         self.empty_string_list = []                                         # Declaration & Initialization of list for empty user input fields used in the Application to raise exception.
         self.integer_string_list = []                                       # Declaration & Initialization of list for user input fields with integer used in the Application to raise exception.
         self.main_win = main_win                                            # Setting the reference of object main win value to the main win value passed, in our case root GUI Window .
@@ -119,9 +120,10 @@ class App(tk.Tk):
             self.style.theme_use("vista")
             self.style.theme_settings("vista", {
                 "TButton": {
-                    "configure": {"padding": 2,
-                                  "font": "Ericsson_Hilda 10 bold"},
-
+                    "configure" :{
+                        "padding": 2,
+                        "font": "Ericsson_Hilda 12 bold"
+                    }
                 },
                 "TMenubutton": {
                     "configure": {"font": "Ericsson_Hilda 14"},
@@ -179,32 +181,32 @@ class App(tk.Tk):
 
             # Creating button for the planning sheet creation task
             self.planning_sheet_creater_task_btn = ttk.Button(
-                self.main_win, text = "         Planning Sheet Preparation       ", command=self.planning_sheet_creater_task_func
+                self.main_win, text = "Planning Sheet Preparation", command=self.planning_sheet_creater_task_func, width=30
             )
             
             # Creating button for the Circle Email- Automation task
             self.circle_email_automation_task_btn = ttk.Button(
-                self.main_win, text = "         Circle Mail Communication         ", command=self.circle_email_automation_task_func_surity)
+                self.main_win, text = "Circle Mail Communication", command=self.circle_email_automation_task_func_surity, width=35)
 
             # Creating button for the Email Package Data Preparation task
             self.email_package_prep_btn = ttk.Button(
-                self.main_win, text="         Email Package Preparation      ", command=self.email_package_prep_func)
+                self.main_win, text="Email Package Preparation", command=self.email_package_prep_func, width=30)
 
             # Creating button for the Interdoman KPIs Data Preparation task
             self.interdomain_kpis_data_prep_btn = ttk.Button(
-                self.main_win, text="   Interdomain KPIs Data Preparation   ", command=self.interdomain_kpis_data_prep_func)
+                self.main_win, text="Interdomain KPIs Data Preparation", command=self.interdomain_kpis_data_prep_func, width=30)
 
             # Creating button for the Interdomain KPIs Mail Communication task
             self.interdomain_kpis_mail_communication_btn = ttk.Button(
-                self.main_win, text="Interdomain KPIs Mail Communication", command=lambda: self.interdomain_kpis_mail_communication_func(1))
+                self.main_win, text="Interdomain KPIs Mail Communication", command=lambda: self.interdomain_kpis_mail_communication_func(1), width=35)
 
             # Creating button for the Evening message task
             self.evening_task_btn = ttk.Button(
-                self.main_win, text=" Email Package & Team Availability  ", command=lambda: self.evening_task_func(1))
+                self.main_win, text="Email Package & Team Availability", command=lambda: self.evening_task_func(1), width=30)
 
             # Creating button for the Executor Mail communication task
             self.executor_mail_communication_btn = ttk.Button(
-                self.main_win, text="        Executor Mail Communication      ", command= self.executor_mail_communication)
+                self.main_win, text="Executor Mail Communication", command= self.executor_mail_communication, width=35)
 
             ##################################################### Status setter variables #####################################################################################################################
             self.planning_sheet_creater_task_status = StringVar(self.main_win_canvas)
@@ -437,6 +439,29 @@ class App(tk.Tk):
         self.frame_idx = IntVar()                                   
         self.frame_idx.set(ind)                                     # Setting the Value of the Integer Variable of Frame Index to get the GIF Frame Number
         self.main_win_canvas.delete("all")                          # Deleting all the GUI Components (GIF Frame and the Background Image) to show the smooth transition of the GIF Frame from one frame to another.
+        self.style.theme_settings("vista", {
+            "TButton": {
+                "configure": {
+                    "padding": 2,
+                    "font": "Ericsson_Hilda 12 bold"
+                }
+            },
+            "TMenubutton": {
+                "configure": {"font": "Ericsson_Hilda 14"},
+            }
+        }
+                                  )
+
+        # self.main_win.update_idletasks()
+
+        # Fixing all the button text sizes to be same.
+        self.planning_sheet_creater_task_btn.configure(padding=2)
+        self.circle_email_automation_task_btn.configure(padding=2)
+        self.email_package_prep_btn.configure(style="TButton", padding=2)
+        self.interdomain_kpis_data_prep_btn.configure(style="TButton", padding=2)
+        self.interdomain_kpis_mail_communication_btn.configure(style="TButton", padding=2)
+        self.evening_task_btn.configure(style="TButton", padding=2)
+        self.executor_mail_communication_btn.configure(style="TButton", padding=2)
 
         # Setting the GIF Image Frame onto GUI along with the Background Image.
         self.main_win_canvas.create_image(
@@ -447,7 +472,7 @@ class App(tk.Tk):
         '''
             Creating the labels for selection of ITSM Raw Report and the MPBN Planning Sheet workbook.
         '''
-        self.main_win_canvas.create_text(220, 194, text="Select ITSM RAW Report :-", 
+        self.main_win_canvas.create_text(220, 194, text="Select ITSM RAW Report :-",
                                          fill="#FFFFFF", font=("Ericsson Hilda ExtraBold",21,"bold underline"))
         self.main_win_canvas.create_text(220, 247, text="Select Daily Planning Sheet :-",
                                          fill="#FFFFFF", font=("Ericsson Hilda ExtraBold", 21, "bold underline"))
@@ -471,9 +496,11 @@ class App(tk.Tk):
             840, 234, anchor="nw", window=self.file_browser_btn)
 
         # Creating the Window for the Planning Sheet creater button to be shown over the Canvas.
+        # self.main_win_canvas.create_window(
+        #     90, 298, anchor="nw", window = self.planning_sheet_creater_task_btn)
         self.main_win_canvas.create_window(
-            90, 298, anchor="nw", window = self.planning_sheet_creater_task_btn)
-        self.main_win_canvas.create_text(145, 330, anchor="nw", text = self.planning_sheet_creater_task_status.get(
+            80, 298, anchor="nw", window = self.planning_sheet_creater_task_btn)
+        self.main_win_canvas.create_text(135, 330, anchor="nw", text = self.planning_sheet_creater_task_status.get(
         ), fill = self.planning_sheet_creater_task_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Circle Email Automation button to be shown over the Canvas.
@@ -484,26 +511,28 @@ class App(tk.Tk):
 
         # Creating the Window for the Email package prep button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            700, 298, anchor="nw", window = self.email_package_prep_btn)
-        self.main_win_canvas.create_text(730, 330, anchor="nw", text = self.email_package_prep_task_status.get(
+            730, 298, anchor="nw", window = self.email_package_prep_btn)
+        self.main_win_canvas.create_text(760, 330, anchor="nw", text = self.email_package_prep_task_status.get(
         ), fill = self.email_package_prep_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Interdomain Kpi Mail button to be shown over the Canvas.
+        # self.main_win_canvas.create_window(
+        #     90, 378, anchor="nw", window = self.interdomain_kpis_data_prep_btn)
         self.main_win_canvas.create_window(
-            90, 378, anchor="nw", window = self.interdomain_kpis_data_prep_btn)
-        self.main_win_canvas.create_text(145, 410, anchor="nw", text = self.interdomain_kpis_data_prep_task_status.get(
+            80, 378, anchor="nw", window = self.interdomain_kpis_data_prep_btn)
+        self.main_win_canvas.create_text(135, 410, anchor="nw", text = self.interdomain_kpis_data_prep_task_status.get(
         ), fill = self.interdomain_kpis_data_prep_color_get.get(), font=("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Evening message task button to be shown over the Canvas.
         self.main_win_canvas.create_window(
             385, 378, anchor="nw", window=self.interdomain_kpis_mail_communication_btn)
         self.main_win_canvas.create_text(440, 410, anchor="nw", text = self.interdomain_kpis_mail_communication_status.get(
-        ), fill = self.interdomain_kpis_mail_communication_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))  
+        ), fill = self.interdomain_kpis_mail_communication_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Evening message task button to be shown over the Canvas.
         self.main_win_canvas.create_window(
-            700, 378, anchor="nw", window=self.evening_task_btn)
-        self.main_win_canvas.create_text(730, 410, anchor="nw", text = self.evening_task_status.get(
+            730, 378, anchor="nw", window=self.evening_task_btn)
+        self.main_win_canvas.create_text(760, 410, anchor="nw", text = self.evening_task_status.get(
         ), fill = self.evening_task_color_get.get(), font = ("Ericsson Hilda ExtraBold", 15, "bold"))
 
         # Creating the Window for the Executor Circle mail communication button to be shown over the Canvas.
@@ -535,7 +564,13 @@ class App(tk.Tk):
                 In this case the Frame Value is something in between the first & last frame of the GIF when the Child GUI was called so we are just using 'after' method 
                 at the 'ind' frame and the next frame which will be shown next is already selected in the 'ind' variable and is sent as an argument to the 'update' method.
             '''
-            self.main_win.after(ind, self.update, ind)         
+            self.main_win.after(ind, self.update, ind)
+
+    def busy_mode(self):
+        self.main_win.config(cursor='watch')
+
+    def normal_mode(self):
+        self.main_win.config(cursor="")
     
     # Method(Function) for browsing the MPBN Planning Task Workbook.
     def file_browser_func(self, event):
@@ -593,7 +628,8 @@ class App(tk.Tk):
                             " Please Select the ITSM Raw Report first!", "File Not Selected")
 
                     else:
-                        # Calling the method of the module for planning sheet creation from the Raw Report CSV and getting the return value of the 
+                        # Calling the method of the module for planning sheet creation from the Raw Report CSV and getting the return value of the
+                        self.busy_mode()
                         # status of the Task in status flag.
                         self.planning_sheet_creater_task_status_flag = Planning_sheet_creater.planning_sheet_creater(
                             self.itsm_file_browser_file, self.file_browser_file, self.sender)
@@ -613,6 +649,7 @@ class App(tk.Tk):
                             self.planning_sheet_creater_task_status_checker_flag = 1
                             self.task_running = 0
                             self.task_module_running = ""
+                            self.normal_mode()
 
                         # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
                         if (self.planning_sheet_creater_task_status_flag == "Unsuccessful"):
@@ -623,6 +660,7 @@ class App(tk.Tk):
                             self.planning_sheet_creater_task_status_checker_flag = 0
                             self.task_running = 0
                             self.task_module_running = ""
+                            self.normal_mode()
 
                 # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
                 except FileNotSelected:
@@ -631,6 +669,7 @@ class App(tk.Tk):
                     self.planning_sheet_creater_task_status.set(" Unsuccessful ")
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
@@ -641,6 +680,7 @@ class App(tk.Tk):
                     self.planning_sheet_creater_task_status.set(" Unsuccessful ")
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
 
             else:
                 self.task_running = 0
@@ -665,9 +705,11 @@ class App(tk.Tk):
                 
                 # If the respose is positive the task is done, else the label for task status is set to Unsuccessful along with it's color.
                 if (self.circle_email_automation_task_surity_check):
+                    self.busy_mode()
                     self.circle_email_automation_task_func()
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
                 
                 else:
                     self.task_running = 0
@@ -742,6 +784,7 @@ class App(tk.Tk):
             self.circle_email_automation_task_status.set(" Unsuccessful ")
             self.task_running = 0
             self.task_module_running = ""
+            self.normal_mode()
 
         # Handling any other Exception and setting the label to unsuccessful along with it's color.
         except Exception as error:
@@ -752,6 +795,7 @@ class App(tk.Tk):
             self.circle_email_automation_task_status.set(" Unsuccessful ")
             self.task_running = 0
             self.task_module_running = ""
+            self.normal_mode()
 
         
     # Method(Function) for Email-Package Preparation.
@@ -776,6 +820,7 @@ class App(tk.Tk):
                     else:
                         # Calling the method of the module for circle email automation from the MPBN Planning sheet workbook and getting the return value of the 
                         # status of the Task in status flag.
+                        self.busy_mode()
                         self.email_package_status_flag = Email_package_generator.email_package_sheet_creater(
                             self.file_browser_file)
 
@@ -795,6 +840,7 @@ class App(tk.Tk):
                             
                             self.task_running = 0
                             self.task_module_running = ""
+                            self.normal_mode()
 
                         # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
                         if (self.email_package_status_flag == "Unsuccessful"):
@@ -806,6 +852,7 @@ class App(tk.Tk):
                             
                             self.task_running = 0
                             self.task_module_running = ""
+                            self.normal_mode()
 
                 # Handling the Exception for file being not selected and setting the label to unsuccessful along with it's color.
                 except FileNotSelected:
@@ -814,6 +861,7 @@ class App(tk.Tk):
                     self.email_package_prep_task_status.set(" Unsuccessful ")
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
@@ -824,6 +872,7 @@ class App(tk.Tk):
                     self.email_package_prep_task_status.set(" Unsuccessful ")
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
 
             else:
                 self.task_running = 0
@@ -855,7 +904,8 @@ class App(tk.Tk):
                             " Please Select the MPBN Planning Excel Workbook first!", "File Not Selected")
 
                     else:
-                        # Calling the method of the module for Interdomain Kpis data preparation from the MPBN Planning sheet workbook and getting the return value of the 
+                        self.busy_mode()
+                        # Calling the method of the module for Interdomain Kpis data preparation from the MPBN Planning sheet workbook and getting the return value of the
                         # status of the Task in status flag.
                         self.interdomain_kpis_data_prep_status_flag = interdomain_KPIs_Data_Prep_Task.paco_cscore(
                             self.sender, self.file_browser_file)
@@ -879,6 +929,7 @@ class App(tk.Tk):
                             
                             self.task_running = 0
                             self.task_module_running = ""
+                            self.normal_mode()
 
                         # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
                         elif (self.interdomain_kpis_data_prep_status_flag == 'Unsuccessful'):
@@ -891,6 +942,7 @@ class App(tk.Tk):
                             
                             self.task_running = 0
                             self.task_module_running = ""
+                            self.normal_mode()
 
                 # If the status flag is Unsuccessful then the label for the task is set to Unsuccessful and it's color is set red.
                 except FileNotSelected:
@@ -900,16 +952,18 @@ class App(tk.Tk):
                         " Unsuccessful ")
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
                 
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
                     # logging.error(f"ExceptionOccured (interdomain_kpis_data_prep_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
-                    messagebox.showerror(" Exception Occured", error)
+                    messagebox.showerror(" Exception Occurred", error)
                     self.interdomain_kpis_data_prep_color_get.set(self.color[0])
                     self.interdomain_kpis_data_prep_status_checker_flag = 0
                     self.interdomain_kpis_data_prep_task_status.set(" Unsuccessful ")
                     self.task_running = 0
                     self.task_module_running = ""
+                    self.normal_mode()
 
             else:
                 self.task_running = 0
@@ -926,7 +980,8 @@ class App(tk.Tk):
     def interdomain_kpis_mail_communication_func(self, event):
         if(self.task_running == 0):
             if (self.interdomain_kpis_mail_communication_status_checker_flag == 0):
-                self.interdomain_kpis_mail_communication_surity_check = messagebox.askyesno("   Interdomain Mail Communication Confirmation","Do you to proceed with Interdomain Mail Communication for tonight planned CRs?")
+                self.interdomain_kpis_mail_communication_surity_check = messagebox.askyesno("   Interdomain Mail Communication Confirmation",
+                                                                                            "Do you to proceed with Interdomain Mail Communication for tonight planned CRs?")
 
                 if(self.interdomain_kpis_mail_communication_surity_check):
                     self.task_running = 1
@@ -935,9 +990,10 @@ class App(tk.Tk):
                     self.region_handler_names_win = Toplevel(self.main_win)
 
                     # Hiding the main GUI window.
-                    if self.main_win.state() == "normal":
-                        self.main_win.withdraw()
-
+                    # if self.main_win.state() == "normal":
+                        # self.main_win.withdraw()
+                    if 'iconified' not in self.main_win.wm_state():
+                        self.main_win.iconify()
                     # Checking the interdomain data prep task is cmpleted or not.
                     if (self.interdomain_kpis_data_prep_task_completed == 1):
 
@@ -1073,7 +1129,8 @@ class App(tk.Tk):
                     # Destroying the child GUI window and making the main GUI window to reappear. 
                     self.main_win.deiconify()
                     self.region_handler_names_win.destroy()
-                    
+
+                    self.busy_mode()
                     # Calling the Module method to complete the task and setting the task label along with suitable color indicating that the task is successfully completed.
                     self.interdomain_starter_func_task_status_checker_flag = interdomain_KPIs_Mail_Comm_Task.paco_cscore(
                         self.sender, self.file_browser_file, self.north_and_west_region, self.east_region_and_south_region)
@@ -1086,6 +1143,7 @@ class App(tk.Tk):
                             " Successful ")
                         self.task_running = 0
                         self.task_module_running = ""
+                        self.normal_mode()
                     
                     if (self.interdomain_starter_func_task_status_checker_flag == 'Unsuccessful'):
                         self.interdomain_kpis_mail_communication_color_get.set(
@@ -1095,6 +1153,7 @@ class App(tk.Tk):
                             " Unsuccessful ")
                         self.task_running = 0
                         self.task_module_running = ""
+                        self.normal_mode()
 
             if (any(c.isdigit() for c in self.north_and_west_region)):
                 self.new_integer_string_list.append(
@@ -1153,6 +1212,7 @@ class App(tk.Tk):
                 ' Unsuccessful ')
             self.task_running = 0
             self.task_module_running = ""
+            self.normal_mode()
 
         except RegionHandlerException:
             # logging.error(f"RegionHandlerException (interdomain kpis mail starter func) =====> \n\n{traceback.format_exc()}")
@@ -1165,6 +1225,7 @@ class App(tk.Tk):
                 ' Unsuccessful ')
             self.task_running = 0
             self.task_module_running = ""
+            self.normal_mode()
 
         except Exception as error:
             # logging.error(f"ExceptionOccured (interdomain_kpis_mail_starter_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
@@ -1175,6 +1236,7 @@ class App(tk.Tk):
                 ' Unsuccessful ')
             self.task_running = 0
             self.task_module_running = ""
+            self.normal_mode()
 
     # Method(Function) for Creating the evening task message.
     def evening_task_func(self, event):
@@ -1231,8 +1293,13 @@ class App(tk.Tk):
                                     Resource on Automation Name.
                                 '''
                                 self.evening_task_win = Toplevel(self.main_win)
-                                if self.main_win.state() == 'normal':
-                                    self.main_win.withdraw()
+                                # if self.main_win.state() == 'normal':
+                                    # self.main_win.withdraw()
+                                if 'iconified' not in self.main_win.wm_state():
+                                    # self.main_win.unbind("<Return>", self.browser_func)
+                                    # self.main_win.unbind("<Escape>", self.main_win_quit)
+                                    # self.main_win.unbind("<Escape>", self.main_win_quit)
+                                    self.main_win.iconify()
                                 self.evening_task_win.iconbitmap(
                                     './images/ericsson-blue-icon-logo.ico')
                                 self.evening_task_win.title(
@@ -1297,9 +1364,10 @@ class App(tk.Tk):
 
                                 # Making the main GUI window to reappear, while destroying the child GUI.
                                 if self.evening_task_win.state() != "normal":
-                                    if self.main_win.state() != "normal":
-                                        self.main_win_flag = 0
-                                        self.main_win.deiconify()
+                                    # if self.main_win.state() != "normal":
+                                    #     self.main_win_flag = 0
+                                    #     self.main_win.deiconify()
+                                    self.evening_task_win.quit()
                                     self.evening_task_win.destroy()
 
                                 # Creating an endless loop until the user presses the submit button or the Enter key or any external interruption occurs.
@@ -1318,7 +1386,7 @@ class App(tk.Tk):
                     
                     except Exception as error:
                         # logging.error(f"ExceptionOccured (evening_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
-                        messagebox.showerror(" Exception Occured", error)
+                        messagebox.showerror(" Exception Occurred", f"{traceback.format_exc()}\n\n{error}")
                         self.evening_task_color_get.set(self.color[0])
                         self.evening_task_status_checker_flag = 0
                         self.evening_task_status.set(' Unsuccessful ')
@@ -1329,7 +1397,7 @@ class App(tk.Tk):
                     self.task_running = 0
                     self.task_module_running = ""
 
-                    # Raising custom made exception for the condition when the task has already been done.
+                    # Raising custom-made exception for the condition when the task has already been done.
                     # logging.debug("User ran the task 'evening_task_func' when it is completed successfully earlier")
                     raise CustomWarning(
                         "Evening Task Already Successfully Completed!", " Task Already Done")
@@ -1370,30 +1438,110 @@ class App(tk.Tk):
                 if (not (any(c.isdigit() for c in self.night_shift_lead))) and (not (any(c.isdigit() for c in self.buffer_auditor_trainer))) and (not (any(c.isdigit() for c in self.resource_on_automation))):
                     
                     # Setting the main win flag to 0 for GIF frame, destroying the child GUI window and making the main GUI window to reappear.
-                    self.main_win_flag = 0
-                    self.main_win.deiconify()
+                    # self.main_win_flag = 0
+                    # self.main_win.deiconify()
+                    # self.evening_task_win.destroy()
+                    self.evening_task_win.quit()
                     self.evening_task_win.destroy()
 
+                    # self.busy_mode()
                     # Calling the required method from the module with sufficient arguments to do the task and getting the return value from the metod in a flag variable.
-                    self.evening_mail_task_status_flag = evening_mail_task.evening_task(
-                        self.sender, self.night_shift_lead, self.buffer_auditor_trainer, self.resource_on_automation, self.file_browser_file, self.acceptable_change_responsible)
-                    
+                    self.evening_mail_task_status_flag = evening_mail_task.calculations(sender = self.sender,
+                                                                                        night_shift_lead=self.night_shift_lead,
+                                                                                        buffer_auditor_trainer=self.buffer_auditor_trainer,
+                                                                                        resource_on_automation=self.resource_on_automation,
+                                                                                        workbook=self.file_browser_file,
+                                                                                        acceptable_change_responsible=self.acceptable_change_responsible)
+                    # print(self.evening_mail_task_status_flag)
+                    # self.normal_mode()
                     # print(self.evening_mail_task_status_flag)
 
                     # Checking the flag variable for setting the label for the task along with it's suitable color.
-                    if (self.evening_mail_task_status_flag == 'Successful'):
-                        self.evening_task_color_get.set(self.color[1])
-                        self.evening_task_status_checker_flag = 1
-                        self.evening_task_status.set(' Successful ')
-                        self.task_running = 0
-                        self.task_module_running = ""
+                    if (self.evening_mail_task_status_flag[0] == 'Successful'):
+                        self.result_dictionary = self.evening_mail_task_status_flag[1]
+                        from evening_confirmation_dialog_box import Confirmation_dialog_box
+                        # self.main_win.withdraw()
+                        # if 'iconified' not in self.main_win.wm_state():
+                        #     self.main_win.iconify()
+                        self.confirmation_popup = Confirmation_dialog_box(self,
+                                                                          total_planned_crs=self.result_dictionary['total_no_of_crs'],
+                                                                          total_night_executors=self.result_dictionary['total_night_executors'],
+                                                                          total_resources_on_leaves= self.result_dictionary['total_resources_on_leaves'],
+                                                                          total_resources_on_comp_off=self.result_dictionary['total_resources_on_comp_off'])
 
-                    if (self.evening_mail_task_status_flag == 'Unsuccessful'):
+
+                        self.confirmation_popup.top.destroy()
+
+                        # if self.confirmation_popup.state() != 'normal':
+                        #     self.main_win_flag = 0
+                        #     self.main_win.deiconify()
+                        self.new_result_dictionary = self.confirmation_popup.get_details()
+                        # print(self.new_result_dictionary)
+                        # if self.main_win.state() != "normal":
+                            # self.main_win_canvas.delete("all")
+                            # self.main_win_flag = 0
+                            # self.update(1)
+                        self.main_win.deiconify()
+                        # self.update(1)
+                            # self.update(0)
+
+                        if self.confirmation_popup.accidental_closed_flag == 1:
+                            raise CustomException("Confirmation Dialog Box Closed without proper submission of the data. Kindly, rerun the evening message task!",
+                                                  "Confirmation Dialog Box Closed Accidentally!")
+                        self.busy_mode()
+                        self.evening_mail_task_status_neo_flag = evening_mail_task.evening_task(sender = self.sender,
+                                                                                                night_shift_lead=self.night_shift_lead,
+                                                                                                buffer_auditor_trainer=self.buffer_auditor_trainer,
+                                                                                                resource_on_automation=self.resource_on_automation,
+                                                                                                workbook=self.file_browser_file,
+                                                                                                acceptable_change_responsible=self.acceptable_change_responsible,
+                                                                                                resources_occupied_in_night_activities=self.result_dictionary['resources_occupied_in_night_activities'],
+                                                                                                delhi_major=self.result_dictionary['delhi_major'],
+                                                                                                manual=self.result_dictionary['manual'],
+                                                                                                create=self.result_dictionary['create'],
+                                                                                                enable=self.result_dictionary['enable'],
+                                                                                                partially_automation=self.result_dictionary['partially_automation'],
+                                                                                                total_no_of_crs=self.result_dictionary["total_no_of_crs"],
+                                                                                                major=self.result_dictionary['major'],
+                                                                                                delhi_critical=self.result_dictionary['delhi_critical'],
+                                                                                                maintenance_window=self.result_dictionary['maintenance_window'],
+                                                                                                critical=self.result_dictionary['critical'],
+                                                                                                execution_date=self.result_dictionary['execution_date'],
+                                                                                                resource_on_leave=self.new_result_dictionary['number_of_resources_who_are_on_leave'],
+                                                                                                picked_crs=self.new_result_dictionary['picked_crs'],
+                                                                                                planned_crs=self.new_result_dictionary['planned_crs'],
+                                                                                                resource_on_comp_off=self.new_result_dictionary['number_of_resources_who_are_on_comp_off'],
+                                                                                                day_planners_count = self.new_result_dictionary['day_planners'],
+                                                                                                names_of_resources_on_comp_off=self.new_result_dictionary['resources_who_are_on_comp_off'],
+                                                                                                names_of_resources_on_leave=self.new_result_dictionary['resources_who_are_on_leave'],
+                                                                                                total_night_executors=self.new_result_dictionary['total_night_executors'])
+                        # print(self.evening_mail_task_status_neo_flag)
+                        if (self.evening_mail_task_status_neo_flag == 'Successful'):
+                            self.evening_task_color_get.set(self.color[1])
+                            self.evening_task_status_checker_flag = 1
+                            self.evening_task_status.set(' Successful ')
+                            self.task_running = 0
+                            self.task_module_running = ""
+                            if self.main_win["cursor"] == "watch":
+                                self.normal_mode()
+
+                        if (self.evening_mail_task_status_neo_flag == 'Unsuccessful'):
+                            self.evening_task_color_get.set(self.color[0])
+                            self.evening_task_status_checker_flag = 0
+                            self.evening_task_status.set(' Unsuccessful ')
+                            self.task_running = 0
+                            self.task_module_running = ""
+                            if self.main_win["cursor"] == "watch":
+                                self.normal_mode()
+
+                    if (self.evening_mail_task_status_flag[0] == 'Unsuccessful'):
                         self.evening_task_color_get.set(self.color[0])
                         self.evening_task_status_checker_flag = 0
                         self.evening_task_status.set(' Unsuccessful ')
                         self.task_running = 0
                         self.task_module_running = ""
+                        # if self.main_win["cursor"] == "watch":
+                        #     self.normal_mode()
 
             # Checking whether the name enteries contain empty strings(no input), or integers and raising custom made exceptions accordingly.
             if (len(self.night_shift_lead) == 0):
@@ -1444,16 +1592,32 @@ class App(tk.Tk):
             self.evening_task_status.set(' Unsuccessful ')
             self.task_running = 0
             self.task_module_running = ""
+            # if self.main_win["cursor"] == "watch":
+            self.normal_mode()
 
-        # Handling any other Exception and setting the label to unsuccessful along with it's color.
-        except Exception as error:
-            # logging.error(f"ExceptionOccured (planning_sheet_creation_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
-            messagebox.showerror(" Exception Occured", error)
+        except CustomException as e:
+            messagebox.showerror(f" {e.title}", f"{traceback.format_exc()}\n\n {e.msg}")
+            # messagebox.showerror(" Exception Occured", error)
             self.evening_task_color_get.set(self.color[0])
             self.evening_task_status_checker_flag = 0
             self.evening_task_status.set(' Unsuccessful ')
             self.task_running = 0
             self.task_module_running = ""
+            # if self.main_win["cursor"] == "watch":
+            self.normal_mode()
+
+        # Handling any other Exception and setting the label to unsuccessful along with it's color.
+        except Exception as error:
+            # logging.error(f"ExceptionOccured (planning_sheet_creation_task_func) =====> \n\n{traceback.format_exc()}\n\n{error}")
+            messagebox.showerror(" Exception Occurred", f"{traceback.format_exc()}\n\n {error}")
+            # messagebox.showerror(" Exception Occured", error)
+            self.evening_task_color_get.set(self.color[0])
+            self.evening_task_status_checker_flag = 0
+            self.evening_task_status.set(' Unsuccessful ')
+            self.task_running = 0
+            self.task_module_running = ""
+            # if self.main_win["cursor"] == "watch":
+            self.normal_mode()
 
     # Method(Function) for sending the execution mail communication
     def executor_mail_communication(self):
@@ -1524,7 +1688,7 @@ class App(tk.Tk):
                 # Handling any other Exception and setting the label to unsuccessful along with it's color.
                 except Exception as error:
                     # logging.error(f"Exception occurred(executor_mail_communication) =====>\n\n{traceback.format_exc()}\n\n{error}")
-                    messagebox.showerror(" Exception Occured", error)
+                    messagebox.showerror(" Exception Occurred", error)
                     self.executor_mail_communication_color_get.set(self.color[0])
                     self.executor_mail_communication_status_checker_flag = 0
                     self.executor_mail_communication_status.set(" Unsuccessful ")
