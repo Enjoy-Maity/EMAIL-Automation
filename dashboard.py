@@ -14,6 +14,12 @@ from Custom_Exception import CustomException
 flag = ''
 dictionary = dict()
 
+class CustomWarning(Exception):
+    def __init__(self, title, message):
+        self.title = title
+        self.message = message
+        super().__init__(self.title, self.message)
+        messagebox.showwarning(self.title, self.message)
 
 def suffix_adder(date_for_suffix):
     suffix = ''
@@ -177,6 +183,11 @@ def table_creater(dictionary: dict):
 def srf_mpbn_dashboard_tracker_file_writer(path: str):
     global dictionary
 
+    # if os.path.exists(path):
+    #     os.remove(path)
+    #     from time import sleep
+    #     sleep(2)
+
     wkbk = load_workbook(path)
     wkbk.active = wkbk['DASHBOARD']
     worksheet = wkbk['DASHBOARD']
@@ -188,32 +199,38 @@ def srf_mpbn_dashboard_tracker_file_writer(path: str):
                     bottom=Side(border_style = 'thin', color = '000000'))
 
     max_row = worksheet.max_row
-    worksheet[f'A{max_row + 1}'] = datetime.now().strftime("%m/%d/%Y")
-    worksheet[f'B{max_row + 1}'] = "SRF MPBN"
-    worksheet[f'C{max_row + 1}'] = str(dictionary['Total Picked CR'])
-    worksheet[f'D{max_row + 1}'] = str(dictionary['Total Planned CR'])
-    worksheet[f'W{max_row + 1}']  = str(dictionary['Night executors count'])
-    worksheet[f'X{max_row + 1}'] = str(dictionary['Day Planners count'])
-    worksheet[f'Y{max_row + 1}'] = str(dictionary['Resources on comp-off'])
-    worksheet[f'Z{max_row + 1}'] = str(dictionary['Resources on leaves'])
-    worksheet[f'AA{max_row + 1}'] = 'NA'
+    # print(f"{(worksheet[f'A{max_row}'].value == datetime.now().strftime('%m/%d/%Y')) = }")
+    if worksheet[f'A{max_row}'].value == datetime.now().strftime("%m/%d/%Y"):
+        wkbk.close()
+        del wkbk
+        raise CustomWarning("Dashboard already updated!!", "Dashboard is already updated for today's date.")
+    else:
+        worksheet[f'A{max_row + 1}'] = datetime.now().strftime("%m/%d/%Y")
+        worksheet[f'B{max_row + 1}'] = "SRF MPBN"
+        worksheet[f'C{max_row + 1}'] = str(dictionary['Total Picked CR'])
+        worksheet[f'D{max_row + 1}'] = str(dictionary['Total Planned CR'])
+        worksheet[f'W{max_row + 1}']  = str(dictionary['Night executors count'])
+        worksheet[f'X{max_row + 1}'] = str(dictionary['Day Planners count'])
+        worksheet[f'Y{max_row + 1}'] = str(dictionary['Resources on comp-off'])
+        worksheet[f'Z{max_row + 1}'] = str(dictionary['Resources on leaves'])
+        worksheet[f'AA{max_row + 1}'] = 'NA'
 
-    # # Hiding the unwanted rows
-    # i = 3
-    # while i < max_row:
-    #     worksheet.row_dimensions[i].hidden = True
-    #     i += 1
+        # # Hiding the unwanted rows
+        # i = 3
+        # while i < max_row:
+        #     worksheet.row_dimensions[i].hidden = True
+        #     i += 1
 
-    # Aligning the table cells and setting the border.
-    i = 1
-    while get_column_letter(i) != "AB":
-        worksheet[get_column_letter(i) + str(max_row + 1)].alignment = alignment_var
-        worksheet[get_column_letter(i) + str(max_row + 1)].border = border
-        i += 1
+        # Aligning the table cells and setting the border.
+        i = 1
+        while get_column_letter(i) != "AB":
+            worksheet[get_column_letter(i) + str(max_row + 1)].alignment = alignment_var
+            worksheet[get_column_letter(i) + str(max_row + 1)].border = border
+            i += 1
 
-    wkbk.save(path)
-    wkbk.close()
-    del wkbk
+        wkbk.save(path)
+        wkbk.close()
+        del wkbk
 
 def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender:str):
     outlook = win32.Dispatch('Outlook.Application')
@@ -242,15 +259,23 @@ def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender:st
             #print(dt)
 
             if dt >= acceptable_delivered_time:
-                #print(message.Subject.upper())
-                #print(message.Subject.upper().__contains__(subject_we_are_looking_for.upper()))
+                # print(message.Subject.upper())
+                # print(message.Subject.upper().__contains__(subject_we_are_looking_for.upper()))
                 if message.Subject.upper().__contains__(subject_we_are_looking_for.upper()):
-                    print(f"{dt =}")
-                    print("message found and downloading the file")
+                    # print(f"{dt =}")
+                    # print("message found and downloading the file")
                     message_found = True
-                    #print("189")
-                    attachment = message.Attachments.Item(1)
-                    attachment.SaveAsFile(str(path))
+                    # print("189")
+                    # print("Attachments: - ", [message.Attachments.Item(i).FileName for i in range(1, len(message.Attachments)+1)])
+                    l = 1
+                    while l <= len(message.Attachments):
+                        if ((str(message.Attachments.Item(l).FileName).strip().upper().startswith("SRF-DASHBOARD")) and
+                                (str(message.Attachments.Item(l).FileName).endswith(".xlsx"))):
+                            attachment = message.Attachments.Item(l)
+                            break
+                        l += 1
+                    path = os.path.join(os.path.dirname(str(path)), str(attachment.FileName))
+                    attachment.SaveAsFile(os.path.join(path))
                     message_to_be_used = message
                     break
 
@@ -287,8 +312,15 @@ def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender:st
                         if message.Subject.upper().__contains__(subject_we_are_looking_for.upper()):
                             message_found = True
                             #print("223")
-                            attachment = message.Attachments.Item(1)
-                            attachment.SaveAsFile(str(path))
+                            l = 1
+                            while l <= len(message.Attachments):
+                                if ((str(message.Attachments.Item(l).FileName).strip().upper().startswith("SRF-DASHBOARD")) and
+                                        (str(message.Attachments.Item(l).FileName).endswith(".xlsx"))):
+                                    attachment = message.Attachments.Item(l)
+                                    break
+                                l += 1
+                            path = os.path.join(os.path.dirname(str(path)), str(attachment.FileName))
+                            attachment.SaveAsFile(path)
                             # mail_drafter(message, sender, path)
                             message_to_be_used = message
                             break
@@ -338,8 +370,16 @@ def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender:st
                             if message.Subject.upper().__contains__(subject_we_are_looking_for.upper()):
                                 message_found = True
                                 #print("267")
-                                attachment = message.Attachments.Item(1)
-                                attachment.SaveAsFile(str(path))
+
+                                l = 1
+                                while l <= len(message.Attachments):
+                                    if ((str(message.Attachments.Item(l).FileName).strip().upper().startswith("SRF-DASHBOARD")) and
+                                            (str(message.Attachments.Item(l).FileName).endswith(".xlsx"))):
+                                        attachment = message.Attachments.Item(l)
+                                        break
+                                    l += 1
+                                path = os.path.join(os.path.dirname(str(path)), str(attachment.FileName))
+                                attachment.SaveAsFile(path)
                                 message_to_be_used = message
                                 # mail_drafter(message, sender, path)
                                 break
@@ -369,7 +409,9 @@ def srf_mpbn_dashboard_tracker_file_getter_and_mail_drafter(path: str, sender:st
                 continue
 
     if message_found:
-        srf_mpbn_dashboard_tracker_file_writer(path)
+        # print(path)
+        # print(f"{os.path.exists(path) = }")
+        srf_mpbn_dashboard_tracker_file_writer(str(path))
         mail_drafter(message_to_be_used, sender, path)
 
         #print(message_found)
@@ -423,35 +465,14 @@ def main_dashboard_func(workbook, sender, dictionary_for_mail):
     global flag
     flag = ""
     main_folder = os.path.dirname(workbook)
-    print(f"{main_folder = }")
+    # print(f"{main_folder = }")
     path_for_srf_mpbn_fni_tracker_dashboard_file = os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER.xlsx')
 
     try:
         if os.path.exists(path_for_srf_mpbn_fni_tracker_dashboard_file):
-            if os.path.exists(os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER_bak.xlsx')):
-                os.remove(os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER_bak.xlsx'))
-
-            # wkbk = load_workbook(path_for_srf_mpbn_fni_tracker_dashboard_file)
-            # wkbk_new = Workbook()
-            # sheetnames = wkbk.sheetnames
-
-            # i = 0
-            # while i < len(sheetnames):
-            #     sheetname = sheetnames[i]
-            #     wkbk_new.create_sheet(title=sheetname)
-            #     worksheet = wkbk_new[sheetname]
-            #     i += 1
-            # wkbk_new.save(os.path.join(main_folder, 'SRF-DASHBOARD-FNI-TRACKER_bak.xlsx'))
-            # wkbk_new.close()
-            # del wkbk_new
-            # wkbk.close()
-            # del wkbk
-        # except:
-            import shutil
-            shutil.copy2(src=path_for_srf_mpbn_fni_tracker_dashboard_file,
-                         dst=os.path.join(main_folder, 'SRF-DASHBOARD-TRACKER_bak.xlsx'))
-
             os.remove(path_for_srf_mpbn_fni_tracker_dashboard_file)
+            from time import sleep
+            sleep(2)
 
         global dictionary
         dictionary = dictionary_for_mail
@@ -463,6 +484,9 @@ def main_dashboard_func(workbook, sender, dictionary_for_mail):
 
     except CustomException as e:
         flag = 'Unsuccessful'
+
+    except CustomWarning as e:
+        flag = 'Successful'
 
     except Exception as e:
         flag = "Unsuccessful"
@@ -477,9 +501,9 @@ def main_dashboard_func(workbook, sender, dictionary_for_mail):
         return flag
 
 # main_dashboard_func(r"C:\Users\emaienj\Downloads\New_folder_(3)\MPBN Daily Planning Sheet.xlsx", "Enjoy Maity",{"Resources on leaves" : 0,
-#                                                                                                                                                "Resources on comp-off": 0,
-#                                                                                                                                                "Domain":"SRF MPBN",
-#                                                                                                                                                "Night executors count": 15,
-#                                                                                                                                                "Total Picked CR": 29,
-#                                                                                                                                                "Total Planned CR": 29,
-#                                                                                                                                                "Day Planners count": 3})
+#                                                                                                                 "Resources on comp-off": 0,
+#                                                                                                                 "Domain":"SRF MPBN",
+#                                                                                                                 "Night executors count": 15,
+#                                                                                                                 "Total Picked CR": 29,
+#                                                                                                                 "Total Planned CR": 29,
+#                                                                                                                 "Day Planners count": 3})

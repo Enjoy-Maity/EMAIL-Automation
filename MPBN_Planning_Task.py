@@ -1467,7 +1467,9 @@ class App(tk.Tk):
                                                                           total_planned_crs=self.result_dictionary['total_no_of_crs'],
                                                                           total_night_executors=self.result_dictionary['total_night_executors'],
                                                                           total_resources_on_leaves= self.result_dictionary['total_resources_on_leaves'],
-                                                                          total_resources_on_comp_off=self.result_dictionary['total_resources_on_comp_off'])
+                                                                          total_resources_on_comp_off=self.result_dictionary['total_resources_on_comp_off'],
+                                                                          list_of_buffer_auditor_trainer=self.result_dictionary['list_of_buffer_auditor_trainer'],
+                                                                          list_of_resource_on_automation=self.result_dictionary['list_of_resource_on_automation'])
 
 
                         self.confirmation_popup.top.destroy()

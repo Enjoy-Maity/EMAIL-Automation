@@ -219,12 +219,12 @@ def email_package_workbook_generator(sender,worksheet,mail_id_sheet,folder,execu
                            'Change Responsible',
                            'Activity Checker']]
     # if isinstance(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")], datetime):
-    print(type(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")]))
+    # print(type(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")]))
     if isinstance(worksheet.iloc[0, worksheet.columns.get_loc("Execution Date")], datetime):
         # worksheet["Execution Date"] = pd.to_datetime(worksheet["Execution Date"])
-        worksheet["Execution Date"] = worksheet["Execution Date"].dt.strftime('%d-%m-%Y')
+        worksheet.loc[:,"Execution Date"] = worksheet["Execution Date"].dt.strftime('%d-%m-%Y')
     worksheet.reset_index(drop = True, inplace = True)
-    print(worksheet.to_markdown())
+    # print(worksheet.to_markdown())
 
     # Calling the Mail Drafter Method for drafting the mail but not send it.
     mail_drafter(worksheet,evening_message_workbook_message,html_body,sender,execution_date,workbook,maintenance_window)
@@ -462,11 +462,11 @@ def calculations(**kwargs):
 
             day_planners_count = 3
             username = os.popen(cmd='cmd.exe /C "echo %USERNAME%"').read().strip()
-            if Path(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt").exists():
-                with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'r') as f:
-                    day_planners_count = int(f.readline())
-                    f.close()
-                del f
+            # if Path(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt").exists():
+            #     with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'r') as f:
+            #         day_planners_count = int(f.readline())
+            #         f.close()
+            #     del f
 
             list_resource_of_buffer_auditor_trainer = buffer_auditor_trainer.split(',')
             if len(list_resource_of_buffer_auditor_trainer) == 1:
@@ -510,17 +510,17 @@ def calculations(**kwargs):
                             'delhi_major': delhi_major,
                             'execution_date': execution_date,
                             'total_no_of_crs': total_no_of_crs,
-                            'total_night_executors' : total_night_executors,
+                            'total_night_executors': total_night_executors,
                             'total_resources_on_comp_off': 0,
                             'maintenance_window': maintenance_window,
                             'total_resources_on_leaves': resource_on_leave,
-                            'resources_occupied_in_night_activities': resources_occupied_in_night_activities
+                            'resources_occupied_in_night_activities': resources_occupied_in_night_activities,
+                            'list_of_buffer_auditor_trainer': list_resource_of_buffer_auditor_trainer,
+                            'list_of_resource_on_automation': list_resource_on_automation
                             }
         temp_flag = 'Successful'
 
-
     # Handling Exceptions
-
     except CustomException:
         # Deleting all the local variables before returning the value "Unsuccessful"
         objects = dir()
@@ -530,19 +530,13 @@ def calculations(**kwargs):
         temp_flag = "Unsuccessful"
         result_dictionary = {}
 
-
     except Exception as e:
-
         import traceback
+        messagebox.showerror("  Exception Occurred!", f"{traceback.format_exc()}\n{e}")
 
-        messagebox.showerror("  Exception Occured!", f"{traceback.format_exc()}\n{e}")
-
-        # Delelting all the local variables before returning the value "Unsuccessful"
-
+        # Deleting all the local variables before returning the value "Unsuccessful"
         objects = dir()
-
         for object_ in objects:
-
             if not object_.startswith("__"):
                 del object_
         temp_flag = "Unsuccessful"
@@ -552,7 +546,6 @@ def calculations(**kwargs):
         gc.collect()
         result = [temp_flag, result_dictionary]
         return result
-
 
 
 # Method(Function) for creating the evening message text.
@@ -773,12 +766,11 @@ Regards,
             # Loading required data and info field.
             ws['A1'].value = "Resource's occupied in night activities"
             ws['A2'].value = "Resource in Day/Planning"
-            ws['A3'].value = "Resource on Comp off"
+            ws['A3'].value = "Auditor/Automation"
             ws['A4'].value = "Resource on Leave"
             ws['A5'].value = "Night Shift Lead "
-            ws['A6'].value = "Resource occupied in 2nd Level Validation/Buffer/Training"
-            ws['A7'].value = "Resource on Training "
-            ws['A8'].value = "Total CR’s"
+            ws['A6'].value = "Resource occupied in Buffer/Training"
+            ws['A7'].value = "Total CR’s"
 
             ws['B1'].value = total_night_executors
             ws['B2'].value = day_planners_count
@@ -786,8 +778,7 @@ Regards,
             ws['B4'].value = resource_on_leave
             ws['B5'].value = 1
             ws['B6'].value = 0
-            ws['B7'].value = 0
-            ws['B8'].value = total_no_of_crs
+            ws['B7'].value = total_no_of_crs
 
             ws['C1'].value = " "
             if names_of_resources_on_comp_off is not None:
@@ -819,8 +810,7 @@ Regards,
             ws['B4'].value = resource_on_leave
             ws['B5'].value = 1
             ws['B6'].value = 0
-            ws['B7'].value = 0
-            ws['B8'].value = total_no_of_crs
+            ws['B7'].value = total_no_of_crs
 
             ws['C1'].value = " "
 

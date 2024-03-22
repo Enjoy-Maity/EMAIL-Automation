@@ -26,6 +26,8 @@ class Confirmation_dialog_box(tkinter.Tk):
         self.total_night_executors = None
         self.total_resources_on_leaves = None
         self.total_resources_on_comp_off = None
+        self.list_of_resource_on_automation = None
+        self.list_of_buffer_auditor_trainer = None
         if len(kwargs) > 0:
             if "total_planned_crs" in kwargs:
                 self.total_planned_crs = kwargs["total_planned_crs"]
@@ -38,6 +40,12 @@ class Confirmation_dialog_box(tkinter.Tk):
 
             if "total_resources_on_comp_off" in kwargs:
                 self.total_resources_on_comp_off = kwargs["total_resources_on_comp_off"]
+
+            if "list_of_buffer_auditor_trainer" in kwargs:
+                self.list_of_buffer_auditor_trainer = kwargs["list_of_buffer_auditor_trainer"]
+
+            if "list_of_resource_on_automation" in kwargs:
+                self.list_of_resource_on_automation = kwargs["list_of_resource_on_automation"]
 
         self.top.title("    Confirmation Dialog Box")
         self.top.geometry("600x550")
@@ -62,9 +70,9 @@ class Confirmation_dialog_box(tkinter.Tk):
             },
             "TMenubutton": {
                 "configure": {
-                    "font": "Ericsson_Hilda 12",
+                    "font": "Ericsson_Hilda 11",
                     'justify': 'center',
-                    'width': 20
+                    'width': 12
                 }
             }
         })
@@ -84,6 +92,21 @@ class Confirmation_dialog_box(tkinter.Tk):
         self.image = ImageTk.PhotoImage(Image.open(".\\images\\MPBN PLANNING TASK_3_4.png"))
         self.canvas.create_image(0, 0, anchor = "nw", image = self.image)
 
+        self.resource_on_buffer_auditor_trainer__on_automation__on_comp_off = []
+        self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off = 0
+        self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off += self.total_resources_on_comp_off
+        if (self.list_of_buffer_auditor_trainer is not None) and (isinstance(self.list_of_buffer_auditor_trainer, list)):
+            self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off += len(self.list_of_buffer_auditor_trainer)
+
+            if len(self.list_of_buffer_auditor_trainer) > 0:
+                self.resource_on_buffer_auditor_trainer__on_automation__on_comp_off.extend([str(element).strip() for element in self.list_of_buffer_auditor_trainer])
+
+        if (self.list_of_resource_on_automation is not None) and (isinstance(self.list_of_resource_on_automation, list)):
+            self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off += len(self.list_of_resource_on_automation)
+
+            if len(self.list_of_resource_on_automation) > 0:
+                self.resource_on_buffer_auditor_trainer__on_automation__on_comp_off.extend([str(element).strip() for element in self.list_of_resource_on_automation])
+
         # self.canvas.create_text(130, 30, text="Total Planned CRs :-", font=self.font_style, fill="white")
         self.canvas.create_text(130, 70, text="Total Planned CRs :-", font=self.font_style, fill="white")
         self.planned_crs = Entry(self.top, width=25, font=self.font_style_1, bd=0, relief="ridge", justify="center")
@@ -102,20 +125,21 @@ class Confirmation_dialog_box(tkinter.Tk):
 
         self.canvas.create_text(135, 110, text="Total Day Planners :-", font=self.font_style, fill="white")
         self.day_planners_var = IntVar(self.top)
-        values = [i for i in range(1, 16)]
-        self.day_planners_file_check()
-        if (self.var is not None) or (isinstance(self.var, int)):
-            if self.var != 0:
-                self.day_planners_var.set(self.var)
-                # print("self.var",self.var)
-            else:
-                self.day_planners_var.set(3)
-
-        if self.var is None:
-            self.day_planners_var.set(3)
+        values = [1]
+        values.extend([i for i in range(1, 16)])
+        # self.day_planners_file_check()
+        # if (self.var is not None) or (isinstance(self.var, int)):
+        #     if self.var != 0:
+        #         self.day_planners_var.set(self.var)
+        #         # print("self.var",self.var)
+        #     else:
+        #         self.day_planners_var.set(3)
+        #
+        # if self.var is None:
+        #     self.day_planners_var.set(3)
 
         # print(self.day_planners_var.get())
-        self.day_planners = ttk.OptionMenu(self.top, self.day_planners_var, *values, style="TMenubutton")
+        self.day_planners = ttk.OptionMenu(self.top, self.day_planners_var, 3, *values, style="TMenubutton")
         self.canvas.create_window(450, 108, window=self.day_planners)
 
         # self.canvas.create_text(140, 150, text="Total Team Resources", font=self.font_style, fill="white")
@@ -141,13 +165,14 @@ class Confirmation_dialog_box(tkinter.Tk):
         self.canvas.create_window(450, 188, window=self.total_resources_on_leaves_optionmenu)
 
         # self.canvas.create_text(172, 310, text="Total Resources on Comp-Off :-", font=self.font_style, fill="white")
-        self.canvas.create_text(172, 230, text="Total Resources on Comp-Off :-", font=self.font_style, fill="white")
+        self.canvas.create_text(172, 230, text="Auditor/Automation/CompOff :- ", font=self.font_style, fill="white")
         values_for_resources_on_comp_off = [0]
         values_for_resources_on_comp_off.extend([i for i in range(0, 26)])
         self.total_resources_on_comp_off_var = IntVar(self.top)
         # Entering the total resources on leaves number in the option menu variable
-        if self.total_resources_on_comp_off is not None:
-            self.total_resources_on_comp_off_var.set(self.total_resources_on_leaves)
+        if self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off is not None:
+            self.total_resources_on_comp_off_var.set(self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off)
+
         self.total_resources_on_comp_off_optionmenu = ttk.OptionMenu(self.top, self.total_resources_on_comp_off_var, *values_for_resources_on_comp_off, style="TMenubutton")
         # self.canvas.create_window(450, 308, window=self.total_resources_on_comp_off_optionmenu)
         self.canvas.create_window(450, 228, window=self.total_resources_on_comp_off_optionmenu)
@@ -159,8 +184,12 @@ class Confirmation_dialog_box(tkinter.Tk):
         self.canvas.create_window(290, 320, window=self.resources_on_leaves_entry)
 
         # self.canvas.create_text(300, 360, text="Resources who are on Comp-off :-", font=self.font_style, fill="white")
-        self.canvas.create_text(300, 370, text="Resources who are on Comp-off :-", font=self.font_style, fill="white")
+        self.canvas.create_text(300, 370, text="Resources who are on Comp-off/Automation/Buffer/Auditor :-", font=self.font_style, fill="white")
         self.resources_on_comp_off_entry = ttk.Entry(self.top, width=50, font=self.font_style_1, justify="center")
+
+        if self.sum_of_buffer_auditor_trainer__resource_on_automation__resources_on_comp_off > 0:
+            self.resources_on_comp_off_entry.insert(0, ','.join([str(element).strip() for element in self.resource_on_buffer_auditor_trainer__on_automation__on_comp_off]))
+
         # self.canvas.create_window(290, 390, window=self.resources_on_comp_off_entry)
         self.canvas.create_window(290, 400, window=self.resources_on_comp_off_entry)
 
@@ -172,8 +201,8 @@ class Confirmation_dialog_box(tkinter.Tk):
         self.submit_button = ttk.Button(self.top, text="Submit", style="TButton", command=lambda: self.submit(""))
         self.canvas.create_window(450, 450, window=self.submit_button)
 
-        if self.top.state() != "normal":
-            print("returning from here")
+        # if self.top.state() != "normal":
+            # print("returning from here")
             # return self.get_details()
         self.top.mainloop()
 
@@ -261,8 +290,8 @@ class Confirmation_dialog_box(tkinter.Tk):
             self.resources_on_leaves_entry.delete(0, END)
 
         else:
-            if self.var != day_planners_count:
-                self.day_planners_file_update()
+            # if self.var != day_planners_count:
+            #     self.day_planners_file_update()
             self.result_dictionary = {
                 "planned_crs": planned_crs,
                 "picked_crs": picked_crs,
@@ -281,37 +310,37 @@ class Confirmation_dialog_box(tkinter.Tk):
 
         # sys.exit(0)
 
-    def day_planners_file_check(self):
-        username = os.popen(cmd='cmd.exe /C "echo %USERNAME%"').read().strip()
-        self.var = 0
-        if os.path.exists(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt"):
-            with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'r') as f:
-                self.var = int(f.readline())
-                f.close()
+    # def day_planners_file_check(self):
+    #     username = os.popen(cmd='cmd.exe /C "echo %USERNAME%"').read().strip()
+    #     self.var = 0
+    #     if os.path.exists(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt"):
+    #         with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'r') as f:
+    #             self.var = int(f.readline())
+    #             f.close()
+    #
+    #         del f
+    #
+    #     if isinstance(self.var,int):
+    #         if self.var != 0:
+    #             # print(self.var)
+    #             self.day_planners_var.set(self.var)
+    #             # print(self.day_planners_var.get())
+    #         else:
+    #             self.day_planners_var.set(3)
+    #     else:
+    #         self.day_planners_var.set(3)
 
-            del f
-
-        if isinstance(self.var,int):
-            if self.var != 0:
-                print(self.var)
-                self.day_planners_var.set(self.var)
-                print(self.day_planners_var.get())
-            else:
-                self.day_planners_var.set(3)
-        else:
-            self.day_planners_var.set(3)
-
-    def day_planners_file_update(self):
-        username = os.popen(cmd='cmd.exe /C "echo %USERNAME%"').read().strip()
-        if not os.path.exists(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\"):
-            os.mkdir(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\")
-
-        with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'w') as f:
-            # print(f"Writing {str(int(self.day_planners_var.get()))} in {f'C:/Users/{username}/AppData/Local/MPBN_Planning_Task/day_planners.txt'}")
-            f.write(str(int(self.day_planners_var.get())))
-            f.close()
-
-        del f
+    # def day_planners_file_update(self):
+    #     username = os.popen(cmd='cmd.exe /C "echo %USERNAME%"').read().strip()
+    #     if not os.path.exists(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\"):
+    #         os.mkdir(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\")
+    #
+    #     with open(f"C:\\Users\\{username}\\AppData\\Local\\MPBN_Planning_Task\\day_planners.txt", 'w') as f:
+    #         # print(f"Writing {str(int(self.day_planners_var.get()))} in {f'C:/Users/{username}/AppData/Local/MPBN_Planning_Task/day_planners.txt'}")
+    #         f.write(str(int(self.day_planners_var.get())))
+    #         f.close()
+    #
+    #     del f
 
     def get_details(self):
         if self.accidental_closed_flag == 0:
